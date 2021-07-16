@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,700;1,500&display=swap');
+
+$dark: #0F1923;
+$light: #CEF1FF;
+$white: #FFFFFF;
+$primary: #3A9CFF;
+$accent: #65FFB7;
+
+h1, h2, h3, h4, h5, h6, p, span, div {
+
+  font-family: 'Roboto Mono', monospace;
+  color: $white;
+  margin: 0;
+  
+  .text-dark { color: $dark;}
+  .text-light { color: $light; }
+  .text-white { color: $white; }
+  .text-primary { color: $primary; }
+  .text-accent { color: $accent; }
+}
+
+h1 {
+  font-size: 5em;
+}
+h2 {
+  font-size: 4em;
+}
+h3 {
+  font-size: 3em;
+}
+h4 {
+  font-size: 2em;
+}
+h5 {
+  font-size: 1.5em;
+}
+h6 {
+  font-size: 1.15em;
+}
+
+.dark { background-color: $dark; }
+.light { background-color: $light; }
+.white { background-color: $white; }
+.primary { background-color: $primary; }
+.accent { background-color: $accent; }
+
+body {
+  background-color: $dark;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: bold;
+  color: $light;
+  text-decoration: none;
+
+  &:hover {
+    color: $accent;
+  }
+
+  &:active {
+    color: $accent;
+  }
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+}
+.spacer {
+  flex: 1;
+}
+.align-{
+  &start {
+    align-items: start;
+  }
+  &center {
+    align-items: center;
+  }
+  &end {
+    align-items: end;
+  }
+  &stretch {
+    align-items: stretch;
+  }
+}
+.justify-{
+  &start {
+    justify-content: start;
+  }
+  &center {
+    justify-content: center;
+  }
+  &end {
+    justify-content: end;
+  }
+  &stretch {
+    justify-content: stretch;
+  }
+}
