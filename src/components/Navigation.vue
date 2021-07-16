@@ -1,11 +1,12 @@
 <template lang="pug">
   #nav.row.justify-center
-    router-link.nav-item(
+    h6.nav-item(
       v-for='link in links'
       :key='link.to'
-      :to='link.to'
+      :class='link.class'
+      v-scroll-to="{ el: `#${link.to}` }"
     )
-      h6 {{ link.name }}
+      a(href='#') {{ link.name }}
 </template>
 
 <script lang="ts">
@@ -15,19 +16,20 @@ export default {
     links: [
       {
         name: 'Home',
-        to: '#home',
+        to: 'home',
+        class: 'text-accent',
       },
       {
         name: 'About',
-        to: '#about',
+        to: 'about',
       },
       {
         name: 'Work',
-        to: '#work',
+        to: 'work',
       },
       {
         name: 'Contact',
-        to: '#contact',
+        to: 'contact',
       },
     ],
   }),
@@ -41,6 +43,11 @@ export default {
 }
 .nav-item {
   display: inline;
-  margin: 50px;
+  
+  a {
+    display: inline-block;
+    padding: 50px;
+  }
 }
+
 </style>

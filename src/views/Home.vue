@@ -1,39 +1,49 @@
 <template lang="pug">
-  #home.flex.row.justify-center
-    .section.flex.row.align-center
+  .flex.col.align-center
+    section#home.flex.row.align-center
       .col
-        h4.text-primary Hi, I'm
-        h1.ma-0 Alex
-        h1.ma-0 Wohlbruck.
-        h4.text-primary I'm a web developer.
+        intro
 
       .spacer
 
       .col
-        a.social-link(href='' v-for='social in socials' :key='social')
+        a.social-link(v-for='(social, i) in socials' :key='i' :href='social.href' target='_blank')
           img(:src='require(`@/assets/svg/${social.name}.svg`)' width='30')
+    
+    section#about.primary
+      p Test
+    section#work.accent
+      p Test
+    section#contact
+      p Test
 </template>
 
 <script>
+// import { gsap } from 'gsap'
+import Intro from '@/components/Intro.vue'
+
 export default {
   name: 'Home',
+  components: {
+    Intro
+  },
   data: () => ({
     socials: [
       {
         name: 'at',
-        href: 'mailto:alexwohlbruck@gmail.com'
+        href: 'mailto:alexwohlbruck@gmail.com',
       },
       {
         name: 'linkedin',
-        href: 'https://linkedin.com/in/alexwohlbruck'
+        href: 'https://linkedin.com/in/alexwohlbruck',
       },
       {
         name: 'github',
-        href: 'https://github.com/alexwohlbruck'
+        href: 'https://github.com/alexwohlbruck',
       },
       {
         name: 'instagram',
-        href: 'https://instagram.com/alexwohlbruck'
+        href: 'https://instagram.com/alexwohlbruck',
       },
     ],
   }),
@@ -41,10 +51,37 @@ export default {
 </script>
 
 <style lang="scss">
-.section {
+section {
   height: 100vh;
   width: 80%;
   max-width: 1200px;
+}
+
+.cursor {
+  margin: 0 5px;
+  width: 3px;
+  display: inline-block;
+  height: 1.1em;
+  position: relative;
+  top: 0.2em;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0% {
+    opacity: 0;
+    width: 1px;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+    width: 3px;
+    transform: translateX(-1px);
+  }
+  100% {
+    opacity: 0;
+    width: 1px;
+    transform: translateX(0);
+  }
 }
 
 .social-link {
