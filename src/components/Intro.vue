@@ -1,8 +1,8 @@
 <template lang="pug">
   #intro
     h4.text-primary Hi, I'm
-    h1.ma-0 Alex
-    h1.ma-0 Wohlbruck,
+    h1 Alex
+    h1 Wohlbruck,
     h4.text-primary
       | and I'm a {{ occupation }}
       span.cursor.accent
@@ -11,11 +11,13 @@
 <script>
 const occupations = [
   'web developer',
-  'designer',
+  'graphic designer',
   'photographer',
+  'software engineer',
   'pianist',
   'cat owner',
   'cheese enthusiast',
+  'techie',
 ]
 const typingSpeed = 60,
   readWait = 1500,
@@ -65,3 +67,32 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+.cursor {
+  margin: 0 5px;
+  width: 3px;
+  display: inline-block;
+  height: 1.1em;
+  position: relative;
+  top: 0.2em;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0% {
+    opacity: 0;
+    width: 1px;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+    width: 3px;
+    transform: translateX(-1px);
+  }
+  100% {
+    opacity: 0;
+    width: 1px;
+    transform: translateX(0);
+  }
+}
+</style>
