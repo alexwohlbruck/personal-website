@@ -1,6 +1,6 @@
 <template lang="pug">
   .flex.col.align-center
-    section#home.flex.row.align-center
+    section#home.flex.row.align-center(ref='home')
       .col
         intro
 
@@ -10,22 +10,51 @@
         a.social-link(v-for='(social, i) in socials' :key='i' :href='social.href' target='_blank')
           img(:src='require(`@/assets/svg/${social.name}.svg`)' width='30')
     
-    section#about.primary
-      p Test
-    section#work.accent
-      p Test
-    section#contact
-      p Test
+    section#about(ref='about')
+      p About
+
+    section#work(ref='work')
+      p My work
+
+    section#contact(ref='contact')
+      p Contact
 </template>
 
 <script>
 // import { gsap } from 'gsap'
+import { EventBus } from '@/event-bus'
 import Intro from '@/components/Intro.vue'
+
+let currentAnchor = ''
 
 export default {
   name: 'Home',
   components: {
-    Intro
+    Intro,
+  },
+  mounted() {
+    this.calculateAnchor()
+    window.addEventListener('scroll', this.calculateAnchor)
+  },
+  methods: {
+    calculateAnchor() {
+      const { scrollY } = window
+
+      for (const [key, value] of Object.entries(this.$refs)) {
+        if (!value) return
+
+        const top = value.offsetTop, midpoint = (top + (value.offsetHeight) / 2)
+
+        if (scrollY <= midpoint) {
+          if (currentAnchor != key) {
+            currentAnchor = key
+            EventBus.$emit('clicked', key)
+          }
+          return
+        }
+      }
+      console.log('')
+    },
   },
   data: () => ({
     socials: [

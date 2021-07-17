@@ -1,10 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,700;1,500&display=swap');
-
-$dark: #0F1923;
-$light: #CEF1FF;
-$white: #FFFFFF;
-$primary: #3A9CFF;
-$accent: #65FFB7;
+@import './variables.scss';
 
 h1, h2, h3, h4, h5, h6, p, span, div {
 
@@ -55,9 +50,10 @@ a {
   font-weight: bold;
   color: $light;
   text-decoration: none;
+  transition: color .2s;
 
   &:hover {
-    color: $accent;
+    color: $white;
   }
 
   &:active {
