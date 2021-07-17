@@ -52,18 +52,18 @@ export default {
   width: 100%;
   z-index: 2;
 
-  &:before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 300%;
-    background-color: $dark;
-    -webkit-mask-image: -webkit-gradient(linear, center 35%, center bottom, 
-    from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
-  }
+  // &:before {
+  //   content: '';
+  //   position: absolute;
+  //   z-index: -1;
+  //   top: 0;
+  //   left: 0;
+  //   width: 100%;
+  //   height: 300%;
+  //   background-color: $dark;
+  //   -webkit-mask-image: -webkit-gradient(linear, center 35%, center bottom, 
+  //   from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+  // }
 }
 .nav-item {
   display: inline;

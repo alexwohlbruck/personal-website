@@ -3,7 +3,7 @@
     section#home(ref='home')
       jumbo
     
-    section#about(ref='about')
+    section#about.primary(ref='about')
       p About
 
     section#work(ref='work')
@@ -55,7 +55,7 @@ export default {
 
 <style lang="scss">
 section {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;

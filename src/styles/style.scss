@@ -50,6 +50,9 @@ h5 {
 h6 {
   font-size: 1.15em;
 }
+.caption {
+  font-size: 0.8em;
+}
 
 .bold {
   font-weight: bold;
@@ -83,13 +86,27 @@ a {
   }
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-gap: 20px 20px; 
+}
 .col {
   display: flex;
   flex-direction: column;
 }
+.col-reverse {
+  display: flex;
+  flex-direction: column-reverse;
+}
 .row {
   display: flex;
   flex-direction: row;
+}
+.row-reverse {
+  display: flex;
+  flex-direction: row-reverse;
 }
 .spacer {
   flex: 1;

@@ -1,80 +1,107 @@
 <template lang="pug">
 .col.works
+
   .container
-    h2 My work
-  
-  .works-list.row.p-l-75.m-t-50
-    router-link.work.m-r-50(
-      v-for='(work, i) in portfolio'
-      :key='i'
-      :to="{ name: 'work', params: { name: work.name, work }}"
-    )
-      img(:src='require(`../assets/portfolio/${work.name}/thumb.png`)' width='300')
-      
-      h4.p-y-15.bold {{ work.title }}
-      p.p-y-15 {{ work.description }}
-      p.p-y-15.opacity-6 {{ work.date.start }} - {{ work.date.end }}
+    .timeline
+      .timeline-item.col.align-center(v-for='(event, i) in events')
+
+        .segment
+          .detail(:class='i % 2 == 1 ? "right" : "left"')
+            .info
+              h5.row.align-center
+                img(
+                  :src='require(`@/assets/svg/${event.icon}.svg`)'
+                  width='40'
+                  :class='`p-${i % 2 == 1 ? "l" : "r"}-15`'
+                )
+                span {{ event.title }}
+                .divider
+              p.m-y-20.text-light {{ event.description }}
+              a.text-accent(v-if='event.to') More
+            .date
+              p.caption {{ event.start | monthName }}
+              p {{ event.start | year }}
+              
+          .dot
+
+          //- If event has end date, add line and another dot
+          .col.align-center(v-if='event.end')
+            .line
+            .detail(:class='i % 2 == 1 ? "right" : "left"')
+              .date
+                p.caption {{ event.end | monthName }}
+                p {{ event.end | year }}
+            .dot
+        
+
+        //- Place line after for spacing
+        .line(v-if='i != events.length - 1')
+
 </template>
 
 <script>
+const months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
+const isToday = date => {
+  const today = new Date()
+  return date.getDate() == today.getDate() &&
+    date.getMonth() == today.getMonth() &&
+    date.getFullYear() == today.getFullYear()
+}
+
 export default {
   name: 'works',
+  filters: {
+    monthName(date) {
+      if (isToday(date)) return ''
+      return months[date.getMonth()]
+    },
+    year(date) {
+      if (isToday(date)) return 'Today'
+      return date.getFullYear()
+    }
+  },
   data: () => ({
-    portfolio: [
+    events: [
       {
-        name: 'worxstr',
+        start: new Date(),
+        end: new Date('December 16, 2020'),
         title: 'Worxstr',
-        description:
-          'I am designing and developing the web frontend and mobile app for Worxstr, a labor management platform.',
-        date: {
-          start: 'Dec 2020',
-          end: 'Present',
-        },
-        url: 'https://worxstr.com',
+        description: 'Designed and developed the web frontend and mobile app for Worxstr, a digital labor management platform.',
+        icon: 'worxstr',
+        to: {}
       },
       {
-        name: 'worxstr',
-        title: 'Worxstr',
-        description:
-          'I am designing and developing the web frontend and mobile app for Worxstr, a labor management platform.',
-        date: {
-          start: 'Dec 2020',
-          end: 'Present',
-        },
-        url: 'https://worxstr.com',
+        start: new Date('August 1, 2019'),
+        end: new Date('May 1, 2019'),
+        title: 'Punch Alert',
+        description: 'Worked on custom software suite integrations for the PunchAlert app using Python.',
+        icon: 'punch',
       },
       {
-        name: 'worxstr',
-        title: 'Worxstr',
-        description:
-          'I am designing and developing the web frontend and mobile app for Worxstr, a labor management platform.',
-        date: {
-          start: 'Dec 2020',
-          end: 'Present',
-        },
-        url: 'https://worxstr.com',
+        start: new Date('August 16, 2018'),
+        title: 'Appalachian State',
+        description: 'Became an undergrad student at Appalachian State University, studying for a B.S. in computer science.',
+        icon: 'appstate',
       },
       {
-        name: 'worxstr',
-        title: 'Worxstr',
-        description:
-          'I am designing and developing the web frontend and mobile app for Worxstr, a labor management platform.',
-        date: {
-          start: 'Dec 2020',
-          end: 'Present',
-        },
-        url: 'https://worxstr.com',
-      },
-      {
-        name: 'worxstr',
-        title: 'Worxstr',
-        description:
-          'I am designing and developing the web frontend and mobile app for Worxstr, a labor management platform.',
-        date: {
-          start: 'Dec 2020',
-          end: 'Present',
-        },
-        url: 'https://worxstr.com',
+        start: new Date('June 1, 2018'),
+        end: new Date('May 1, 2018'),
+        title: 'Punch Alert',
+        description: 'Interned writing a new front-end web console for internal use at the company using Vue.js.',
+        icon: 'punch',
       },
     ],
   }),
@@ -82,13 +109,104 @@ export default {
 </script>
 
 <style lang="scss">
-.works-list {
-  overflow-x: scroll;
-}
+@import '@/styles/variables.scss';
 
-.work {
-  img {
-    border-radius: 5px;
+$dot-size: 20px;
+$line-height: 150px;
+$segment-line-height: 200px;
+$segment-color: $accent;
+$spacing: 40px;
+
+.timeline-item {
+  position: relative;
+
+  .line {
+    width: $dot-size * 0.5;
+    height: $line-height;
+    transform: scaleY(
+      ($line-height + ($dot-size / 2)) / $line-height
+    ); // Scale line to line up with center of dots
+    background-color: $primary;
+    border-radius: $dot-size;
+  }
+  .dot {
+    position: relative;
+    z-index: 2;
+    width: $dot-size;
+    height: $dot-size;
+    border-radius: 50%;
+    background-color: $white;
+    border: ($dot-size / 3) solid $segment-color;
+    box-sizing: border-box;
+  }
+  .info {
+    position: absolute;
+    width: 400px;
+    
+    h5 {
+      white-space: nowrap;
+    }
+
+    .divider {
+      width: 100%;
+      height: 2px;
+      border-radius: 2px;
+      background: $primary;
+      margin: 0 ($spacing / 2);
+    }
+  }
+  .date {
+    position: absolute;
+    top: 0;
+  }
+  .info, .date {
+    transform: translateY(#{$dot-size / -2})
+  }
+
+  .detail {
+    position: relative;
+    
+    &.left {
+      .info {
+        right: calc(100% + #{$spacing});
+      }
+      .date {
+        left: calc(100% + #{$spacing});
+      }
+    }
+
+    &.right {
+      .info {
+        left: calc(100% + #{$spacing});
+        text-align: right;
+
+        h5 {
+          flex-direction: row-reverse;
+        }
+      }
+      .date {
+        right: calc(100% + #{$spacing});
+      }
+    }
+  }
+
+  .segment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .line {
+      background-color: $segment-color;
+      height: $segment-line-height;
+    }
   }
 }
+
+// .work {
+//   width: 300px;
+
+//   img {
+//     border-radius: 5px;
+//   }
+// }
 </style>
