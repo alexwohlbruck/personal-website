@@ -1,33 +1,31 @@
 <template lang="pug">
-  .col.align-center
-    section#home.row.align-center(ref='home')
-      intro
-      .spacer
-      socials
+  .col.align-stretch
+    section#home(ref='home')
+      jumbo
     
-    section#about(ref='about')
+    section#about.primary(ref='about')
       p About
 
     section#work(ref='work')
-      p My work
+      works
 
-    section#contact(ref='contact')
+    section#contact.primary(ref='contact')
       p Contact
 </template>
 
 <script>
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
-import Intro from '@/components/Intro.vue'
-import Socials from '@/components/Socials.vue'
+import Jumbo from '@/views/Jumbo.vue'
+import Works from '@/views/Works.vue'
 
 let currentAnchor = ''
 
 export default {
   name: 'Home',
   components: {
-    Intro,
-    Socials,
+    Jumbo,
+    Works,
   },
   mounted() {
     this.calculateAnchor()
@@ -40,7 +38,7 @@ export default {
       for (const [key, value] of Object.entries(this.$refs)) {
         if (!value) return
 
-        const top = value.offsetTop, midpoint = (top + (value.offsetHeight) / 2)
+        const top = value.offsetTop, midpoint = (top + (value.offsetHeight) * .8)
 
         if (scrollY <= midpoint) {
           if (currentAnchor != key) {
@@ -57,35 +55,9 @@ export default {
 
 <style lang="scss">
 section {
-  height: 100vh;
-  width: 80%;
-  max-width: 1200px;
-}
-
-.cursor {
-  margin: 0 5px;
-  width: 3px;
-  display: inline-block;
-  height: 1.1em;
-  position: relative;
-  top: 0.2em;
-  animation: blink 1s infinite;
-}
-@keyframes blink {
-  0% {
-    opacity: 0;
-    width: 1px;
-    transform: translateX(0);
-  }
-  50% {
-    opacity: 1;
-    width: 3px;
-    transform: translateX(-1px);
-  }
-  100% {
-    opacity: 0;
-    width: 1px;
-    transform: translateX(0);
-  }
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>

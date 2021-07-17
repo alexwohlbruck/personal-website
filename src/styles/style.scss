@@ -2,7 +2,8 @@
 @import './variables.scss';
 
 ::-webkit-scrollbar {
-  width: 20px;
+  width: 18px;
+  padding: 0;
 }
 ::-webkit-scrollbar-track {
   background-color: transparent;
@@ -50,6 +51,13 @@ h5 {
 h6 {
   font-size: 1.15em;
 }
+.caption {
+  font-size: 0.8em;
+}
+
+.bold {
+  font-weight: bold;
+}
 
 .dark { background-color: $dark; }
 .light { background-color: $light; }
@@ -79,17 +87,47 @@ a {
   }
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-gap: 20px 20px; 
+}
 .col {
   display: flex;
   flex-direction: column;
+}
+.col-reverse {
+  display: flex;
+  flex-direction: column-reverse;
 }
 .row {
   display: flex;
   flex-direction: row;
 }
+.row-reverse {
+  display: flex;
+  flex-direction: row-reverse;
+}
 .spacer {
   flex: 1;
 }
+.container {
+  margin: 0 auto;
+  padding: 150px 20px;
+  width: 80%;
+  max-width: 1200px;
+}
+
+
+$opacities: (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+@each $opacity in $opacities {
+  .opacity-#{$opacity} {
+    opacity: #{$opacity / 10};
+  }
+}
+
 
 // Generate flexbox alignment and justification classes
 
@@ -117,7 +155,7 @@ $justifications: (flex-start, center, flex-end, space-between, space-around);
 //     Margin top 100px:      .m-t-100
 
 $spacingtypes: (m, p);
-$spaceamounts: (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100);
+$spaceamounts: (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 200, 300, 400, 500);
 $sides: (top, bottom, left, right);
 
 @each $type in $spacingtypes {

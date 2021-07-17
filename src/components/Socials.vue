@@ -1,12 +1,12 @@
 <template lang="pug">
   .socials.col.align-flex-end
-    a.social-link.row.align-center.m-y-10(
+    a.social-link.row.align-center.m-y-20(
       v-for='(social, i) in socials'
       :key='i'
       :href='social.href'
       target='_blank'
     )
-      span.text.text-accent {{ social.text }}
+      a.text.text-accent {{ social.text }}
       img.m-l-15(
         :src='require(`@/assets/svg/${social.icon}.svg`)'
         width='30'

@@ -5,7 +5,7 @@
       :key='i'
       v-scroll-to="{ el: `#${link.to}` }"
     )
-      a.p-a-50(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.to }}
+      a.p-a-50(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
       
 </template>
 
@@ -23,20 +23,20 @@ export default {
     currentAnchor: '',
     links: [
       {
-        name: 'home',
+        name: 'Home',
         to: 'home',
         class: 'text-accent',
       },
       {
-        name: 'about',
+        name: 'About',
         to: 'about',
       },
       {
-        name: 'work',
+        name: 'Work',
         to: 'work',
       },
       {
-        name: 'contact',
+        name: 'Contact',
         to: 'contact',
       },
     ],
@@ -52,21 +52,28 @@ export default {
   width: 100%;
   z-index: 2;
 
-  &:before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 300%;
-    background-color: $dark;
-    -webkit-mask-image: -webkit-gradient(linear, center 35%, center bottom, 
-    from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
-  }
+  // &:before {
+  //   content: '';
+  //   position: absolute;
+  //   z-index: -1;
+  //   top: 0;
+  //   left: 0;
+  //   width: 100%;
+  //   height: 300%;
+  //   background-color: $dark;
+  //   -webkit-mask-image: -webkit-gradient(linear, center 35%, center bottom, 
+  //   from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+  // }
 }
 .nav-item {
   display: inline;
+  cursor: pointer;
+
+  &:hover {
+    a {
+      color: $white;
+    }
+  }
   
   a {
     display: inline-block;
