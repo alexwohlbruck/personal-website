@@ -27,18 +27,18 @@ export default {
         to: 'home',
         class: 'text-accent',
       },
-      {
-        name: 'About',
-        to: 'about',
-      },
+      // {
+      //   name: 'About',
+      //   to: 'about',
+      // },
       {
         name: 'Work',
         to: 'work',
       },
-      {
-        name: 'Contact',
-        to: 'contact',
-      },
+      // {
+      //   name: 'Contact',
+      //   to: 'contact',
+      // },
     ],
   }),
 }
