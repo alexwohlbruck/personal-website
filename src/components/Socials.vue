@@ -6,7 +6,7 @@
       :href='social.href'
       target='_blank'
     )
-      span.text.text-accent {{ social.text }}
+      a.text.text-accent {{ social.text }}
       img.m-l-15(
         :src='require(`@/assets/svg/${social.icon}.svg`)'
         width='30'

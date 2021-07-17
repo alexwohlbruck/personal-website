@@ -9,7 +9,7 @@
     section#work(ref='work')
       works
 
-    section#contact(ref='contact')
+    section#contact.primary(ref='contact')
       p Contact
 </template>
 
@@ -38,7 +38,7 @@ export default {
       for (const [key, value] of Object.entries(this.$refs)) {
         if (!value) return
 
-        const top = value.offsetTop, midpoint = (top + (value.offsetHeight) / 2)
+        const top = value.offsetTop, midpoint = (top + (value.offsetHeight) * .8)
 
         if (scrollY <= midpoint) {
           if (currentAnchor != key) {

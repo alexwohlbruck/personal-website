@@ -2,6 +2,8 @@
 .col.works
 
   .container
+    h4 My work
+
     .timeline
       .timeline-item.col.align-center(v-for='(event, i) in events')
 
@@ -10,6 +12,7 @@
             .info
               h5.row.align-center
                 img(
+                  v-if='event.icon'
                   :src='require(`@/assets/svg/${event.icon}.svg`)'
                   width='40'
                   :class='`p-${i % 2 == 1 ? "l" : "r"}-15`'
@@ -103,6 +106,18 @@ export default {
         description: 'Interned writing a new front-end web console for internal use at the company using Vue.js.',
         icon: 'punch',
       },
+      {
+        start: new Date('August 18, 2014'),
+        end: new Date('May 30, 2018'),
+        title: 'Myers Park High',
+        description: 'I started learning to code with some of my friends during high school when I went to Myers Park.',
+        icon: 'myerspark',
+      },
+      {
+        start: new Date('May 11, 2000'),
+        title: 'Birth',
+        description: 'I was born in Charlotte, NC at the turn of the century.',
+      },
     ],
   }),
 }
@@ -111,12 +126,15 @@ export default {
 <style lang="scss">
 @import '@/styles/variables.scss';
 
-$dot-size: 20px;
-$line-height: 150px;
-$segment-line-height: 200px;
+$dot-size: 17px;
+$line-height: 140px;
+$segment-line-height: 180px;
 $segment-color: $accent;
 $spacing: 40px;
 
+.timeline {
+  padding: 100px 0;
+}
 .timeline-item {
   position: relative;
 

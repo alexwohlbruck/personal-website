@@ -5,7 +5,7 @@
       :key='i'
       v-scroll-to="{ el: `#${link.to}` }"
     )
-      a.p-a-50(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.to }}
+      a.p-a-50(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
       
 </template>
 
@@ -23,20 +23,20 @@ export default {
     currentAnchor: '',
     links: [
       {
-        name: 'home',
+        name: 'Home',
         to: 'home',
         class: 'text-accent',
       },
       {
-        name: 'about',
+        name: 'About',
         to: 'about',
       },
       {
-        name: 'work',
+        name: 'Work',
         to: 'work',
       },
       {
-        name: 'contact',
+        name: 'Contact',
         to: 'contact',
       },
     ],
@@ -68,6 +68,12 @@ export default {
 .nav-item {
   display: inline;
   cursor: pointer;
+
+  &:hover {
+    a {
+      color: $white;
+    }
+  }
   
   a {
     display: inline-block;
