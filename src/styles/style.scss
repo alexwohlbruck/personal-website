@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,700;1,500&display=swap');
+@import './variables.scss';
+
+::-webkit-scrollbar {
+  width: 20px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: $primary;
+  border-radius: 20px;
+  border: 7px solid transparent;
+  background-clip: content-box;
+
+  &:hover {
+    background-color: $light;
+  }
+}
+
+
+h1, h2, h3, h4, h5, h6, p, span, div {
+
+  font-family: 'Roboto Mono', monospace;
+  color: $white;
+  margin: 0;
+  
+  .text-dark { color: $dark;}
+  .text-light { color: $light; }
+  .text-white { color: $white; }
+  .text-primary { color: $primary; }
+  .text-accent { color: $accent; }
+}
+
+h1 {
+  font-size: 5em;
+}
+h2 {
+  font-size: 4em;
+}
+h3 {
+  font-size: 3em;
+}
+h4 {
+  font-size: 2em;
+}
+h5 {
+  font-size: 1.5em;
+}
+h6 {
+  font-size: 1.15em;
+}
+
+.dark { background-color: $dark; }
+.light { background-color: $light; }
+.white { background-color: $white; }
+.primary { background-color: $primary; }
+.accent { background-color: $accent; }
+
+body {
+  background-color: $dark;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: bold;
+  color: $light;
+  text-decoration: none;
+  transition: color .2s;
+
+  &:hover {
+    color: $white;
+  }
+
+  &:active {
+    color: $accent;
+  }
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+}
+.spacer {
+  flex: 1;
+}
+
+// Generate flexbox alignment and justification classes
+
+$alignments: (flex-start, center, flex-end, stretch);
+$justifications: (flex-start, center, flex-end, space-between, space-around);
+
+.align-{
+  @each $alignment in $alignments {
+    &#{$alignment} {
+      align-items: #{$alignment};
+    }
+  }
+}
+.justify-{
+  @each $justification in $justifications {
+    &#{$justification} {
+      justify-content: #{$justification};
+    }
+  }
+}
+
+// Generate margin and padding classes
+// ex. Margin all sides 20px: .m-a-20
+//     Padding x sides 1px:   .p-x-1
+//     Margin top 100px:      .m-t-100
+
+$spacingtypes: (m, p);
+$spaceamounts: (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100);
+$sides: (top, bottom, left, right);
+
+@each $type in $spacingtypes {
+  @each $space in $spaceamounts {
+    @each $side in $sides {
+      .#{$type}-#{str-slice($side, 0, 1)}-#{$space} {
+        margin-#{$side}: #{$space}px !important;
+      }
+    }
+    .#{$type}-a-#{$space} {
+      margin: #{$space}px !important;
+    }
+    .#{$type}-x-#{$space} {
+      margin-left: #{$space}px !important;
+      margin-right: #{$space}px !important;
+    }
+    .#{$type}-y-#{$space} {
+      margin-top: #{$space}px !important;
+      margin-bottom: #{$space}px !important;
+    }
+  }
+}

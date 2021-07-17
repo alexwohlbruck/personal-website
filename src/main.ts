@@ -1,11 +1,15 @@
-import Vue from "vue";
-import App from "./App.vue";
-import "./registerServiceWorker";
-import router from "./router";
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import './styles/style.scss'
 
-Vue.config.productionTip = false;
+const VueScrollTo = require('vue-scrollto')
+
+Vue.config.productionTip = false
+
+Vue.use(VueScrollTo)
 
 new Vue({
   router,
-  render: (h) => h(App),
-}).$mount("#app");
+  render: h => h(App)
+}).$mount('#app')
