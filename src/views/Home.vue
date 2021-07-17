@@ -1,14 +1,9 @@
 <template lang="pug">
-  .flex.col.align-center
-    section#home.flex.row.align-center(ref='home')
-      .col
-        intro
-
+  .col.align-center
+    section#home.row.align-center(ref='home')
+      intro
       .spacer
-
-      .col
-        a.social-link(v-for='(social, i) in socials' :key='i' :href='social.href' target='_blank')
-          img(:src='require(`@/assets/svg/${social.name}.svg`)' width='30')
+      socials
     
     section#about(ref='about')
       p About
@@ -24,6 +19,7 @@
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
 import Intro from '@/components/Intro.vue'
+import Socials from '@/components/Socials.vue'
 
 let currentAnchor = ''
 
@@ -31,6 +27,7 @@ export default {
   name: 'Home',
   components: {
     Intro,
+    Socials,
   },
   mounted() {
     this.calculateAnchor()
@@ -53,29 +50,8 @@ export default {
           return
         }
       }
-      console.log('')
     },
   },
-  data: () => ({
-    socials: [
-      {
-        name: 'at',
-        href: 'mailto:alexwohlbruck@gmail.com',
-      },
-      {
-        name: 'linkedin',
-        href: 'https://linkedin.com/in/alexwohlbruck',
-      },
-      {
-        name: 'github',
-        href: 'https://github.com/alexwohlbruck',
-      },
-      {
-        name: 'instagram',
-        href: 'https://instagram.com/alexwohlbruck',
-      },
-    ],
-  }),
 }
 </script>
 
@@ -111,9 +87,5 @@ section {
     width: 1px;
     transform: translateX(0);
   }
-}
-
-.social-link {
-  margin: 10px 0;
 }
 </style>

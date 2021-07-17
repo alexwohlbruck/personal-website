@@ -5,17 +5,17 @@
       :key='i'
       v-scroll-to="{ el: `#${link.to}` }"
     )
-      a(href='#' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.to }}
+      a.p-a-50(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.to }}
       
 </template>
 
-<script lang="ts">
+<script>
 import { EventBus } from '@/event-bus'
 
 export default {
   name: 'navigation',
   mounted() {
-    EventBus.$on('clicked', (a: string) => {
+    EventBus.$on('clicked', a => {
       this.currentAnchor = a
     })
   },
@@ -70,7 +70,6 @@ export default {
   
   a {
     display: inline-block;
-    padding: 50px;
   }
 }
 
