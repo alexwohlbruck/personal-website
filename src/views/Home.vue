@@ -1,15 +1,13 @@
 <template lang="pug">
-  .col.align-center
-    section#home.row.align-center(ref='home')
-      intro
-      .spacer
-      socials
+  .col.align-stretch
+    section#home(ref='home')
+      jumbo
     
     section#about(ref='about')
       p About
 
     section#work(ref='work')
-      p My work
+      works
 
     section#contact(ref='contact')
       p Contact
@@ -18,16 +16,16 @@
 <script>
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
-import Intro from '@/components/Intro.vue'
-import Socials from '@/components/Socials.vue'
+import Jumbo from '@/views/Jumbo.vue'
+import Works from '@/views/Works.vue'
 
 let currentAnchor = ''
 
 export default {
   name: 'Home',
   components: {
-    Intro,
-    Socials,
+    Jumbo,
+    Works,
   },
   mounted() {
     this.calculateAnchor()
@@ -58,7 +56,8 @@ export default {
 <style lang="scss">
 section {
   height: 100vh;
-  width: 80%;
-  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>

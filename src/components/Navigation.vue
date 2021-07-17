@@ -67,6 +67,7 @@ export default {
 }
 .nav-item {
   display: inline;
+  cursor: pointer;
   
   a {
     display: inline-block;
