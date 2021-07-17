@@ -3,14 +3,14 @@
     section#home(ref='home')
       jumbo
     
-    section#about.primary(ref='about')
-      p About
+    //- section#about.primary(ref='about')
+    //-   p About
 
     section#work(ref='work')
       works
 
-    section#contact.primary(ref='contact')
-      p Contact
+    //- section#contact.primary(ref='contact')
+    //-   p Contact
 </template>
 
 <script>
