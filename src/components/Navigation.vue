@@ -5,7 +5,7 @@
       :key='i'
       v-scroll-to="{ el: `#${link.to}` }"
     )
-      a.p-a-50(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
+      a.p-y-20.p-x-40(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
       
 </template>
 

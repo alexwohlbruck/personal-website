@@ -1,6 +1,6 @@
 <template lang="pug">
   .col.align-stretch
-    section#home(ref='home')
+    section#home.justify-center(ref='home')
       jumbo
     
     //- section#about.primary(ref='about')
@@ -58,6 +58,5 @@ section {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 </style>

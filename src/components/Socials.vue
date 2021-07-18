@@ -44,18 +44,25 @@ export default {
 </script>
 
 <style lang='scss'>
-  .social-link {
-    .text {
-      opacity: 0;
-      transform: translateX(10px);
-      transition: all .2s ease-in-out;
-    }
+@import '@/styles/variables.scss';
 
-    &:hover {
-      .text {
-        opacity: 1;
-        transform: translateX(0);
-      }
+
+.social-link {
+  .text {
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all .2s ease-in-out;
+
+    @media (max-width: $mobile-breakpoint) {
+      display: none;     
     }
   }
+
+  &:hover {
+    .text {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
 </style>

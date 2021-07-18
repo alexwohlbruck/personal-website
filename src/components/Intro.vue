@@ -1,8 +1,8 @@
 <template lang="pug">
   #intro
     h4.text-primary Hi, I'm
-    h1 Alex
-    h1 Wohlbruck,
+    h2 Alex
+    h2 Wohlbruck,
     h4.text-primary
       | and I'm a {{ occupation }}
       span.cursor.accent
