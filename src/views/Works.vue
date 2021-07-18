@@ -34,7 +34,7 @@
                   p.text-primary.caption {{ event.start | monthName }}
                   p.text-primary {{ event.start | year }}
 
-              a.text-accent(v-if='event.to') More
+              a.text-accent(v-if='event.to') See more
               
             .date
               p.caption {{ event.start | monthName }}
@@ -137,8 +137,8 @@ export default {
         icon: 'punch',
       },
       {
-        start: new Date('August 18, 2014'),
-        end: new Date('May 30, 2018'),
+        start: new Date('May 30, 2018'),
+        end: new Date('August 18, 2014'),
         title: 'Myers Park High',
         description:
           'I started learning to code with some of my friends during high school when I went to Myers Park.',
