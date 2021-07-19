@@ -1,23 +1,26 @@
 <template lang="pug">
-  .col.align-stretch
-    section#home.justify-center(ref='home')
-      jumbo
-    
-    //- section#about.primary(ref='about')
-    //-   p About
+  div
+    navigation
+    .col.align-stretch
+      section#home.justify-center(ref='home')
+        jumbo
+      
+      //- section#about.primary(ref='about')
+      //-   p About
 
-    section#work(ref='work')
-      works
+      section#work(ref='work')
+        work
 
-    //- section#contact.primary(ref='contact')
-    //-   p Contact
+      //- section#contact.primary(ref='contact')
+      //-   p Contact
 </template>
 
 <script>
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
 import Jumbo from '@/views/Jumbo.vue'
-import Works from '@/views/Works.vue'
+import Work from '@/views/Work.vue'
+import Navigation from '@/components/Navigation.vue'
 
 let currentAnchor = ''
 
@@ -25,7 +28,8 @@ export default {
   name: 'Home',
   components: {
     Jumbo,
-    Works,
+    Work,
+    Navigation,
   },
   mounted() {
     this.calculateAnchor()

@@ -14,9 +14,10 @@ const occupations = [
   'graphic designer',
   'photographer',
   'software engineer',
+  'student',
   'pianist',
   'cat owner',
-  'cheese enthusiast',
+  'cheese lover',
   'techie',
 ]
 const typingSpeed = 60,
