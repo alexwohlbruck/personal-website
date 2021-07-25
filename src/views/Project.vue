@@ -1,70 +1,82 @@
-<template lang='pug'>
-.work(:style='`background-color: ${project.color}`')
+<template lang="pug">
+.work.col
   
-  .row.align-center.p-x-20.p-y-50
+  .container.p-y-50
     
-    //- Back button
-    h3.m-x-20
-      a(@click='$router.go(-1)') <
-
-    //- Icon
-    img.m-r-30(
-      :src="require(`@/assets/svg/${project.icon}.svg`)"
-      width='80'
-    )
-
     //- Details
     .col
-      h3(:class="darkText ? 'b' : 'w'") {{ project.title }}
+      //- Back button
+      a.m-b-15(@click='$router.go(-1)')
+        img(
+          :src='require(`@/assets/svg/arrow-left.svg`)'
+          width='30'
+        )
 
-      p.m-y-10 {{ project.description }}
+      .row.align-center.m-y-15
+        .icon.m-r-30
+          project-tile(:project='project')
+        h3(:class="darkText ? 'b' : 'w'") {{ project.title }}
 
-      a(
+      p.m-y-15 {{ project.description }}
+
+      a.text-accent.m-y-15(
         v-if='project.url'
         :href="`${project.url}`"
         target='_blank'
       ) Visit site
+  
+  .spacer
 
-  //- Image carousel
-  div
-    img(
-      v-for='(image, i) in project.images'
-      :index='i'
-      :src="require(`@/assets/portfolio/${project.name}/${image}`)"
-      width='500' 
-    )
+    //- Image thumbs
+  div(:style='`background-color: ${project.color}`')
+    horizontal-scroll.container.scroll-x.p-y-75.row
+      img.thumb(
+        v-for='(image, i) in project.images'
+        :index='i'
+        :src="require(`@/assets/portfolio/${project.name}/${image}`)"
+      )
+    
+
 
 </template>
 
 <script>
+import HorizontalScroll from 'vue-horizontal-scroll'
+import ProjectTile from '@/components/ProjectTile.vue'
+
 export default {
   name: 'work',
+  components: {
+    ProjectTile,
+    HorizontalScroll,
+  },
   computed: {
     project() {
       return this.$store.getters.project(this.$route.params.name)
     },
-
-    // Compute text color based on background
-    darkText(){
-      const hexcolor = this.project.color.replace("#", "");
-      var r = parseInt(hexcolor.substr(0,2),16);
-      var g = parseInt(hexcolor.substr(2,2),16);
-      var b = parseInt(hexcolor.substr(4,2),16);
-      var yiq = ((r*299)+(g*587)+(b*114))/1000;
-      return yiq >= 128;
-    }
-  }
+  },
 }
 </script>
 
-<style lang='scss'>
+<style lang="scss">
+@import '@/styles/variables.scss';
+
 .work {
   height: 100%;
+
+  .icon {
+    width: 90px;
+
+    @media (min-width: $mobile-breakpoint) {
+      width: 120px;
+    }
+  }
+
+  .thumb {
+    height: 35vh;
+    border-radius: 8px;
+    margin-right: 30px;
+  }
 }
-.w {
-  color: white;
-}
-.b {
-  color: black;
-}
+
 </style>

@@ -70,9 +70,11 @@ export default {
 </script>
 
 <style lang="scss">
+$cursor-width: 3.5px;
+
 .cursor {
   margin: 0 5px;
-  width: 3px;
+  width: $cursor-width;
   display: inline-block;
   height: 1.1em;
   position: relative;
@@ -87,7 +89,7 @@ export default {
   }
   50% {
     opacity: 1;
-    width: 3px;
+    width: $cursor-width;
     transform: translateX(-1px);
   }
   100% {

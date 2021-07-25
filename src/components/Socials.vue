@@ -38,6 +38,11 @@ export default {
         icon: 'instagram',
         href: 'https://instagram.com/alexwohlbruck',
       },
+      {
+        text: 'Spotify',
+        icon: 'spotify',
+        href: 'https://open.spotify.com/user/alexwohlbruck',
+      },
     ],
   }),
 }

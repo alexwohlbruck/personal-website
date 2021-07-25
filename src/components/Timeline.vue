@@ -160,7 +160,7 @@ $spacing: 40px;
     max-width: 560px;
 
     @media (max-width: $mobile-breakpoint) {
-      width: calc(90vw - #{$spacing * 2});
+      width: calc(85vw - #{$spacing * 2});
       max-width: none;
     }
 
