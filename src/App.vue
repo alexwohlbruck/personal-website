@@ -1,15 +1,11 @@
 <template lang='pug'>
-  #app.flex.col
-    navigation
+  #app.flex.color
     router-view
 </template>
 
 <script lang='ts'>
-import Navigation from '@/components/Navigation.vue'
-
 export default {
   name: 'App',
-  components: { Navigation },
 }
 </script>
 

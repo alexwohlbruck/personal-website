@@ -6,14 +6,14 @@ Vue.use(VueRouter)
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/',
     name: 'home',
+    path: '/',
     component: Home
   },
   {
-    path: '/work/:name',
-    name: 'work',
-    component: () => import('@/views/Work.vue')
+    name: 'project',
+    path: '/project/:name',
+    component: () => import('@/views/Project.vue')
   }
 ]
 

@@ -19,6 +19,9 @@
   }
 }
 
+html, body, #app {
+  height: 100%;
+}
 
 h1, h2, h3, h4, h5, h6, p, span, div {
 
@@ -54,6 +57,10 @@ h6 {
 .caption {
   font-size: 0.8em;
 }
+a {
+  cursor: pointer;
+}
+
 @media (max-width: $mobile-breakpoint) {
   h1 {
     font-size: 4em;
@@ -128,10 +135,11 @@ a {
   flex: 1;
 }
 .container {
-  margin: 0 auto;
-  padding: 150px 20px;
-  width: 90%;
-  max-width: 1200px;
+  padding: 150px 8vw;
+  
+  &.scroll-x {
+    overflow-x: scroll;
+  }
 }
 .overflow-hidden {
   overflow: hidden;
@@ -172,7 +180,7 @@ $justifications: (flex-start, center, flex-end, space-between, space-around);
 //     Margin top 100px:      .m-t-100
 
 $spacingtypes: (margin, padding);
-$spaceamounts: (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 200, 300, 400, 500);
+$spaceamounts: (0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 200, 300, 400, 500);
 $sides: (top, bottom, left, right);
 
 @each $type in $spacingtypes {
