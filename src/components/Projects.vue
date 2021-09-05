@@ -3,7 +3,7 @@
     
     router-link.project(
       v-for='(project, i) in projects'
-      :index='i'
+      :key='i'
       :to="{ name: 'project', params: { name: project.name } }"
     )
       project-tile.m-r-15.m-b-15(:project='project')
