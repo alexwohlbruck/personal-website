@@ -13,7 +13,7 @@ Vue.use(VueScrollTo)
 
 Vue.use(VueGtag, {
   config: { id: 'G-MNXNSBCLCN' },
-})
+}, router)
 
 new Vue({
   router,
