@@ -61,6 +61,9 @@ export default {
       this.selectedSkill = skill
     },
   },
+  mounted() {
+    this.select(this.skills.languages[0])
+  }
 }
 </script>
 
