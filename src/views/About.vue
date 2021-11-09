@@ -12,7 +12,7 @@
 
   .m-y-10.row-mobile.justify-space-between
     .col
-      h6 Programming languages
+      h6 Languages
       ul.col
         li.p-y-5(
           v-for='(language, i) in skills.languages' :key='i'
@@ -47,9 +47,13 @@
         .progress-linear.m-t-5
           .p(:class='`p${selectedSkill.proficiency * 10}`')
 
-    p.text-light {{ selectedSkill.description }}
+    p.text-light.m-b-20 {{ selectedSkill.description }}
 
-    //- TOOD: Add links to projects related to the selected skill
+    div(v-if='relatedProjects.length')
+      h6 Related projects
+      ul
+        li(v-for='(project, i) in relatedProjects' :key='i')
+          router-link.text-accent(:to="{ name: 'project', params: { name: project.name }}") {{ project.title }}
 
 </template>
 
@@ -60,6 +64,9 @@ export default {
   name: 'about',
   computed: {
     ...mapState(['skills']),
+    relatedProjects() {
+      return this.$store.state.projects.filter(project => project.tags.includes(this.selectedSkill.tag))
+    },
   },
   data: () => ({
     selectedSkill: null,

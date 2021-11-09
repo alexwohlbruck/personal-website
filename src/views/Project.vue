@@ -19,6 +19,11 @@
 
       p.m-y-15 {{ project.description }}
 
+      p.caption
+        a.text-accent(v-for='(tag, index) in project.tags')
+          | {{ tag }}
+          span(v-if='index != project.tags.length - 1') ,&nbsp;
+
       a.text-accent.m-y-15(
         v-if='project.url'
         :href="`${project.url}`"
