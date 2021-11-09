@@ -15,7 +15,7 @@
       //-   p Contact
 
     .footnote
-      p ! This site is still under construction. Come back soon :)
+      p !!! This site is still under construction. Come back soon for more :)
 </template>
 
 <script>

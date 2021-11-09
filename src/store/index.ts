@@ -22,13 +22,13 @@ const state = {
           'CSS has always been a fantastic yet deeply confusing tool for application design, but I have managed to get the hang of it by now. I designed this site using my own custom SCSS markup.',
       },
       {
-        name: 'Javascript',
+        name: 'JavaScript',
         proficiency: 10,
         description:
           'The first programming lanuage I learned, and the one I have most experience with. I have a love-hate relationship with JS, but TypeScript has come to save the day.',
       },
       {
-        name: 'Typescript',
+        name: 'TypeScript',
         proficiency: 8,
         description:
           'I was reluctant to get on board with TypeScript for a while, but ever since I started using it I have found it hard to go back. Some of the advanced language features are still unfamiliar territory for me, but I am learning all the time!',
@@ -65,25 +65,116 @@ const state = {
       },
     ],
     tools: [
-      { name: 'Vue.js' },
-      { name: 'React' },
-      { name: 'Node.js' },
-      { name: 'Flutter' },
-      { name: 'Git' },
-      { name: 'MongoDB' },
-      { name: 'MySQL' },
-      { name: 'Firebase' },
-      { name: 'Photoshop' },
-      { name: 'Illustrator' },
-      { name: 'Adobe XD' },
+      {
+        name: 'Vue.js',
+        proficiency: 10,
+        description:
+          'Vue has always been my favorite javascript framework since I first tried it after coming from Angular.js. It has been my framework of choice for most of my projects, including this website.',
+      },
+      {
+        name: 'React',
+        proficiency: 7,
+        description:
+          "I have used React in some open source contributions and I tried my hand with it a number of times. Although I have not used it for a major project, I am fairly familiar with it's paradigms and design patterns.",
+      },
+      {
+        name: 'Node.js',
+        proficiency: 10,
+        description:
+          'When I began learning web development, I started out with PHP, but quickly got annoyed with it. Node.js was my next choice and I love using it to this day. Usually my preferred language for my web backends.',
+      },
+      {
+        name: 'Flutter',
+        proficiency: 5,
+        description:
+          'Flutter has always fascinated me, and although I have not had the time yet to sink some good hours into learning it all, I have dabbled with Flutter in some hackathons I attended. Hoping to learn more soon.',
+      },
+      {
+        name: 'Git',
+        proficiency: 9,
+        description:
+          "Being an essential tool for programming teams, I am very familiar with the Git workflow, although some of it's more advanced commands are still out of my reach.",
+      },
+      {
+        name: 'MongoDB',
+        proficiency: 9,
+        description:
+          "MongoDB has been my favorite database to use since I came across it the first time. It gives me flexibility that SQL databases don't while still able to perform complex lookup and join features.",
+      },
+      {
+        name: 'MySQL',
+        proficiency: 7,
+        description:
+          "This is the type of SQL database I have used before. I am familiar and comfortable with basic relational database design and querying, though I haven't tried many of it's advanced features.",
+      },
+      {
+        name: 'Firebase',
+        proficiency: 8,
+        description:
+          "The Firebase suite has always been fun to work with with it's realtime database and plug-n-play libraries. Although it can be limiting sometimes, it is a very fun tool to use for my projects.",
+      },
+      {
+        name: 'Photoshop',
+        proficiency: 10,
+        description:
+          'I started playing around in Photoshop around when I was in middle school. Learning to use Photoshop is what got me interested in graphic design, and then later web design and programming. I have used this tool the longest out of everything else listed here.',
+      },
+      {
+        name: 'Illustrator',
+        proficiency: 9,
+        description:
+          'Shortly after learning to use Photoshop, I also began learning Illustrator for designing vector graphics. This has been an invaluable skill to this day for me when creating graphics and mockups for my website and app designs.',
+      },
+      {
+        name: 'Adobe XD',
+        proficiency: 8,
+        description:
+          'I began using XD along with Figma occasionally for UI mockups around when they were first released. I have come to love these tools since they provide much better features for UI prototyping than something like Illustrator.',
+      },
     ],
     specializations: [
-      { name: 'Client-side development' },
-      { name: 'Server-side development' },
-      { name: 'Cross-platform apps' },
-      { name: 'Hybrid apps' },
-      { name: 'UX design' },
-      { name: 'Graphic design' },
+      {
+        name: 'Client-side development',
+        proficiency: 10,
+        description:
+          'This is what I do best. Front-end web development has always been what I have considered my best skill. Although I am always wanting to dive in to other areas of programming, this has always been my special power.',
+      },
+      {
+        name: 'Server-side development',
+        proficiency: 9,
+        description:
+          'The other half of web development, backend programming is also in my toolbelt by default. I have extensive experience programming web backends in Node.js, Python, and some PHP.',
+      },
+      {
+        name: 'Cross-platform/hybrid apps',
+        proficiency: 9,
+        description:
+          'In addition to messing around with Flutter occasionally, I have also shipped JavaScript-based mobile apps to iOS and Android using the Capacitor framework. Not only was I able to target multiple platforms with one codebase, but the native apps perform well and hardly feel out of place in their respective operating systems, even integrating with native system APIs.',
+      },
+      {
+        name: 'Web API design',
+        proficiency: 10,
+        description:
+          'I have had many runs at designing web APIs to have my client code communicate with a backend server. I am proficient in REST API concepts, as well as using Socket.io for real-time data communication. Check out my project Cat Facts, which has a public API for accessing random facts about cats and other animals.',
+      },
+      {
+        name: 'Graphic design',
+        proficiency: 9,
+        description:
+          'When I first learned Photoshop, it started my lifelong passion for graphic design. Before I learned to code, I wanted to major in it in college. I have designed countless logos, graphic art, and UI mockups over the years.',
+      },
+      {
+        name: 'UX design',
+        proficiency: 9,
+        description:
+          'When I am making my apps, I always keep the user experience at the center of my process. I aim to create beautiful but also intuitive interfaces that pack a list of required features naturally into the viewport, with fluid animations and delightful interactions.',
+      },
+      {
+        name: 'IoT',
+        proficiency: 8,
+        description:
+          'In addition to programming, I also love smart home tech. I got my Home Assistant rig set up a couple of years ago and I have had a lot of fun using sensors and other devices to control my home automation system.',
+      },
     ],
   },
   projects: [

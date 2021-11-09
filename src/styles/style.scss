@@ -120,6 +120,13 @@ a, .pointer {
   display: flex;
   flex-direction: column;
 }
+.col-mobile {
+  display: flex;
+  flex-direction: column;
+  @media (max-width: $mobile-breakpoint) {
+    flex-direction: row;
+  }
+}
 .col-reverse {
   display: flex;
   flex-direction: column-reverse;
@@ -128,10 +135,19 @@ a, .pointer {
   display: flex;
   flex-direction: row;
 }
+.row-mobile {
+  display: flex;
+  flex-direction: row;
+  @media (max-width: $mobile-breakpoint) {
+    flex-direction: column;
+  }
+}
 .row-reverse {
   display: flex;
   flex-direction: row-reverse;
 }
+
+
 .spacer {
   flex: 1;
 }
