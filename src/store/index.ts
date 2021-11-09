@@ -14,7 +14,7 @@ const state = {
         tag: 'html',
         proficiency: 10,
         description:
-          'I first started to learn to code with HTML, and it has been the backbone of most of my projects ever since. Although these days, I prefer to use tools like Pug and JSX to elevate my HTML capabilities.',
+          'I first started to learn to code with HTML, and it has been the backbone of most of my projects ever since. Although these days, I prefer to use tools like Pug and JSX to elevate my HTML\'s capabilities.',
       },
       {
         name: 'CSS',
@@ -222,7 +222,7 @@ const state = {
       url: 'https://worxstr.com',
       showPreview: true,
       images: ['home.png', 'home.png', 'home.png'],
-      tags: ['html', 'css', 'js', 'ts', 'sql', 'vue', 'git', 'mysql', 'illustrator', 'xd', 'client-side', 'server-side', 'cross-platform', 'apis', 'realtime', 'graphic-design', 'ux' ],
+      tags: ['html', 'css', 'js', 'ts', 'python', 'sql', 'vue', 'git', 'mysql', 'illustrator', 'xd', 'client-side', 'server-side', 'cross-platform', 'apis', 'realtime', 'graphic-design', 'ux' ],
     },
     {
       name: 'cat-facts',
@@ -252,7 +252,6 @@ const state = {
       icon: 'gp-wallpaper',
       description:
         "This project was inspired by the personal photo slideshow on the Google Nest devices. This app uses the Google Photos API to retrieve a user's photo albums, changing their desktop wallpaper on a customized cycle.",
-      url: 'https://github.com/alexwohlbruck/google-photos-wallpaper',
       github: 'https://github.com/alexwohlbruck/google-photos-wallpaper',
       tags: ['html', 'css', 'js', 'python', 'vue', 'git', 'xd', 'client-side', 'cross-platform']
     },
@@ -274,7 +273,6 @@ const state = {
       icon: 'jukebox',
       description:
         'This app lets you stream music from your Spotify account for free by streaming the isolated audio from the Youtube-equivalent music videos. You can play and queue songs from your library, and the mp3 file will be streamed to the browser. It is no longer functional because of copyright issues and the YTDL dispute.',
-      url: 'https://github.com/alexwohlbruck/jukebox',
       github: 'https://github.com/alexwohlbruck/jukebox',
       tags: ['html', 'css', 'js', 'vue', 'git', 'mongodb', 'xd', 'client-side', 'server-side', 'apis', 'graphic-design', 'ux']
     },

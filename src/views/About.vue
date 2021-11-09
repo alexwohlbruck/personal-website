@@ -53,21 +53,36 @@
 
     div(v-if='relatedProjects.length')
       h6 Related projects
-      ul
-        li(v-for='(project, i) in relatedProjects' :key='i')
-          router-link.text-accent(:to="{ name: 'project', params: { name: project.name }}") {{ project.title }}
+
+      .row.related-projects
+        router-link.project(
+          v-for='(project, i) in relatedProjects'
+          :key='i'
+          :to="{ name: 'project', params: { name: project.name } }"
+        )
+          project-tile.m-r-15.m-b-15(:project='project')
+          p.m-r-10 {{ project.title }}
+      //- ul
+      //-   li(v-for='(project, i) in relatedProjects' :key='i')
+      //-     router-link.text-accent(:to="{ name: 'project', params: { name: project.name }}") {{ project.title }}
 
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import ProjectTile from '@/components/ProjectTile'
 
 export default {
   name: 'about',
+  components: {
+    ProjectTile,
+  },
   computed: {
     ...mapState(['skills']),
     relatedProjects() {
-      return this.$store.state.projects.filter(project => project.tags.includes(this.selectedSkill.tag))
+      return this.$store.state.projects.filter((project) =>
+        project.tags.includes(this.selectedSkill.tag)
+      )
     },
   },
   data: () => ({
@@ -80,7 +95,7 @@ export default {
   },
   mounted() {
     this.select(this.skills.languages[0])
-  }
+  },
 }
 </script>
 
@@ -101,29 +116,31 @@ $border-width: 5px;
 .skill-info {
   border: $border-width solid $accent;
   border-radius: $border-width;
+
+  .project {
+    width: 100px;
+  }
 }
 
 $progress-height: $border-width;
 .progress-linear {
   width: 70px;
   height: $progress-height;
-  border-radius: $progress-height / 2; 
+  border-radius: $progress-height / 2;
   background-color: $dark;
   margin-bottom: 10px;
-  
+
   .p {
     background-color: $accent;
     height: 100%;
     border-radius: $progress-height / 2;
-    
-    $progress-amounts: (10,20,30,40,50,60,70,80,90,100);
+
+    $progress-amounts: (10, 20, 30, 40, 50, 60, 70, 80, 90, 100);
     @each $progress-amount in $progress-amounts {
       &.p#{$progress-amount} {
         width: #{$progress-amount * 1%};
       }
     }
   }
-  
 }
-
 </style>
