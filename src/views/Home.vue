@@ -5,20 +5,24 @@
       section#home.justify-center(ref='home')
         jumbo
       
-      //- section#about.primary(ref='about')
-      //-   p About
+      section#about.primary(ref='about')
+        about
 
       section#work(ref='work')
         work
 
       //- section#contact.primary(ref='contact')
       //-   p Contact
+
+    .footnote
+      p ! This site is still under construction. Come back soon :)
 </template>
 
 <script>
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
 import Jumbo from '@/views/Jumbo.vue'
+import About from '@/views/About.vue'
 import Work from '@/views/Work.vue'
 import Navigation from '@/components/Navigation.vue'
 
@@ -28,6 +32,7 @@ export default {
   name: 'Home',
   components: {
     Jumbo,
+    About,
     Work,
     Navigation,
   },
@@ -62,5 +67,19 @@ section {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.footnote {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  text-align: center;
+  font-style: italic;
+  font-size: .8rem;
+  font-weight: 300;
+  color: white;
+  opacity: .5;
 }
 </style>

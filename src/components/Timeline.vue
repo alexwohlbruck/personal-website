@@ -6,6 +6,7 @@
     )
 
     .segment
+      //- Name of item and and description off of the timeline
       .detail(:class='(i % 2 == 1) && (!mobile) ? "right" : "left"')
         .info
           h5.row.align-center
@@ -42,15 +43,14 @@
     
     .line(v-if='!event.end')
     
-    .segment
       //- If event has end date, add line and another dot
-      .col.align-center(v-if='event.end')
-        .line
-        .detail(:class='(i % 2 == 1) && (!mobile) ? "right" : "left"')
-          .date
-            p.caption {{ event.end | monthName }}
-            p {{ event.end | year }}
-        .dot
+    .segment.col.align-center(v-if='event.end')
+      .line
+      .detail(:class='(i % 2 == 1) && (!mobile) ? "right" : "left"')
+        .date
+          p.caption {{ event.end | monthName }}
+          p {{ event.end | year }}
+      .dot
     
 
     //- Place line after for spacing
@@ -116,10 +116,10 @@ export default {
 @import '@/styles/variables.scss';
 
 $dot-size: 17px;
-$line-height: 90px;
 $segment-line-height: 100px;
 $segment-color: $accent;
 $spacing: 40px;
+$line-height: 125px;
 
 .timeline {
   padding: 100px 0;

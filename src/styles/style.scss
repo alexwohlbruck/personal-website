@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,700;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
 @import './variables.scss';
 
 ::-webkit-scrollbar {
@@ -57,19 +57,19 @@ h6 {
 .caption {
   font-size: 0.8em;
 }
-a {
-  cursor: pointer;
-}
 
 @media (max-width: $mobile-breakpoint) {
   h1 {
     font-size: 4em;
+    font-weight: 700;
   }
   h2 {
     font-size: 3em;
+    font-weight: 700;
   }
   h3 {
     font-size: 2em;
+    font-weight: 700;
   }
   h4 {
     font-size: 1.5em;
@@ -100,7 +100,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
+a, .pointer {
+  cursor: pointer;
   font-weight: bold;
   color: $light;
   text-decoration: none;
