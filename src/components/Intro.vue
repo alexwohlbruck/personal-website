@@ -2,7 +2,8 @@
   #intro
     h4.text-primary Hi, I'm
     h2 Alex
-    h2 Wohlbruck,
+      br
+      | Wohlbruck,
     h4.text-primary
       | and I'm a {{ occupation }}
       span.cursor.accent

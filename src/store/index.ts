@@ -61,14 +61,14 @@ const state = {
       {
         name: 'C++',
         tag: 'cpp',
-        proficiency: 5,
+        proficiency: 4,
         description:
           'We learned C and C++ in our systems classes in university, which were not easy at all. What got me to dread the language less was a number of experiments I did with the Arduino and ESP8266 computer boards. Programming those is mainly what kickstarted my interest in IoT.',
       },
       {
         name: 'SQL',
         tag: 'sql',
-        proficiency: 4,
+        proficiency: 5,
         description:
           'I started using SQL when I first started learning web development, and every now and then it comes by me. Although given the choice, I usually use a NoSQL database like MongoDB or Firebase for my projects.',
       },
@@ -232,8 +232,18 @@ const state = {
       description:
         'What started out as a fun prank texting friends random cat facts every day, turned into a wide-scale API that people around the world use in their pet projects. Here I host a database of facts about cats, dogs, and other animals. Facts are crowdsourced from users and voted on to elect the best facts.',
       url: 'https://cat-fact.herokuapp.com',
+      github: 'https://github.com/alexwohlbruck/cat-facts',
       showPreview: true,
       tags: ['html', 'css', 'js', 'git', 'mongodb', 'photoshop', 'illustrator', 'client-side', 'server-side', 'apis', 'graphic-design']
+    },
+    {
+      name: 'friendship-lamp',
+      title: 'Friendship Lamp',
+      color: '#141618',
+      icon: 'friendship-lamp',
+      description: 'Using Firebase and an ESP8266 microcontroller, this project aims to connect friends who live far away with a lamp for each person, that will light up and pulse in sync when someone sends a message',
+      url: 'https://friendship-lamp-1ea8a.web.app',
+      tags: ['html', 'css', 'js', 'git', 'cpp', 'vue', 'node', 'firebase', 'client-side', 'realtime', 'iot']
     },
     {
       name: 'gp-wallpaper',
@@ -243,6 +253,7 @@ const state = {
       description:
         "This project was inspired by the personal photo slideshow on the Google Nest devices. This app uses the Google Photos API to retrieve a user's photo albums, changing their desktop wallpaper on a customized cycle.",
       url: 'https://github.com/alexwohlbruck/google-photos-wallpaper',
+      github: 'https://github.com/alexwohlbruck/google-photos-wallpaper',
       tags: ['html', 'css', 'js', 'python', 'vue', 'git', 'xd', 'client-side', 'cross-platform']
     },
     {
@@ -253,6 +264,7 @@ const state = {
       description:
         'In high school, sometimes I would play a game with classmates where one person would type a letter into a text box as fast as they can, and another person would backspace as fast as they can. The first person to fill the text box or delete all the letters wins. I decided to turn this into an online multiplayer game, and I called it Clicky.',
       url: 'https://clickygame.herokuapp.com/',
+      github: 'https://github.com/alexwohlbruck/clicky',
       tags: ['html', 'css', 'js', 'node', 'photoshop', 'client-side', 'server-side', 'realtime', 'ux']
     },
     {
@@ -263,7 +275,8 @@ const state = {
       description:
         'This app lets you stream music from your Spotify account for free by streaming the isolated audio from the Youtube-equivalent music videos. You can play and queue songs from your library, and the mp3 file will be streamed to the browser. It is no longer functional because of copyright issues and the YTDL dispute.',
       url: 'https://github.com/alexwohlbruck/jukebox',
-      tags: ['']
+      github: 'https://github.com/alexwohlbruck/jukebox',
+      tags: ['html', 'css', 'js', 'vue', 'git', 'mongodb', 'xd', 'client-side', 'server-side', 'apis', 'graphic-design', 'ux']
     },
   ],
   timeline: [

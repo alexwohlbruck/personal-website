@@ -24,11 +24,20 @@
           | {{ tag }}
           span(v-if='index != project.tags.length - 1') ,&nbsp;
 
-      a.text-accent.m-y-15(
-        v-if='project.url'
-        :href="`${project.url}`"
-        target='_blank'
-      ) Visit site
+      .m-y-15
+        a.text-accent(
+          v-if='project.url'
+          :href="`${project.url}`"
+          target='_blank'
+        ) Visit site
+
+        br
+
+        a.text-accent(
+          v-if='project.github'
+          :href="`${project.github}`"
+          target='_blank'
+        ) View on GitHub
   
   .spacer
 
