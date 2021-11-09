@@ -1,5 +1,5 @@
 <template lang='pug'>
-.row.align-center.container
+.jumbo.row.align-center.container
   intro
   .spacer
   socials

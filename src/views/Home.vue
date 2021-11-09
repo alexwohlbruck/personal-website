@@ -5,8 +5,8 @@
       section#home.justify-center(ref='home')
         jumbo
       
-      //- section#about.primary(ref='about')
-      //-   p About
+      section#about.primary(ref='about')
+        about
 
       section#work(ref='work')
         work
@@ -19,6 +19,7 @@
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
 import Jumbo from '@/views/Jumbo.vue'
+import About from '@/views/About.vue'
 import Work from '@/views/Work.vue'
 import Navigation from '@/components/Navigation.vue'
 
@@ -28,6 +29,7 @@ export default {
   name: 'Home',
   components: {
     Jumbo,
+    About,
     Work,
     Navigation,
   },

@@ -1,12 +1,12 @@
 <template lang="pug">
-.col.work
+.work.col.container
+  h3.m-b-50 My work
 
-  .container
-    h4.text-accent Stuff I've made
-    projects.m-y-50
+  h4.text-accent Stuff I've made
+  projects.m-y-50
 
-    h4.text-accent Experience
-    timeline
+  h4.text-accent Experience
+  timeline
     
 </template>
 
