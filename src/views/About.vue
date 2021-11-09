@@ -4,44 +4,56 @@
     img.profile-photo(:src='require(`@/assets/img/me.jpg`)')
 
   .m-b-40
-    h3.text-dark About me
-    p I love designing and developing websites and web applications. I have a passion for clean, elegant and modern designs. I am a self-taught front-end developer and I am always learning new things.
+    h3 About me
+    p.text-light I love designing and developing websites and web applications. I have a passion for clean, elegant and modern designs. I am a self-taught front-end developer and I am always learning new things.
 
-  h4.text-accent Skills
-  p Here is a brief list of things I've learned and worked with.
+  h4 Skills
+  p.text-light Here is a brief list of things I've learned and worked with. Hover or tap for more info.
 
-  .m-y-10.row.justify-space-between
-    ul.col
-      li(
-        v-for='(language, i) in skills.languages' :key='i'
-        @mouseover='select(language)'
-      )
-        h6.text-accent.pointer {{ language.name }}
+  .m-y-10.row-mobile.justify-space-between
+    .col
+      h6 Languages
+      ul.col
+        li.p-y-5(
+          v-for='(language, i) in skills.languages' :key='i'
+          @mouseover='select(language)'
+        )
+          p.text-accent.pointer {{ language.name }}
 
-    ul.col
-      li(
-        v-for='(tool, i) in skills.tools' :key='i'
-        @mouseover='select(tool)'
-      )
-        h6.text-accent.pointer {{ tool.name }}
+    .col
+      h6 Tools and technologies
+      ul.col
+        li.p-y-5(
+          v-for='(tool, i) in skills.tools' :key='i'
+          @mouseover='select(tool)'
+        )
+          p.text-accent.pointer {{ tool.name }}
 
-    ul.col
-      li(
-        v-for='(specialization, i) in skills.specializations' :key='i'
-        @mouseover='select(specialization)'
-      )
-        h6.text-accent.pointer {{ specialization.name }}
-  
+    .col
+      h6 High-level concepts
+      ul.col
+        li.p-y-5(
+          v-for='(specialization, i) in skills.specializations' :key='i'
+          @mouseover='select(specialization)'
+        )
+          p.text-accent.pointer {{ specialization.name }}
+    
   .col.skill-info.p-a-15(v-if='selectedSkill')
     .row.m-b-10.align-center
-      h5.text-accent.m-r-25 {{ selectedSkill.name }}
+      h5.m-r-25 {{ selectedSkill.name }}
 
       .col.m-t-10
         p.caption Proficiency
         .progress-linear.m-t-5
           .p(:class='`p${selectedSkill.proficiency * 10}`')
 
-    p {{ selectedSkill.description }}
+    p.text-light.m-b-20 {{ selectedSkill.description }}
+
+    div(v-if='relatedProjects.length')
+      h6 Related projects
+      ul
+        li(v-for='(project, i) in relatedProjects' :key='i')
+          router-link.text-accent(:to="{ name: 'project', params: { name: project.name }}") {{ project.title }}
 
 </template>
 
@@ -52,6 +64,9 @@ export default {
   name: 'about',
   computed: {
     ...mapState(['skills']),
+    relatedProjects() {
+      return this.$store.state.projects.filter(project => project.tags.includes(this.selectedSkill.tag))
+    },
   },
   data: () => ({
     selectedSkill: null,
