@@ -7,7 +7,7 @@
       :to="{ name: 'project', params: { name: project.name } }"
     )
       project-tile.m-r-15.m-b-15(:project='project')
-      h6 {{ project.title }}
+      h6.m-r-10 {{ project.title }}
 </template>
 
 <script>
@@ -31,7 +31,7 @@ export default {
   flex-wrap: wrap;
   
   .project {
-    width: 110px;
+    width: 120px;
   }
 }
 </style>

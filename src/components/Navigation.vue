@@ -35,10 +35,10 @@ export default {
         name: 'Work',
         to: 'work',
       },
-      // {
-      //   name: 'Contact',
-      //   to: 'contact',
-      // },
+      {
+        name: 'Contact',
+        to: 'contact',
+      },
     ],
   }),
 }

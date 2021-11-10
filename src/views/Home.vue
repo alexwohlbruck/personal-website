@@ -11,8 +11,8 @@
       section#work(ref='work')
         work
 
-      //- section#contact.primary(ref='contact')
-      //-   p Contact
+      section#contact.primary(ref='contact')
+        contact
 
     .footnote
       p !!! This site is still under construction. Come back soon for more :)
@@ -21,20 +21,22 @@
 <script>
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
+import Navigation from '@/components/Navigation.vue'
 import Jumbo from '@/views/Jumbo.vue'
 import About from '@/views/About.vue'
 import Work from '@/views/Work.vue'
-import Navigation from '@/components/Navigation.vue'
+import Contact from '@/views/Contact.vue'
 
 let currentAnchor = ''
 
 export default {
   name: 'Home',
   components: {
+    Navigation,
     Jumbo,
     About,
     Work,
-    Navigation,
+    Contact,
   },
   mounted() {
     this.calculateAnchor()

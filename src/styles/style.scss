@@ -24,7 +24,6 @@ html, body, #app {
 }
 
 h1, h2, h3, h4, h5, h6, p, span, div {
-
   font-family: 'Roboto Mono', monospace;
   color: $white;
   margin: 0;
@@ -35,6 +34,12 @@ h1, h2, h3, h4, h5, h6, p, span, div {
   .text-primary { color: $primary; }
   .text-accent { color: $accent; }
 }
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
 
 h1 {
   font-size: 5em;
@@ -116,6 +121,48 @@ a, .pointer {
   }
 }
 
+textarea {
+  border: $border-width * .8 solid $light;
+  border-radius: $border-width;
+  outline: none;
+  resize: none;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.15em;
+  padding: 0.5rem;
+  color: $white;
+  background-color: transparent;
+  transition: all ease-in-out .2s;
+  font-size: 1rem;
+
+  &:focus {
+    border-color: $accent;
+  }
+}
+::placeholder {
+  color: $light;
+}
+
+button {
+  cursor: pointer;
+  border: $border-width * .8 solid $light;
+  border-radius: $border-width;
+  outline: none;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  color: $accent;
+  background-color: transparent;
+  transition: all ease-in-out .2s;
+
+  &:active {
+    border-color: $accent;
+  }
+
+  &:hover {
+    background-color: rgba($light, 0.1);
+  }
+}
+
 .col {
   display: flex;
   flex-direction: column;
@@ -158,6 +205,14 @@ a, .pointer {
     overflow-x: scroll;
   }
 }
+.section {
+  margin-bottom: 40px;
+  
+  &-dense {
+    margin-bottom: 20px;
+  }
+}
+
 .overflow-hidden {
   overflow: hidden;
 }
