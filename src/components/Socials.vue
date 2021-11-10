@@ -1,47 +1,54 @@
 <template lang="pug">
-  .socials.col.align-flex-end
-    a.social-link.row.align-center.m-y-20(
+  .socials.col.align-flex-end(:class='{row}')
+    a.social-link.align-center.m-y-20(
       v-for='(social, i) in socials'
       :key='i'
       :href='social.href'
       target='_blank'
+      :class="{'col-reverse': row, 'row': !row }"
     )
-      a.text.text-accent {{ social.text }}
-      img.m-l-15(
+      a.text.text-accent(:class='{absolute: row}') {{ social.text }}
+      img(
+        :class="{'m-l-15': !row, 'm-r-25': row}"
         :src='require(`@/assets/svg/${social.icon}.svg`)'
         width='30'
       )
 </template>
 
 <script>
+import { contact } from '@/globals'
+
 export default {
   name: 'socials',
+  props: {
+    row: Boolean,
+  },
   data: () => ({
     socials: [
       {
-        text: 'alexwohlbruck@gmail.com',
+        text: contact.email,
         icon: 'at',
-        href: 'mailto:alexwohlbruck@gmail.com',
+        href: contact.mailto(),
       },
       {
         text: 'LinkedIn',
         icon: 'linkedin',
-        href: 'https://linkedin.com/in/alexwohlbruck',
+        href: contact.linkedin,
       },
       {
         text: 'Github',
         icon: 'github',
-        href: 'https://github.com/alexwohlbruck',
+        href: contact.github,
       },
       {
         text: 'Instagram',
         icon: 'instagram',
-        href: 'https://instagram.com/alexwohlbruck',
+        href: contact.instagram,
       },
       {
         text: 'Spotify',
         icon: 'spotify',
-        href: 'https://open.spotify.com/user/alexwohlbruck',
+        href: contact.spotify,
       },
     ],
   }),
@@ -58,6 +65,11 @@ export default {
     transform: translateX(10px);
     transition: all .2s ease-in-out;
 
+    &.absolute {
+      position: absolute;
+      transform: translate(calc(50% - 25px), 40px);
+    }
+
     @media (max-width: $mobile-breakpoint) {
       display: none;     
     }
@@ -67,6 +79,10 @@ export default {
     .text {
       opacity: 1;
       transform: translateX(0);
+
+      &.absolute {
+        transform: translate(calc(50% - 25px), 30px);
+      }
     }
   }
 }

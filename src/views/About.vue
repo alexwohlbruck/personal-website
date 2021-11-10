@@ -103,7 +103,6 @@ export default {
 @import '@/styles/variables.scss';
 
 $profile-photo-size: 150px;
-$border-width: 5px;
 
 .profile-photo {
   border-radius: 50%;
