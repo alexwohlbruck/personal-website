@@ -15,6 +15,9 @@
   background-clip: content-box;
 
   &:hover {
+    background-color: $accent;
+  }
+  &:active {
     background-color: $light;
   }
 }

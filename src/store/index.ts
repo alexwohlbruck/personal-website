@@ -223,7 +223,7 @@ const state = {
       end: new Date(),
       url: 'https://worxstr.com',
       showPreview: true,
-      images: ['home.png'],
+      images: ['home.png', 'home-2.png', 'pricing.png', 'clock.png', 'jobs.png', 'job.png', 'payments.png', 'schedule.png', 'users.png', 'messages.png', 'settings.png'],
       tags: [
         'html',
         'css',
@@ -257,6 +257,7 @@ const state = {
       url: 'https://cat-fact.herokuapp.com',
       github: 'https://github.com/alexwohlbruck/cat-facts',
       showPreview: true,
+      images: ['home.png', 'facts.png', 'fact.png', 'fact-2.png', 'profile.png', 'console.png', 'recipients.png'],
       tags: [
         'html',
         'css',
