@@ -43,7 +43,7 @@
     .section-dense.row.align-center
       h5.m-r-25 {{ selectedSkill.name }}
 
-      .col.m-t-10
+      .col.m-b-5
         p.caption Proficiency
         .progress-linear.m-t-5
           .p(:class='`p${selectedSkill.proficiency * 10}`')

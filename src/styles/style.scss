@@ -159,7 +159,7 @@ button {
   }
 
   &:hover {
-    background-color: rgba($light, 0.1);
+    background-color: rgba($light, 0.2);
   }
 }
 
@@ -199,7 +199,10 @@ button {
   flex: 1;
 }
 .container {
-  padding: 150px 8vw;
+  padding: 150px 0;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
   
   &.scroll-x {
     overflow-x: scroll;

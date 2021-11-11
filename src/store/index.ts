@@ -186,7 +186,7 @@ const state = {
         tag: 'realtime',
         proficiency: 9,
         description:
-          'I have always thought realtime data was one of the coolest features of modern applications, and over the years I have learned how to integrate realtime data updates in my apps in a robust and reactive manner using socket.io and Flux state management patterns.',
+          'I have always thought realtime data was one of the coolest features of modern applications, and over the years I have learned how to integrate realtime data updates in my apps in a robust and reactive manner using Socket.io and Flux state management patterns.',
       },
       {
         name: 'Graphic design',
