@@ -223,7 +223,7 @@ const state = {
       end: new Date(),
       url: 'https://worxstr.com',
       showPreview: true,
-      images: ['home.png', 'home.png', 'home.png'],
+      images: ['home.png'],
       tags: [
         'html',
         'css',
