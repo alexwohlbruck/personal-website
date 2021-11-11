@@ -1,17 +1,19 @@
 <template lang='pug'>
   .projects.row
     
-    router-link.project(
+    router-link.project.m-b-15(
       v-for='(project, i) in projects'
       :key='i'
       :to="{ name: 'project', params: { name: project.name } }"
+      :class='{small}'
     )
       project-tile.m-r-15.m-b-15(:project='project')
-      h6.m-r-10 {{ project.title }}
+      .m-r-10
+        p(v-if='small') {{ project.title }}
+        h6(v-else) {{ project.title }}
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import ProjectTile from '@/components/ProjectTile.vue'
 
 export default {
@@ -19,8 +21,9 @@ export default {
   components: {
     ProjectTile
   },
-  computed: {
-    ...mapState(['projects']) 
+  props: {
+    projects: Array,
+    small: Boolean,
   }
 }
 </script>
@@ -32,6 +35,10 @@ export default {
   
   .project {
     width: 120px;
+
+    &.small {
+      width: 100px;
+    }
   }
 }
 </style>

@@ -15,12 +15,17 @@
       .row.align-center.m-y-15
         .icon.m-r-30
           project-tile(:project='project')
-        h3(:class="darkText ? 'b' : 'w'") {{ project.title }}
+        .col
+          h3.m-b-5.m-t-15(:class="darkText ? 'b' : 'w'") {{ project.title }}
+          h6.text-primary
+            | {{ project.start.getFullYear() }}
+            span.text-primary(v-if='project.end')
+              | &nbsp;- {{ project.end.getFullYear() }}
 
       p.m-y-15 {{ project.description }}
 
       p.caption
-        a.text-accent(v-for='(tag, index) in project.tags')
+        a.text-primary(v-for='(tag, index) in project.tags')
           | {{ tag }}
           span(v-if='index != project.tags.length - 1') ,&nbsp;
 

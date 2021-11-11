@@ -69,14 +69,18 @@
     div(v-if='relatedProjects.length')
       h6 Related projects
 
-      .row
-        router-link.project(
-          v-for='(project, i) in relatedProjects'
-          :key='i'
-          :to="{ name: 'project', params: { name: project.name } }"
-        )
-          project-tile.m-r-15.m-b-15(:project='project')
-          p.m-r-10 {{ project.title }}
+      projects(
+        :projects='relatedProjects'
+        small
+      )
+      //- .row
+      //-   router-link.project(
+      //-     v-for='(project, i) in relatedProjects'
+      //-     :key='i'
+      //-     :to="{ name: 'project', params: { name: project.name } }"
+      //-   )
+      //-     project-tile.m-r-15.m-b-15(:project='project')
+      //-     p.m-r-10 {{ project.title }}
       //- ul
       //-   li(v-for='(project, i) in relatedProjects' :key='i')
       //-     router-link.text-accent(:to="{ name: 'project', params: { name: project.name }}") {{ project.title }}
@@ -85,13 +89,15 @@
 
 <script>
 import { mapState } from 'vuex'
-import ProjectTile from '@/components/ProjectTile'
 import { BREAKPOINT_SIZE } from '@/globals'
+import Projects from '@/components/Projects.vue'
+import ProjectTile from '@/components/ProjectTile'
 
 export default {
   name: 'about',
   components: {
     ProjectTile,
+    Projects,
   },
   computed: {
     ...mapState(['skills']),
@@ -134,10 +140,6 @@ $profile-photo-size: 150px;
 #skill-info {
   border: $border-width solid $accent;
   border-radius: $border-width;
-
-  .project {
-    width: 100px;
-  }
 }
 
 $progress-height: $border-width;
