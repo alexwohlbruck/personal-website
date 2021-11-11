@@ -12,7 +12,7 @@
           h5.row.align-center
             img(
               v-if='event.icon'
-              :src='require(`@/assets/svg/${event.icon}.svg`)'
+              :src='require(`@/assets/${event.icon}`)'
               width='40'
               :class='`p-${(i % 2 == 1) && (!mobile) ? "l" : "r"}-15`'
             )

@@ -1,7 +1,7 @@
 <template lang="pug">
   .project-tile
     .fill(:style='`background-color: ${project.color}`')
-      img(:src='require(`@/assets/svg/${project.icon}.svg`)')
+      img(:src='require(`@/assets/${project.icon}`)')
 </template>
 
 <script>
