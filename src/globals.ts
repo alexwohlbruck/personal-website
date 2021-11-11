@@ -11,3 +11,6 @@ export const contact = {
   instagram: 'https://instagram.com/alexwohlbruck',
   spotify: 'https://open.spotify.com/user/alexwohlbruck',
 }
+
+
+export const BREAKPOINT_SIZE = 900
