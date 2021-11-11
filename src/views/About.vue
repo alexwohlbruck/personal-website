@@ -9,7 +9,7 @@
 
   .section
     h4 Skills
-    p.text-light Here is a brief list of things I've learned and worked with. Hover or tap for more info.
+    p.text-light Here is a brief list of things I've learned and worked with. Click or tap for more info.
 
   .section.row-mobile.justify-space-between
     .col
@@ -17,29 +17,44 @@
       ul.col
         li.p-b-10(
           v-for='(language, i) in skills.languages' :key='i'
-          @mouseover='select(language)'
+          @click='select(language)'
         )
-          p.text-accent.pointer {{ language.name }}
+          p.pointer(
+            :class="{\
+                'text-white': language.tag == selectedSkill.tag,\
+                'text-accent': language.tag != selectedSkill.tag,\
+            }"
+          ) {{ language.name }}
 
     .col
       h6.m-b-0 Tools and technologies
       ul.col
         li.p-b-10(
           v-for='(tool, i) in skills.tools' :key='i'
-          @mouseover='select(tool)'
+          @click='select(tool)'
         )
-          p.text-accent.pointer {{ tool.name }}
+          p.pointer(
+            :class="{\
+                'text-white': tool.tag == selectedSkill.tag,\
+                'text-accent': tool.tag != selectedSkill.tag,\
+            }"
+          ) {{ tool.name }}
 
     .col
       h6.m-b-0 High-level concepts
       ul.col
         li.p-b-10(
           v-for='(specialization, i) in skills.specializations' :key='i'
-          @mouseover='select(specialization)'
+          @click='select(specialization)'
         )
-          p.text-accent.pointer {{ specialization.name }}
+          p.pointer(
+            :class="{\
+                'text-white': specialization.tag == selectedSkill.tag,\
+                'text-accent': specialization.tag != selectedSkill.tag,\
+            }"
+          ) {{ specialization.name }}
     
-  .col.skill-info.p-a-15(v-if='selectedSkill')
+  #skill-info.col.p-a-25(v-if='selectedSkill')
     .section-dense.row.align-center
       h5.m-r-25 {{ selectedSkill.name }}
 
@@ -54,7 +69,7 @@
     div(v-if='relatedProjects.length')
       h6 Related projects
 
-      .row.related-projects
+      .row
         router-link.project(
           v-for='(project, i) in relatedProjects'
           :key='i'
@@ -71,6 +86,7 @@
 <script>
 import { mapState } from 'vuex'
 import ProjectTile from '@/components/ProjectTile'
+import { BREAKPOINT_SIZE } from '@/globals'
 
 export default {
   name: 'about',
@@ -91,6 +107,9 @@ export default {
   methods: {
     select(skill) {
       this.selectedSkill = skill
+      if (window.innerWidth <= BREAKPOINT_SIZE) {
+        this.$scrollTo('#skill-info', { offset: -150 })
+      }
     },
   },
   mounted() {
@@ -112,7 +131,7 @@ $profile-photo-size: 150px;
   height: $profile-photo-size;
 }
 
-.skill-info {
+#skill-info {
   border: $border-width solid $accent;
   border-radius: $border-width;
 

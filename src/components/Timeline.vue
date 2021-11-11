@@ -41,7 +41,7 @@
           
       .dot
     
-    .line(v-if='!event.end')
+    .line(v-if='!event.end && i != events.length - 1')
     
       //- If event has end date, add line and another dot
     .segment.col.align-center(v-if='event.end')
@@ -60,6 +60,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { BREAKPOINT_SIZE } from '@/globals'
 
 const months = [
   'Jan',
@@ -103,11 +104,11 @@ export default {
   },
   mounted() {
     window.onresize = () => {
-      this.mobile = window.innerWidth <= 900
+      this.mobile = window.innerWidth <= BREAKPOINT_SIZE
     }
   },
   data: () => ({
-    mobile: window.innerWidth <= 900,
+    mobile: window.innerWidth <= BREAKPOINT_SIZE,
   }),
 }
 </script>

@@ -5,8 +5,6 @@
         h3 Contact me
         p.text-light You can reach me on these social platforms:
         socials(row)
-
-
      
       textarea(
         v-model='message'
