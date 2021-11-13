@@ -46,17 +46,21 @@
   
   .spacer
 
-    //- Image thumbs
-  div(:style='`background-color: ${project.color}`')
-    horizontal-scroll.container.scroll-x.p-y-75.row
+  .carousel.p-y-75(:style='`background-color: ${project.color}`')
+
+    button(@click='carouselPrev') prev
+    button(@click='carouselNext') next
+
+    //- horizontal-scroll.container.scroll-x.p-y-75.row
+    .thumbs-container(:style='`transform: translateX(${carouselOffset}`')
       img.thumb(
         v-for='(image, i) in project.images'
         :index='i'
         :src="require(`@/assets/portfolio/${project.name}/${image}`)"
+        :class="{large: i == carouselIndex}"
       )
     
-
-
+    
 </template>
 
 <script>
@@ -69,9 +73,31 @@ export default {
     ProjectTile,
     HorizontalScroll,
   },
+  data: () => ({
+    carouselIndex: 0,
+  }),
   computed: {
     project() {
       return this.$store.getters.project(this.$route.params.name)
+    },
+    carouselOffset() {
+      const thumbWidth = 50 // 50vw
+      const margin = 10 // X margin between thumbs, 10vw
+      const defaultOffset = 50 - thumbWidth / 2 
+      const offset = defaultOffset - this.carouselIndex * (thumbWidth + margin)
+      return `${offset}vw`
+    }
+  },
+  methods: {
+    carouselNext() {
+      if (this.carouselIndex < this.project.images.length - 1) {
+        this.carouselIndex++
+      }
+    },
+    carouselPrev() {
+      if (this.carouselIndex > 0) {
+        this.carouselIndex--
+      }
     },
   },
 }
@@ -81,7 +107,7 @@ export default {
 @import '@/styles/variables.scss';
 
 .work {
-  height: 100%;
+  // height: 100%;
 
   .icon {
     width: 90px;
@@ -91,10 +117,31 @@ export default {
     }
   }
 
-  .thumb {
-    height: 35vh;
-    border-radius: 8px;
-    margin-right: 30px;
+  $thumb-width: 50vw;
+  $thumb-margin: 10vw;
+
+  .carousel {
+
+    overflow-x: hidden;
+  }
+
+  .thumbs-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    transition: all cubic-bezier(.38,.01,.01,1) .4s;
+
+    .thumb {
+      width: $thumb-width;
+      border-radius: 8px;
+      margin-right: $thumb-margin;
+      transition: all cubic-bezier(.38,.01,.01,1) .4s;
+
+      &.large {
+        transform: scale(1.2);
+      }
+    }
   }
 }
 
