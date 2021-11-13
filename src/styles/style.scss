@@ -281,3 +281,10 @@ $sides: (top, bottom, left, right);
     }
   }
 }
+
+$blur-values: (2px, 5px, 10px, 15px, 20px, 25px, 30px);
+@for $i from 1 through length($blur-values) {
+  .shadow-#{$i + 1} {
+    box-shadow: 0px #{2 * $i}px nth($blur-values, $i) 1px rgba(0,0,0,0.25);
+  }
+}

@@ -16,7 +16,7 @@
         .icon.m-r-30
           project-tile(:project='project')
         .col
-          h3.m-b-5.m-t-15(:class="darkText ? 'b' : 'w'") {{ project.title }}
+          h3.m-b-5.m-t-15 {{ project.title }}
           h6.text-primary
             | {{ project.start.getFullYear() }}
             span.text-primary(v-if='project.end')
@@ -46,20 +46,36 @@
   
   .spacer
 
-  .carousel.p-y-75(:style='`background-color: ${project.color}`')
-
-    button(@click='carouselPrev') prev
-    button(@click='carouselNext') next
+  .carousel.p-y-75(:style='`background-color: ${project.color}`' v-if='project.images')
 
     //- horizontal-scroll.container.scroll-x.p-y-75.row
-    .thumbs-container(:style='`transform: translateX(${carouselOffset}`')
+    .thumbs-container(:style='`transform: translateX(${carouselOffset}`' ref='thumbs')
       img.thumb(
         v-for='(image, i) in project.images'
         :index='i'
         :src="require(`@/assets/portfolio/${project.name}/${image}`)"
-        :class="{large: i == carouselIndex}"
+        @click='thumbClick($event, i)'
+        :class="{\
+          large: i == carouselIndex,\
+          'shadow-6': i == carouselIndex,\
+          'shadow-3': i != carouselIndex,\
+          hidden: i == carouselIndex && selectedImage,\
+        }"
       )
-    
+  
+  .image-viewer(v-show='selectedImage')
+    button#close(@click='selectedImage = null') Close
+    //- Shared element transition: used for animating the image when opening it in the preview
+    img#set(
+      ref='set'
+      :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
+    )
+
+    img#preview(
+      ref='preview'
+      :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
+    )
+
     
 </template>
 
@@ -75,14 +91,15 @@ export default {
   },
   data: () => ({
     carouselIndex: 0,
+    selectedImage: null,
   }),
   computed: {
     project() {
       return this.$store.getters.project(this.$route.params.name)
     },
     carouselOffset() {
-      const thumbWidth = 50 // 50vw
-      const margin = 10 // X margin between thumbs, 10vw
+      const thumbWidth = 40
+      const margin = 8 // X margin between thumbs
       const defaultOffset = 50 - thumbWidth / 2 
       const offset = defaultOffset - this.carouselIndex * (thumbWidth + margin)
       return `${offset}vw`
@@ -99,6 +116,51 @@ export default {
         this.carouselIndex--
       }
     },
+    thumbClick(e, clickedIndex) {
+      if (clickedIndex == this.carouselIndex) {
+        this.openImageViewer()
+      }
+      if (clickedIndex == this.carouselIndex + 1) {
+        this.carouselNext()
+      }
+      if (clickedIndex == this.carouselIndex - 1) {
+        this.carouselPrev()
+      }
+    },
+    setBoundingRect(el, rect) {
+      const { width, height, x, y } = rect
+      el.style.width = `${width}px`
+      el.style.height = `${height}px`
+      el.style.top = `${y}px`
+      el.style.left = `${x}px`
+    },
+    show(el) {
+      el.style.visibility = 'visible'
+    },
+    hide(el) {
+      el.style.visibility = 'hidden'
+    },
+    openImageViewer() {
+      this.selectedImage = {
+        src: this.project.images[this.carouselIndex],
+      }
+      const thumb = this.$refs.thumbs.children[this.carouselIndex]
+      const preview = this.$refs.preview
+      const set = this.$refs.set
+
+      this.show(set)
+      this.hide(preview)
+
+      this.setBoundingRect(set, thumb.getBoundingClientRect())
+      setTimeout(() => {
+        this.setBoundingRect(set, preview.getBoundingClientRect())
+
+        setTimeout(() => {
+          this.show(preview)
+          this.hide(set)
+        }, 1000)
+      }, 1)
+    }
   },
 }
 </script>
@@ -107,8 +169,6 @@ export default {
 @import '@/styles/variables.scss';
 
 .work {
-  // height: 100%;
-
   .icon {
     width: 90px;
 
@@ -117,11 +177,12 @@ export default {
     }
   }
 
-  $thumb-width: 50vw;
-  $thumb-margin: 10vw;
+  $thumb-width: 40vw;
+  $thumb-margin: 8vw;
+  $thumb-radius: 10px;
+  $smooth-ease: all cubic-bezier(.38,.01,.01,1) .4s;
 
   .carousel {
-
     overflow-x: hidden;
   }
 
@@ -130,17 +191,54 @@ export default {
     flex-direction: row;
     align-items: center;
     width: 100%;
-    transition: all cubic-bezier(.38,.01,.01,1) .4s;
+    transition: $smooth-ease;
 
     .thumb {
       width: $thumb-width;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-right: $thumb-margin;
-      transition: all cubic-bezier(.38,.01,.01,1) .4s;
+      transition: $smooth-ease;
+      cursor: pointer;
+
+      &.hidden {
+        opacity: 0;
+      }
 
       &.large {
         transform: scale(1.2);
       }
+    }
+  }
+
+  .image-viewer {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    #close {
+      position: fixed;
+      margin: 10px;
+      top: 0;
+      right: 0;
+    }
+
+    #set {
+      transition: $smooth-ease;
+      position: fixed;
+      max-width: 100vw;
+      max-height: 100vh;
+      border-radius: $thumb-radius;
+    }
+
+    #preview {
+      max-width: 90%;
+      max-height: 90%;
+
+      border-radius: $thumb-radius;
     }
   }
 }

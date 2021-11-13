@@ -257,7 +257,7 @@ const state = {
       url: 'https://cat-fact.herokuapp.com',
       github: 'https://github.com/alexwohlbruck/cat-facts',
       showPreview: true,
-      images: ['home.png', 'facts.png', 'fact.png', 'fact-2.png', 'profile.png', 'console.png', 'recipients.png'],
+      images: ['home.png', 'facts.png', 'fact.png', 'recipients.png', 'console.png', 'fact-2.png', 'profile.png'],
       tags: [
         'html',
         'css',
