@@ -1,6 +1,6 @@
 <template lang="pug">
   .project-tile
-    .fill(:style='`background-color: ${project.color}`')
+    .fill.shadow-2(:style='`background-color: ${project.color}`')
       img(:src='require(`@/assets/${project.icon}`)')
 </template>
 

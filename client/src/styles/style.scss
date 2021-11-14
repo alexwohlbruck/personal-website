@@ -122,6 +122,14 @@ a, .pointer {
   &:active {
     color: $accent;
   }
+
+  &.alt {
+    color: $white;
+
+    &:hover {
+      color: $accent;
+    }
+  }
 }
 
 textarea {
@@ -257,7 +265,7 @@ $justifications: (flex-start, center, flex-end, space-between, space-around);
 //     Margin top 100px:      .m-t-100
 
 $spacingtypes: (margin, padding);
-$spaceamounts: (0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 200, 300, 400, 500);
+$spaceamounts: (0, 1, 2, 3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 200, 300, 400, 500);
 $sides: (top, bottom, left, right);
 
 @each $type in $spacingtypes {
@@ -281,10 +289,10 @@ $sides: (top, bottom, left, right);
   }
 }
 
-$blur-values: (2px, 5px, 10px, 15px, 20px, 25px, 30px);
+$blur-values: (4px, 6px, 10px, 15px, 20px, 25px, 30px);
 @for $i from 1 through length($blur-values) {
   .shadow-#{$i + 1} {
-    box-shadow: 0px #{2 * $i}px nth($blur-values, $i) 1px rgba(0,0,0,0.25);
+    box-shadow: 0px #{1.2 * ($i + 1)}px nth($blur-values, $i) 1px rgba(0,0,0,0.25);
   }
 }
 
