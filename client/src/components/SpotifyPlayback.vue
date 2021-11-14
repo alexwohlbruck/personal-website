@@ -47,6 +47,15 @@ export default {
       spot: (state) => state.spotifyPlaybackState,
     }),
   },
+  watch: {
+    spot: {
+      handler(newVal) {
+        if (newVal.is_playing) {
+          this.playbackProgress = 0
+        }
+      },
+    },
+  },
 };
 </script>
 

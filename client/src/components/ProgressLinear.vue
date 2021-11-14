@@ -36,7 +36,7 @@ $progress-height: $border-width;
     background-color: $accent;
     height: 100%;
     border-radius: $progress-height / 2;
-    transition: width 1s linear;
+    transition: width 1s ease-in-out;
   }
 }
 </style>
