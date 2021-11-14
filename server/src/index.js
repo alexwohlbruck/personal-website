@@ -45,7 +45,9 @@ async function getSpotifyPlaybackState() {
 
   console.log(`Playing song: ${body?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
 
+  clearTimeout(playbackTimeout)
   playbackTimeout = setTimeout(getSpotifyPlaybackState, (timeLeft + 2000))
+  
   io.emit('SET_SPOTIFY_PLAYBACK_STATE', body)
 
   return body

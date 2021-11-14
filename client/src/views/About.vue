@@ -63,8 +63,10 @@
 
       .col.m-b-5
         p.caption Proficiency
-        .progress-linear.m-t-5
-          .p(:class='`p${selectedSkill.proficiency * 10}`')
+        progress-linear(
+          :value='selectedSkill.proficiency'
+          :max='10'
+        )
 
     .section-dense
       p.text-light {{ selectedSkill.description }}
@@ -76,18 +78,6 @@
         :projects='relatedProjects'
         small
       )
-      //- .row
-      //-   router-link.project(
-      //-     v-for='(project, i) in relatedProjects'
-      //-     :key='i'
-      //-     :to="{ name: 'project', params: { name: project.name } }"
-      //-   )
-      //-     project-tile.m-r-15.m-b-15(:project='project')
-      //-     p.m-r-10 {{ project.title }}
-      //- ul
-      //-   li(v-for='(project, i) in relatedProjects' :key='i')
-      //-     router-link.text-accent(:to="{ name: 'project', params: { name: project.name }}") {{ project.title }}
-
 </template>
 
 <script>
@@ -95,6 +85,7 @@ import { mapState } from 'vuex'
 import { BREAKPOINT_SIZE } from '@/globals'
 import Projects from '@/components/Projects'
 import ProjectTile from '@/components/ProjectTile'
+import ProgressLinear from '@/components/ProgressLinear'
 import SpotifyPlayback from '@/components/SpotifyPlayback'
 
 export default {
@@ -102,6 +93,7 @@ export default {
   components: {
     ProjectTile,
     Projects,
+    ProgressLinear,
     SpotifyPlayback,
   },
   computed: {
@@ -145,27 +137,5 @@ $profile-photo-size: 150px;
 #skill-info {
   border: $border-width solid $accent;
   border-radius: $border-width;
-}
-
-$progress-height: $border-width;
-.progress-linear {
-  width: 70px;
-  height: $progress-height;
-  border-radius: $progress-height / 2;
-  background-color: $dark;
-  margin-bottom: 10px;
-
-  .p {
-    background-color: $accent;
-    height: 100%;
-    border-radius: $progress-height / 2;
-
-    $progress-amounts: (10, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-    @each $progress-amount in $progress-amounts {
-      &.p#{$progress-amount} {
-        width: #{$progress-amount * 1%};
-      }
-    }
-  }
 }
 </style>

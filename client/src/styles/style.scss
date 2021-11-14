@@ -122,6 +122,14 @@ a, .pointer {
   &:active {
     color: $accent;
   }
+
+  &.alt {
+    color: $white;
+
+    &:hover {
+      color: $accent;
+    }
+  }
 }
 
 textarea {
