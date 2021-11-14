@@ -1,0 +1,301 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
+@import './variables.scss';
+
+::-webkit-scrollbar {
+  width: 18px;
+  padding: 0;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: $primary;
+  border-radius: 20px;
+  border: 7px solid transparent;
+  background-clip: content-box;
+
+  &:hover {
+    background-color: $accent;
+  }
+  &:active {
+    background-color: $light;
+  }
+}
+
+html, body, #app {
+  height: 100%;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, div {
+  font-family: 'Roboto Mono', monospace;
+  color: $white;
+  margin: 0;
+  
+  .text-dark { color: $dark;}
+  .text-light { color: $light; }
+  .text-white { color: $white; }
+  .text-primary { color: $primary; }
+  .text-accent { color: $accent; }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+
+h1 {
+  font-size: 5em;
+}
+h2 {
+  font-size: 4em;
+}
+h3 {
+  font-size: 3em;
+}
+h4 {
+  font-size: 2em;
+}
+h5 {
+  font-size: 1.5em;
+}
+h6 {
+  font-size: 1.15em;
+}
+.caption {
+  font-size: 0.8em;
+}
+
+@media (max-width: $mobile-breakpoint) {
+  h1 {
+    font-size: 4em;
+    font-weight: 700;
+  }
+  h2 {
+    font-size: 3em;
+    font-weight: 700;
+  }
+  h3 {
+    font-size: 2em;
+    font-weight: 700;
+  }
+  h4 {
+    font-size: 1.5em;
+  }
+  h5 {
+    font-size: 1.15em;
+  }
+  h6 {
+    font-size: 1em;
+  }
+}
+
+
+.bold {
+  font-weight: bold;
+}
+
+.dark { background-color: $dark; }
+.light { background-color: $light; }
+.white { background-color: $white; }
+.primary { background-color: $primary; }
+.accent { background-color: $accent; }
+
+body {
+  background-color: $dark;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a, .pointer {
+  cursor: pointer;
+  font-weight: bold;
+  color: $light;
+  text-decoration: none;
+  transition: color .2s;
+
+  &:hover {
+    color: $white;
+  }
+
+  &:active {
+    color: $accent;
+  }
+}
+
+textarea {
+  border: $border-width * .8 solid $light;
+  border-radius: $border-width;
+  outline: none;
+  resize: none;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.15em;
+  padding: 0.5rem;
+  color: $white;
+  background-color: transparent;
+  transition: all ease-in-out .2s;
+  font-size: 1rem;
+
+  &:focus {
+    border-color: $accent;
+  }
+}
+::placeholder {
+  color: $light;
+}
+
+button {
+  cursor: pointer;
+  border: $border-width * .8 solid $light;
+  border-radius: $border-width;
+  outline: none;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  color: $accent;
+  background-color: transparent;
+  transition: all ease-in-out .2s;
+
+  &:active {
+    border-color: $accent;
+  }
+
+  &:hover {
+    background-color: rgba($light, 0.2);
+  }
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+.col-mobile {
+  display: flex;
+  flex-direction: column;
+  @media (max-width: $mobile-breakpoint) {
+    flex-direction: row;
+  }
+}
+.col-reverse {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+}
+.row-mobile {
+  display: flex;
+  flex-direction: row;
+  @media (max-width: $mobile-breakpoint) {
+    flex-direction: column;
+  }
+}
+.row-reverse {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+
+.spacer {
+  flex: 1;
+}
+.container {
+  padding: 150px 0;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  &.scroll-x {
+    overflow-x: scroll;
+  }
+}
+.section {
+  margin-bottom: 40px;
+  
+  &-dense {
+    margin-bottom: 20px;
+  }
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+$opacities: (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+@each $opacity in $opacities {
+  .opacity-#{$opacity} {
+    opacity: #{$opacity / 10};
+  }
+}
+
+// Generate flexbox alignment and justification classes
+
+$alignments: (flex-start, center, flex-end, stretch);
+$justifications: (flex-start, center, flex-end, space-between, space-around);
+
+.align-{
+  @each $alignment in $alignments {
+    &#{$alignment} {
+      align-items: #{$alignment};
+    }
+  }
+}
+.justify-{
+  @each $justification in $justifications {
+    &#{$justification} {
+      justify-content: #{$justification};
+    }
+  }
+}
+
+// Generate margin and padding classes
+// ex. Margin all sides 20px: .m-a-20
+//     Padding x sides 1px:   .p-x-1
+//     Margin top 100px:      .m-t-100
+
+$spacingtypes: (margin, padding);
+$spaceamounts: (0, 1, 2, 3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 200, 300, 400, 500);
+$sides: (top, bottom, left, right);
+
+@each $type in $spacingtypes {
+  @each $space in $spaceamounts {
+    @each $side in $sides {
+      .#{str-slice($type, 0, 1)}-#{str-slice($side, 0, 1)}-#{$space} {
+        #{$type}-#{$side}: #{$space}px !important;
+      }
+    }
+    .#{str-slice($type, 0, 1)}-a-#{$space} {
+      #{$type}: #{$space}px !important;
+    }
+    .#{str-slice($type, 0, 1)}-x-#{$space} {
+      #{$type}-left: #{$space}px !important;
+      #{$type}-right: #{$space}px !important;
+    }
+    .#{str-slice($type, 0, 1)}-y-#{$space} {
+      #{$type}-top: #{$space}px !important;
+      #{$type}-bottom: #{$space}px !important;
+    }
+  }
+}
+
+$blur-values: (4px, 6px, 10px, 15px, 20px, 25px, 30px);
+@for $i from 1 through length($blur-values) {
+  .shadow-#{$i + 1} {
+    box-shadow: 0px #{1.2 * ($i + 1)}px nth($blur-values, $i) 1px rgba(0,0,0,0.25);
+  }
+}
+
+// Vue transitions
+
+// fade
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 200ms
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0
+}
