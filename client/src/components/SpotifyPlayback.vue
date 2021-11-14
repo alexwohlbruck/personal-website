@@ -1,5 +1,5 @@
 <template lang="pug">
-.spotify-playback.row.align-center
+.spotify-playback.row.align-center(v-if='spot && spot.item')
   .album.shadow-2
     img(
       :src="spot.item.album.images[1].url"

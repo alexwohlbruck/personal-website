@@ -5,7 +5,11 @@ const cors = require('cors')
 const http = require('http')
 const server = http.createServer(app)
 const { Server } = require("socket.io")
-const io = new Server(server)
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  }
+})
 
 const port = process.env.PORT || 3000
 
@@ -22,7 +26,6 @@ spotify.setRefreshToken(process.env.SPOTIFY_REFRESH_TOKEN)
 
 function refreshAccessToken() {
   spotify.refreshAccessToken().then(data => {
-    console.log(data.body['access_token'])
     spotify.setAccessToken(data.body['access_token'])
 
     // Refresh again one minute before expiration
@@ -40,8 +43,10 @@ async function getSpotifyPlaybackState() {
   const duration = parseInt(body.item.duration_ms)
   const timeLeft = duration - progress
 
-  playbackTimeout = setTimeout(getSpotifyPlaybackState, timeLeft)
-  io.emit('setSpotifyPlaybackState', body)
+  console.log(`Playing song: ${body?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
+
+  playbackTimeout = setTimeout(getSpotifyPlaybackState, (timeLeft + 2000))
+  io.emit('SET_SPOTIFY_PLAYBACK_STATE', body)
 
   return body
 }
@@ -56,6 +61,6 @@ app.get('/', (req, res) => {
 })
 
 refreshAccessToken()
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server started on port ${port}!`);
 })

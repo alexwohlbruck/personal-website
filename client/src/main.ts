@@ -19,7 +19,7 @@ Vue.use(VueGtag, {
   config: { id: 'G-MNXNSBCLCN' },
 }, router)
 
-const socket = io('http://192.168.86.25:3000')
+const socket = io('http://localhost:3000')
 
 Vue.use(VueSocketIOExt, socket, {
   store,

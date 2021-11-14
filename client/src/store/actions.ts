@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const getSpotifyPlaybackState = async ({ commit }) => {
-  const { data } = await axios.get('http://192.168.86.25:3000/spotify/playback-state')
-  commit('setSpotifyPlaybackState', data)
+  const { data } = await axios.get('http://localhost:3000/spotify/playback-state')
+  commit('SET_SPOTIFY_PLAYBACK_STATE', data)
 }
 
