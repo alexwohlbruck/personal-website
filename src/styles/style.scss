@@ -223,7 +223,6 @@ button {
   overflow: hidden;
 }
 
-
 $opacities: (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
 @each $opacity in $opacities {
@@ -287,4 +286,16 @@ $blur-values: (2px, 5px, 10px, 15px, 20px, 25px, 30px);
   .shadow-#{$i + 1} {
     box-shadow: 0px #{2 * $i}px nth($blur-values, $i) 1px rgba(0,0,0,0.25);
   }
+}
+
+// Vue transitions
+
+// fade
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 200ms
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0
 }

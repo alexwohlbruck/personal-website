@@ -35,9 +35,7 @@
           :href="`${project.url}`"
           target='_blank'
         ) Visit site
-
         br
-
         a.text-accent(
           v-if='project.github'
           :href="`${project.github}`"
@@ -59,22 +57,29 @@
           large: i == carouselIndex,\
           'shadow-6': i == carouselIndex,\
           'shadow-3': i != carouselIndex,\
-          hidden: i == carouselIndex && selectedImage,\
         }"
       )
   
-  .image-viewer(v-show='selectedImage')
-    button#close(@click='selectedImage = null') Close
-    //- Shared element transition: used for animating the image when opening it in the preview
-    img#set(
-      ref='set'
-      :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
-    )
 
-    img#preview(
-      ref='preview'
-      :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
-    )
+  //- Shared element transition: used for animating the image when opening it in the preview
+  img#set.shadow-6(
+    v-if='project.images'
+    style='visibility: hidden'
+    ref='set'
+    :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
+  )
+
+  transition(v-if='project.images' name='fade')
+    .image-viewer(v-show='selectedImage' @click='closeImageViewer')
+      button#close(@click='closeImageViewer') X
+      button#next(@click.stop='carouselNext' v-if='carouselCanNext') Next
+      button#prev(@click.stop='carouselPrev' v-if='carouselCanPrev') Prev
+
+      img#preview.shadow-6(
+        @click.stop='test'
+        ref='preview'
+        :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
+      )
 
     
 </template>
@@ -82,6 +87,8 @@
 <script>
 import HorizontalScroll from 'vue-horizontal-scroll'
 import ProjectTile from '@/components/ProjectTile.vue'
+
+const transitionDuration = 300
 
 export default {
   name: 'work',
@@ -93,6 +100,11 @@ export default {
     carouselIndex: 0,
     selectedImage: null,
   }),
+  created() {
+    window.addEventListener('keydown', this.keydown)
+    if (this.$refs.thumbs)
+      this.$refs.thumbs.addEventListener('wheel', e => console.log(e))
+  },
   computed: {
     project() {
       return this.$store.getters.project(this.$route.params.name)
@@ -103,16 +115,25 @@ export default {
       const defaultOffset = 50 - thumbWidth / 2 
       const offset = defaultOffset - this.carouselIndex * (thumbWidth + margin)
       return `${offset}vw`
-    }
+    },
+    carouselCanNext() {
+      return this.carouselIndex < this.project.images.length - 1
+    },
+    carouselCanPrev() {
+      return this.carouselIndex > 0
+    },
   },
   methods: {
+    test() {
+      console.log('test')
+    },
     carouselNext() {
-      if (this.carouselIndex < this.project.images.length - 1) {
+      if (this.carouselCanNext) {
         this.carouselIndex++
       }
     },
     carouselPrev() {
-      if (this.carouselIndex > 0) {
+      if (this.carouselCanPrev) {
         this.carouselIndex--
       }
     },
@@ -125,6 +146,17 @@ export default {
       }
       if (clickedIndex == this.carouselIndex - 1) {
         this.carouselPrev()
+      }
+    },
+    keydown(e) {
+      if (e.keyCode == 37) {
+        this.carouselPrev()
+      }
+      if (e.keyCode == 39) {
+        this.carouselNext()
+      }
+      if (e.keyCode == 27) {
+        this.closeImageViewer()
       }
     },
     setBoundingRect(el, rect) {
@@ -140,7 +172,10 @@ export default {
     hide(el) {
       el.style.visibility = 'hidden'
     },
-    openImageViewer() {
+    async delay(duration) {
+      return new Promise(resolve => setTimeout(resolve, duration))
+    },
+    async openImageViewer() {
       this.selectedImage = {
         src: this.project.images[this.carouselIndex],
       }
@@ -148,25 +183,54 @@ export default {
       const preview = this.$refs.preview
       const set = this.$refs.set
 
-      this.show(set)
-      this.hide(preview)
-
+      // Show shared element transition
       this.setBoundingRect(set, thumb.getBoundingClientRect())
-      setTimeout(() => {
-        this.setBoundingRect(set, preview.getBoundingClientRect())
 
-        setTimeout(() => {
-          this.show(preview)
-          this.hide(set)
-        }, 1000)
-      }, 1)
-    }
+      // Set visibilities
+      this.hide(preview)
+      this.show(set)
+      await this.delay(1)
+
+      // Animate SET
+      this.setBoundingRect(set, preview.getBoundingClientRect())
+      await this.delay(transitionDuration)
+
+      // Reset visibilities
+      this.show(preview)
+      this.hide(set)
+    },
+    async closeImageViewer() {
+      const thumb = this.$refs.thumbs.children[this.carouselIndex]
+      const preview = this.$refs.preview
+      const set = this.$refs.set
+
+      // Set visibilities
+      this.setBoundingRect(set, preview.getBoundingClientRect())
+      this.show(set)
+      await this.delay(10) // Wait for shared element transition to show
+      this.hide(preview)
+      this.selectedImage = null
+
+      // Animate SET
+      await this.delay(1)
+      this.setBoundingRect(set, thumb.getBoundingClientRect())
+      await this.delay(transitionDuration)
+
+      // Reset visibilities
+      this.hide(set)
+    },
   },
 }
 </script>
 
 <style lang="scss">
 @import '@/styles/variables.scss';
+
+$thumb-width: 40vw;
+$thumb-margin: 8vw;
+$thumb-radius: 10px;
+$transition-duration: 300ms;
+$smooth-ease: all cubic-bezier(.38,.01,.01,1) $transition-duration, visibility 0ms;
 
 .work {
   .icon {
@@ -176,11 +240,6 @@ export default {
       width: 120px;
     }
   }
-
-  $thumb-width: 40vw;
-  $thumb-margin: 8vw;
-  $thumb-radius: 10px;
-  $smooth-ease: all cubic-bezier(.38,.01,.01,1) .4s;
 
   .carousel {
     overflow-x: hidden;
@@ -198,11 +257,8 @@ export default {
       border-radius: 10px;
       margin-right: $thumb-margin;
       transition: $smooth-ease;
+      opacity: 1;
       cursor: pointer;
-
-      &.hidden {
-        opacity: 0;
-      }
 
       &.large {
         transform: scale(1.2);
@@ -218,20 +274,36 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+
+    $margin: 10px;
 
     #close {
       position: fixed;
-      margin: 10px;
+      margin: $margin;
       top: 0;
       right: 0;
     }
 
-    #set {
-      transition: $smooth-ease;
+    #next {
       position: fixed;
-      max-width: 100vw;
-      max-height: 100vh;
-      border-radius: $thumb-radius;
+      margin: $margin;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 0;
+    }
+
+    #prev {
+      position: fixed;
+      margin: $margin;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 0;
+    }
+
+    #close, #next, #prev {
+      z-index: 10;
     }
 
     #preview {
@@ -241,6 +313,17 @@ export default {
       border-radius: $thumb-radius;
     }
   }
+}
+
+#set, #preview {
+  z-index: 9;
+  cursor: default;
+}
+
+#set {
+  transition: $smooth-ease;
+  position: fixed;
+  border-radius: $thumb-radius;
 }
 
 </style>
