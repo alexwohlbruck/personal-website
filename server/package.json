@@ -4,7 +4,8 @@
   "description": "Backend server for my personal website.",
   "main": "src/index.js",
   "scripts": {
-    "start": "nodemon .",
+    "start": "node .",
+    "dev": "nodemon .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Alex Wohlbruck",
