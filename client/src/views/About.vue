@@ -11,6 +11,9 @@
     spotify-playback
 
   .section
+    ig-grid
+
+  .section
     h4 Skills
     p.text-light Here is a brief list of things I've learned and worked with. Click or tap for more info.
 
@@ -87,6 +90,7 @@ import Projects from '@/components/Projects'
 import ProjectTile from '@/components/ProjectTile'
 import ProgressLinear from '@/components/ProgressLinear'
 import SpotifyPlayback from '@/components/SpotifyPlayback'
+import IgGrid from '@/components/IgGrid'
 
 export default {
   name: 'about',
@@ -95,6 +99,7 @@ export default {
     Projects,
     ProgressLinear,
     SpotifyPlayback,
+    IgGrid,
   },
   computed: {
     ...mapState(['skills']),

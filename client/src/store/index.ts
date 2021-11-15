@@ -8,6 +8,7 @@ Vue.use(Vuex)
 
 const state = {
   spotifyPlaybackState: {},
+  igGrid: null,
   skills: {
     languages: [
       {
