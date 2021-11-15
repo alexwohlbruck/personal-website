@@ -14,7 +14,6 @@ export default {
 </script>
 
 <style lang="scss">
-
 .project-tile {
   .fill {
     width: 100%;
