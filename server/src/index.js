@@ -12,6 +12,7 @@ const io = new Server(server, {
     origin: '*',
   }
 })
+const CronJob = require('cron').CronJob
 const SpotifyWebApi = require('spotify-web-api-node')
 const InstagramBasicDisplayApi = require('instagram-basic-display')
 const HerokuApi = require('heroku-client')
@@ -106,6 +107,7 @@ async function refreshSpotifyAccessToken() {
 
 // Refresh long-lived token before it expires
 async function refreshIgAccessToken(updateEnvironmentFile) {
+  console.log("Getting new IG access token")
   const { access_token: accessToken, expires_in: expiresIn } = await ig.refreshLongLivedToken(process.env.IG_ACCESS_TOKEN)
   process.env.IG_ACCESS_TOKEN = accessToken
   if (updateEnvironmentFile)
@@ -115,8 +117,7 @@ async function refreshIgAccessToken(updateEnvironmentFile) {
 // Refresh the IG access token once a day at midnight (PT)
 // Normally, when updateEvnironment is called, the Heroku server will restart anyway
 function startIgAccessTokenCron() {
-  console.log("Getting new IG access token")
-  let job = new ChronJob('0 0 0 * * *', refreshIgAccessToken, null, true, 'America/Los_Angeles')
+  let job = new CronJob('0 0 0 * * *', refreshIgAccessToken, null, true, 'America/Los_Angeles')
   job.start()
 }
 
