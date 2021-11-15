@@ -4,18 +4,56 @@ const app = express()
 const cors = require('cors')
 const http = require('http')
 const server = http.createServer(app)
+const fs = require('fs') 
+const { parse, stringify } = require('envfile')
 const { Server } = require("socket.io")
 const io = new Server(server, {
   cors: {
     origin: '*',
   }
 })
-
-const port = process.env.PORT || 3000
-
-app.use(cors())
-
 const SpotifyWebApi = require('spotify-web-api-node')
+const InstagramBasicDisplayApi = require('instagram-basic-display')
+const HerokuApi = require('heroku-client')
+
+// setTimeout modified to allow for larger intervals
+// https://catonmat.net/settimeout-setinterval
+function setTimeout_(fn, delay) {
+  var maxDelay = Math.pow(2,31)-1;
+
+  if (delay > maxDelay) {
+      var args = arguments;
+      args[1] -= maxDelay;
+
+      return setTimeout(function () {
+          setTimeout_.apply(undefined, args);
+      }, maxDelay);
+  }
+
+  return setTimeout.apply(undefined, arguments);
+}
+
+// https://github.com/loicnestler/instagram-basic-display/blob/528dc794bdf9178ba6baa504f614121383f68e78/lib/index.js#L25
+// The NPM package doesn't include this method even though it is in the codebase.
+// I have added it here manually.
+const axios = require('axios')
+const INSTAGRAM_GRAPH_BASE_URL = 'https://graph.instagram.com'
+Object.assign(InstagramBasicDisplayApi.prototype, {
+  refreshLongLivedToken: (accessToken) => {
+    const requestData = {
+      grant_type: 'ig_refresh_token',
+			access_token: accessToken,
+		}
+    const params = new URLSearchParams(requestData)
+		return axios
+			.get(`${INSTAGRAM_GRAPH_BASE_URL}/refresh_access_token?${params}`)
+			.then((res) => res.data)
+	}
+})
+
+
+// Initialize API clients
+
 const spotify = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -23,25 +61,61 @@ const spotify = new SpotifyWebApi({
 })
 spotify.setRefreshToken(process.env.SPOTIFY_REFRESH_TOKEN)
 
-const InstagramBasicDisplayApi = require('instagram-basic-display')
 const ig = new InstagramBasicDisplayApi({
   appId: process.env.IG_APP_ID,
   appSecret: process.env.IG_APP_SECRET,
   redirectUri: process.env.IG_REDIRECT_URI,
 })
 
-function refreshSpotifyAccessToken() {
-  spotify.refreshAccessToken().then(data => {
-    spotify.setAccessToken(data.body['access_token'])
+const heroku = new HerokuApi({ token: process.env.HEROKU_API_TOKEN })
 
-    // Refresh again one minute before expiration
-    const expiresIn = parseInt(data.body['expires_in'])
-    setTimeout(refreshSpotifyAccessToken, (expiresIn - 60) * 1000)
+
+// Set the environment variable config locally and in Heroku app config
+function updateEnvironment(key, value) {
+  // Update local environment file
+  const envPath = '.env'
+  if (fs.existsSync(envPath)) {
+    const env = fs.readFileSync(envPath, 'utf8')
+    let parsedFile = parse(env)
+    parsedFile[key] = value
+    fs.writeFileSync(`./${envPath}`, stringify(parsedFile)) 
+  }
+
+  // Update heroku config vars
+  heroku.patch(`/apps/${process.env.HEROKU_APP_NAME}/config-vars`, {
+    body: {
+      [key]: value
+    }
   })
 }
 
-let playbackTimeout
 
+const port = process.env.PORT || 3000
+
+app.use(cors())
+
+// Use refresh token to get a new access token
+async function refreshSpotifyAccessToken() {
+  const data = await spotify.refreshAccessToken()
+  spotify.setAccessToken(data.body['access_token'])
+
+  // Refresh again one minute before expiration
+  const expiresIn = parseInt(data.body['expires_in'])
+  setTimeout(refreshSpotifyAccessToken, (expiresIn - 60) * 1000)
+}
+
+// Refresh long-lived token before it expires
+async function refreshIgAccessToken() {
+  const { access_token: accessToken, expires_in: expiresIn } = await ig.refreshLongLivedToken(process.env.IG_ACCESS_TOKEN)
+  process.env.IG_ACCESS_TOKEN = accessToken
+  updateEnvironment('IG_ACCESS_TOKEN', accessToken)
+
+  const oneDay = 60 * 60 * 24
+  setTimeout_(refreshIgAccessToken, (expiresIn - oneDay) * 1000)
+}
+
+// Retrieve Spotify player state
+let playbackTimeout
 async function getSpotifyPlaybackState() {
   const { body } = await spotify.getMyCurrentPlaybackState()
 
@@ -51,6 +125,7 @@ async function getSpotifyPlaybackState() {
 
   console.log(`Playing song: ${body?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
 
+  // Rerun the function when the song is over
   clearTimeout(playbackTimeout)
   playbackTimeout = setTimeout(getSpotifyPlaybackState, (timeLeft + 2000))
 
@@ -65,15 +140,27 @@ app.get('/spotify/playback-state', async (req, res) => {
 })
 
 app.get('/ig/grid', async (req, res) => {
-  const { data } = await ig.retrieveUserMedia(process.env.IG_ACCESS_TOKEN)
-  res.json(data)
+  try {
+    const { data } = await ig.retrieveUserMedia(process.env.IG_ACCESS_TOKEN)
+    res.json(data)
+  }
+  catch (err) {
+    console.log(err)
+    res.status(err.status || 500).json(err)
+  } 
 })
 
 app.get('/', (req, res) => {
-  res.send("Hello world!")
+  res.redirect('https://alex.wohlbruck.com')
 })
 
-refreshSpotifyAccessToken()
-server.listen(port, () => {
-  console.log(`Server started on port ${port}!`);
-})
+async function initApp() {
+  await refreshSpotifyAccessToken()
+  await refreshIgAccessToken()
+
+  server.listen(port, () => {
+    console.log(`Server started on port ${port}!`);
+  })
+}
+
+initApp()
