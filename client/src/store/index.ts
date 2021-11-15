@@ -284,6 +284,7 @@ const state = {
       start: new Date('2021-11-03'),
       // end: new Date(),
       url: 'https://friendship-lamp-1ea8a.web.app',
+      images: ['lamp.png'],
       tags: [
         'html',
         'css',
@@ -308,6 +309,7 @@ const state = {
       start: new Date('2020-03-19'),
       // end: new Date('2020-11-03'),
       github: 'https://github.com/alexwohlbruck/google-photos-wallpaper',
+      images: ['main.png'],
       tags: [
         'html',
         'css',
@@ -331,6 +333,7 @@ const state = {
       end: new Date('2018-05-10'),
       url: 'https://clickygame.herokuapp.com/',
       github: 'https://github.com/alexwohlbruck/clicky',
+      images: ['game.png', 'logo.png', 'name.png'],
       tags: [
         'html',
         'css',
@@ -378,6 +381,7 @@ const state = {
       start: new Date('2015-05-26'),
       url: 'https://rockpaperscissors-demo.netlify.app',
       github: 'https://github.com/alexwohlbruck/rock-paper-scissors',
+      images: ['title.png', 'instructions.png', 'color.png', 'play.png', 'finish.png'],
       tags: ['html', 'css', 'js', 'photoshop', 'client-side-development'],
     },
   ],

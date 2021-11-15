@@ -321,7 +321,7 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
 }
 
 #set {
-  transition: $smooth-ease;
+  transition: $transition;
   position: fixed;
   border-radius: $thumb-radius;
 }
