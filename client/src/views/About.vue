@@ -26,10 +26,7 @@
           @click='select(language)'
         )
           p.pointer(
-            :class="{\
-                'text-white': language.tag == selectedSkill.tag,\
-                'text-accent': language.tag != selectedSkill.tag,\
-            }"
+            :class="selectedSkill && language.tag == selectedSkill.tag ? 'text-accent' : 'text-white'"
           ) {{ language.name }}
 
     .col
@@ -40,10 +37,7 @@
           @click='select(tool)'
         )
           p.pointer(
-            :class="{\
-                'text-white': tool.tag == selectedSkill.tag,\
-                'text-accent': tool.tag != selectedSkill.tag,\
-            }"
+            :class="selectedSkill && tool.tag == selectedSkill.tag ? 'text-accent' : 'text-white'"
           ) {{ tool.name }}
 
     .col
@@ -54,10 +48,7 @@
           @click='select(specialization)'
         )
           p.pointer(
-            :class="{\
-                'text-white': specialization.tag == selectedSkill.tag,\
-                'text-accent': specialization.tag != selectedSkill.tag,\
-            }"
+            :class="selectedSkill && specialization.tag == selectedSkill.tag ? 'text-accent' : 'text-white'"
           ) {{ specialization.name }}
     
   #skill-info.col.p-a-25(v-if='selectedSkill')
@@ -119,9 +110,6 @@ export default {
         this.$scrollTo('#skill-info', { offset: -150 })
       }
     },
-  },
-  mounted() {
-    this.select(this.skills.languages[0])
   },
 }
 </script>

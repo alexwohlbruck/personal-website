@@ -112,9 +112,11 @@ a, .pointer {
   cursor: pointer;
   font-weight: bold;
   color: $light;
+  transition: color .2s;
   text-decoration: none;
   transition: color .2s;
-
+}
+a {
   &:hover {
     color: $white;
   }
