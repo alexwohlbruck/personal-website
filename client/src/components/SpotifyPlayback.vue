@@ -7,22 +7,31 @@
     )
   .col.justify-center.m-l-15.m-t-15
     .row.align-center.m-b-5
-      img.m-r-5(:src="require(`@/assets/svg/spotify.svg`)" width='18')
-      p.caption.m-b-2 Listening to
-    
+      img.m-r-5(:src="require(`@/assets/svg/spotify.svg`)", width="18")
+      a.caption.m-b-2(:href="contact.spotify", target="_blank") Check out my Spotify
+
     h5.m-b-0
-      a.alt(:href='spot.item.external_urls.spotify' target='_blank') {{ spot.item.name }}
+      a.alt(:href="spot.item.external_urls.spotify", target="_blank") {{ spot.item.name }}
     p.caption.m-b-5
-      a.alt(v-for="(artist, i) in spot.item.artists" :key='i' :href='spot.item.artists[i].external_urls.spotify' target='_blank')
+      a.alt(
+        v-for="(artist, i) in spot.item.artists",
+        :key="i",
+        :href="spot.item.artists[i].external_urls.spotify",
+        target="_blank"
+      )
         | {{ artist.name }}
         span(v-if="i != spot.item.artists.length - 1") ,&nbsp;
-    
-    progress-linear(:value="spot.progress_ms + playbackProgress", :max="spot.item.duration_ms")
+
+    progress-linear(
+      :value="spot.progress_ms + playbackProgress",
+      :max="spot.item.duration_ms"
+    )
 </template>
 
 <script>
 import { mapState } from "vuex";
 import ProgressLinear from "@/components/ProgressLinear";
+import { contact } from "@/globals";
 
 export default {
   name: "spotifyPlayback",
@@ -31,15 +40,16 @@ export default {
   },
   data: () => ({
     playbackProgress: 0,
+    contact,
   }),
   mounted() {
     this.$store.dispatch("getSpotifyPlaybackState");
     this.$nextTick(function () {
       window.setInterval(() => {
         if (this.spot && this.spot.is_playing) {
-          this.playbackProgress += 1000
+          this.playbackProgress += 1000;
         }
-      }, 1000)
+      }, 1000);
     });
   },
   computed: {
@@ -51,7 +61,7 @@ export default {
     spot: {
       handler(newVal) {
         if (newVal.is_playing) {
-          this.playbackProgress = 0
+          this.playbackProgress = 0;
         }
       },
     },
@@ -68,13 +78,16 @@ export default {
     -webkit-transform: rotate(360deg);
   }
 }
-$album-size: 80px;
+$album-size: 95px;
 
 .spotify-playback {
   .album {
     border-radius: 50%;
     width: $album-size;
     height: $album-size;
+
+    clip-path: path('M 50 50 m -69 0 a 69 69 0 1 0 138 0 a 69 69 0 1 0 -138 0 z M 50 50 m -6 0 a 6 6 0 0 1 12 0 a 6 6 0 0 1 -12 0 z');
+    
 
     img {
       border-radius: 50%;
@@ -83,7 +96,7 @@ $album-size: 80px;
     }
 
     img.playing {
-      animation: rotating 3s linear infinite;
+      animation: rotating 4s linear infinite;
     }
   }
 }

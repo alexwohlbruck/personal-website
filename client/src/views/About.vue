@@ -8,12 +8,6 @@
     p.text-light I love designing and developing websites and web applications. I have a passion for clean, elegant and modern designs. I am a self-taught front-end developer and I am always learning new things.
 
   .section
-    spotify-playback
-
-  .section
-    ig-grid
-
-  .section
     h4 Skills
     p.text-light Here is a brief list of things I've learned and worked with. Click or tap for more info.
 
@@ -51,7 +45,7 @@
             :class="selectedSkill && specialization.tag == selectedSkill.tag ? 'text-accent' : 'text-white'"
           ) {{ specialization.name }}
     
-  #skill-info.col.p-a-25(v-if='selectedSkill')
+  .section#skill-info.col.p-a-25(v-if='selectedSkill')
     .section-dense.row.align-center
       h5.m-r-25 {{ selectedSkill.name }}
 
@@ -72,6 +66,13 @@
         :projects='relatedProjects'
         small
       )
+
+  .section
+    h4 Social
+    spotify-playback
+
+  .section
+    ig-grid
 </template>
 
 <script>
@@ -121,8 +122,7 @@ $profile-photo-size: 150px;
 
 .profile-photo {
   border-radius: 50%;
-  border: 7px solid $primary;
-  outline: $border-width solid $accent;
+  border: $border-width solid $accent;
   width: $profile-photo-size;
   height: $profile-photo-size;
 }
