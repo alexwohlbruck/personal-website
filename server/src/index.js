@@ -105,13 +105,19 @@ async function refreshSpotifyAccessToken() {
 }
 
 // Refresh long-lived token before it expires
-async function refreshIgAccessToken() {
+async function refreshIgAccessToken(updateEnvironmentFile) {
   const { access_token: accessToken, expires_in: expiresIn } = await ig.refreshLongLivedToken(process.env.IG_ACCESS_TOKEN)
   process.env.IG_ACCESS_TOKEN = accessToken
-  updateEnvironment('IG_ACCESS_TOKEN', accessToken)
+  if (updateEnvironmentFile)
+    updateEnvironment('IG_ACCESS_TOKEN', accessToken)
+}
 
-  const oneDay = 60 * 60 * 24
-  setTimeout_(refreshIgAccessToken, (expiresIn - oneDay) * 1000)
+// Refresh the IG access token once a day at midnight (PT)
+// Normally, when updateEvnironment is called, the Heroku server will restart anyway
+function startIgAccessTokenCron() {
+  console.log("Getting new IG access token")
+  let job = new ChronJob('0 0 0 * * *', refreshIgAccessToken, null, true, 'America/Los_Angeles')
+  job.start()
 }
 
 // Retrieve Spotify player state
@@ -156,7 +162,7 @@ app.get('/', (req, res) => {
 
 async function initApp() {
   await refreshSpotifyAccessToken()
-  await refreshIgAccessToken()
+  startIgAccessTokenCron()
 
   server.listen(port, () => {
     console.log(`Server started on port ${port}!`);
