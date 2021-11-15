@@ -2,7 +2,9 @@
 .ig-grid
   .row.align-center.m-b-20
     img.m-r-10(:src="require(`@/assets/svg/instagram.svg`)", width="25")
-    h5.m-b-0 Latest photos
+    .col
+      h5.m-b-0 Latest photos
+      a.caption(:href='contact.instagram' target='_blank') Follow me on Instagram
   .grid
     a.thumb.shadow-2(
       v-for="(thumb, i) in igGrid",
@@ -14,11 +16,16 @@
 </template>
 
 <script>
+import { contact } from '@/globals'
+
 export default {
   name: "IgGrid",
   mounted() {
     this.$store.dispatch("getIgGrid");
   },
+  data: () => ({
+    contact,
+  }),
   computed: {
     igGrid() {
       return this.$store.state.igGrid?.slice(0, 10);
@@ -58,9 +65,16 @@ $gap: 10px;
       border-radius: 10px;
       background-size: cover;
       background-position: center;
-      background-color: rgba(255, 255, 255, 0.8);
       aspect-ratio: 1;
       object-fit: contain;
+      transition: transform $smooth-ease 300ms;
+      position: relative;
+      z-index: 1;
+
+      &:hover {
+        z-index: 2;
+        transform: scale(1.09);
+      }
     }
   }
 }

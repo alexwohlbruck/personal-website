@@ -230,7 +230,7 @@ $thumb-width: 40vw;
 $thumb-margin: 8vw;
 $thumb-radius: 10px;
 $transition-duration: 300ms;
-$smooth-ease: all cubic-bezier(.38,.01,.01,1) $transition-duration, visibility 0ms;
+$transition: all $smooth-ease $transition-duration, visibility 0ms;
 
 .work {
   .icon {
@@ -250,13 +250,13 @@ $smooth-ease: all cubic-bezier(.38,.01,.01,1) $transition-duration, visibility 0
     flex-direction: row;
     align-items: center;
     width: 100%;
-    transition: $smooth-ease;
+    transition: $transition;
 
     .thumb {
       width: $thumb-width;
       border-radius: 10px;
       margin-right: $thumb-margin;
-      transition: $smooth-ease;
+      transition: $transition;
       opacity: 1;
       cursor: pointer;
 
@@ -321,7 +321,7 @@ $smooth-ease: all cubic-bezier(.38,.01,.01,1) $transition-duration, visibility 0
 }
 
 #set {
-  transition: $smooth-ease;
+  transition: $transition;
   position: fixed;
   border-radius: $thumb-radius;
 }
