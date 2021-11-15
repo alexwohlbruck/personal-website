@@ -70,6 +70,7 @@ const ig = new InstagramBasicDisplayApi({
 const heroku = new HerokuApi({ token: process.env.HEROKU_API_TOKEN })
 
 
+// Set the environment variable config locally and in Heroku app config
 function updateEnvironment(key, value) {
   // Update local environment file
   const envPath = '.env'
@@ -93,6 +94,7 @@ const port = process.env.PORT || 3000
 
 app.use(cors())
 
+// Use refresh token to get a new access token
 async function refreshSpotifyAccessToken() {
   const data = await spotify.refreshAccessToken()
   spotify.setAccessToken(data.body['access_token'])
@@ -102,6 +104,7 @@ async function refreshSpotifyAccessToken() {
   setTimeout(refreshSpotifyAccessToken, (expiresIn - 60) * 1000)
 }
 
+// Refresh long-lived token before it expires
 async function refreshIgAccessToken() {
   const { access_token: accessToken, expires_in: expiresIn } = await ig.refreshLongLivedToken(process.env.IG_ACCESS_TOKEN)
   process.env.IG_ACCESS_TOKEN = accessToken
@@ -111,8 +114,8 @@ async function refreshIgAccessToken() {
   setTimeout_(refreshIgAccessToken, (expiresIn - oneDay) * 1000)
 }
 
+// Retrieve Spotify player state
 let playbackTimeout
-
 async function getSpotifyPlaybackState() {
   const { body } = await spotify.getMyCurrentPlaybackState()
 
@@ -122,6 +125,7 @@ async function getSpotifyPlaybackState() {
 
   console.log(`Playing song: ${body?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
 
+  // Rerun the function when the song is over
   clearTimeout(playbackTimeout)
   playbackTimeout = setTimeout(getSpotifyPlaybackState, (timeLeft + 2000))
 
