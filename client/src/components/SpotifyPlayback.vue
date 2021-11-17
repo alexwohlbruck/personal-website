@@ -85,18 +85,32 @@ $album-size: 95px;
     border-radius: 50%;
     width: $album-size;
     height: $album-size;
-
-    clip-path: path('M 48 47 m -69 0 a 69 69 0 1 0 138 0 a 69 69 0 1 0 -138 0 z M 48 47 m -6 0 a 6 6 0 0 1 12 0 a 6 6 0 0 1 -12 0 z');
-    
+    position: relative;
 
     img {
       border-radius: 50%;
       width: $album-size;
       height: $album-size;
+
+      clip-path: path(
+        "M 48 47 m -69 0 a 69 69 0 1 0 138 0 a 69 69 0 1 0 -138 0 z M 48 47 m -6 0 a 6 6 0 0 1 12 0 a 6 6 0 0 1 -12 0 z"
+      );
     }
 
     img.playing {
       animation: rotating 4s linear infinite;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 17%;
+      height: 17%;
+      box-shadow: inset 0 2px 5px rgb(0 0 0 / 80%);
+      left: calc(50% - 1px);
+      top: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
     }
   }
 }
