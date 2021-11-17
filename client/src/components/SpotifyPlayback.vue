@@ -86,7 +86,7 @@ $album-size: 95px;
     width: $album-size;
     height: $album-size;
 
-    clip-path: path('M 50 50 m -69 0 a 69 69 0 1 0 138 0 a 69 69 0 1 0 -138 0 z M 50 50 m -6 0 a 6 6 0 0 1 12 0 a 6 6 0 0 1 -12 0 z');
+    clip-path: path('M 48 47 m -69 0 a 69 69 0 1 0 138 0 a 69 69 0 1 0 -138 0 z M 48 47 m -6 0 a 6 6 0 0 1 12 0 a 6 6 0 0 1 -12 0 z');
     
 
     img {
