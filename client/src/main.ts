@@ -5,6 +5,7 @@ import router from './router'
 import VueGtag from 'vue-gtag'
 import VueSocketIOExt from 'vue-socket.io-extended'
 import dayjs from 'dayjs'
+import Toasted from 'vue-toasted'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { io } from 'socket.io-client'
 import './styles/style.scss'
@@ -26,6 +27,11 @@ Vue.use(VueSocketIOExt, socket, {
   store,
   actionPrefix: '',
   mutationPrefix: '',
+})
+
+Vue.use(Toasted, {
+  position: 'bottom-center',
+  className: 'toast',
 })
 
 dayjs.extend(relativeTime)

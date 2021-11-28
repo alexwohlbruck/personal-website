@@ -1,4 +1,5 @@
 import axios from '@/axios'
+import Vue from 'vue'
 
 export const getSpotifyPlaybackState = async ({ commit }) => {
   const { data } = await axios.get('spotify/playback-state')
@@ -13,10 +14,11 @@ export const getIgGrid = async ({ commit }) => {
 }
 
 export const sendMessage = async  (_store, { name, email, message }) => {
-  const data = await axios.post('/mailer/contact', {
+  const { data } = await axios.post('/mailer/contact', {
     name,
     email,
     message
   })
+  Vue.toasted.show(data.message)
   return data
 }

@@ -18,7 +18,7 @@ router.post('/contact', async(req, res) => {
     log(`Message sent: ${info.messageId}`, 'FgGreen')
   
     res.status(200).json({
-      message: 'Message sent successfully.',
+      message: `Message sent successfully.`,
     })
   }
 

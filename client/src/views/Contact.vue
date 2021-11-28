@@ -50,7 +50,7 @@ export default {
       const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)
 
       if (!emailValid) {
-        alert("invalid email")
+        this.$toasted.show('Invalid email.')
         return
       }
 
