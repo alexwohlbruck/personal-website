@@ -354,10 +354,12 @@ const state = {
       color: '#063547',
       icon: 'svg/jukebox.svg',
       description:
-        'This app lets you stream music from your Spotify account for free by streaming the isolated audio from the Youtube-equivalent music videos. You can play and queue songs from your library, and the mp3 file will be streamed to the browser. It is no longer functional because of copyright issues and the YTDL dispute.',
+        'This app lets you stream music from your Spotify account for free by streaming the isolated audio from the Youtube-equivalent music videos. You can search and play songs from Spotify, and the mp3 file will be streamed to the browser. I started to redesign the site with a better user interface and synchonized group playback, but I later scrapped it to work on other projects. There are some concept UI mockups in the screenshots below.',
       start: new Date('2017-02-10'),
       // end: new Date('2017-12-16'),
+      url: 'https://jukebox-redux.herokuapp.com/',
       github: 'https://github.com/alexwohlbruck/jukebox',
+      images: ['original.png', 'new.png', 'album.png', 'search.png', 'artist.png', 'home.png', 'songs.png', 'album-mobile.png', 'home-mobile.png', 'now-playing.png'],
       tags: [
         'html',
         'css',
