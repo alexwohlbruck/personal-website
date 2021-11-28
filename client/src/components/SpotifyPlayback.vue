@@ -1,5 +1,16 @@
 <template lang="pug">
 .spotify-playback.col(v-if="spot && spot.item")
+  audio(
+    ref='audio'
+    :src='audioSourceUrl'
+    preload
+    id='audio'
+    controls
+    @canplaythrough='canplaythrough'
+    @timeupdate='timeupdate'
+    @volumechange='volumechange'
+  )
+
   a.row.align-center.m-b-20(:href='contact.spotify' target='_blank')
     img.m-r-10(:src="require(`@/assets/svg/spotify.svg`)", width="25")
     .col
@@ -29,10 +40,13 @@
           | {{ artist.name }}
           span(v-if="i != spot.item.artists.length - 1") ,&nbsp;
 
-      progress-linear(
-        :value="spot.progress_ms + playbackProgress",
-        :max="spot.item.duration_ms"
-      )
+      .row.align-center
+        progress-linear(
+          :value="playbackProgress",
+          :max="spot.item.duration_ms"
+        )
+        a
+          img.m-l-10(:src="require(`@/assets/svg/volume-${muted ? 'off' : 'high'}.svg`)" width='20' @click='toggleMute')
 </template>
 
 <script>
@@ -47,11 +61,13 @@ export default {
   },
   data: () => ({
     playbackProgress: 0,
+    muted: false,
     contact,
   }),
   mounted() {
     this.$store.dispatch("getSpotifyPlaybackState");
-    this.$nextTick(function () {
+
+    this.$nextTick(function() {
       window.setInterval(() => {
         if (this.spot && this.spot.is_playing) {
           this.playbackProgress += 1000;
@@ -64,17 +80,51 @@ export default {
       spot: (state) => state.spotifyPlaybackState,
     }),
     lastUpdated() {
-      return this.spot.is_playing ? 'Listening now' : this.$dayjs(this.spot.timestamp).fromNow()
-    }
+      return this.spot.is_playing
+        ? "Listening now"
+        : this.$dayjs(this.spot.timestamp).fromNow();
+    },
+    audioSourceUrl() {
+      const { name: track, artists } = this.spot.item;
+      const artist = artists[0].name;
+      return `http://localhost:8080/api/tracks/mp3?artist=${artist}&track=${track}`;
+    },
   },
   watch: {
     spot: {
       handler(newVal) {
         if (newVal.is_playing) {
-          this.playbackProgress = 0;
+          console.log("settings progress", newVal.progress_ms);
+          this.setAudioProgress(newVal.progress_ms);
         }
       },
     },
+  },
+  methods: {
+    canplaythrough(e) {
+      if (e.target.paused) {
+        this.setAudioProgress(this.spot.progress_ms / 1000)
+        e.target.play()
+      }
+    },
+    timeupdate(e) {
+      this.playbackProgress = e.target.currentTime * 1000
+    },
+    volumechange(e) {
+      this.muted = e.target.muted
+    },
+
+    setAudioProgress(progress) {
+      if (this.$refs.audio)
+        this.$refs.audio.currentTime = progress
+    },
+    toggleMute() {
+      if (this.$refs.audio.muted) {
+        this.$refs.audio.muted = false
+      } else {
+        this.$refs.audio.muted = true
+      }
+    }
   },
 };
 </script>
@@ -112,7 +162,7 @@ $album-size: 95px;
     }
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       width: 17%;
       height: 17%;
