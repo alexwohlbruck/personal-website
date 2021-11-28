@@ -18,7 +18,8 @@
     "envfile": "^6.17.0",
     "express": "^4.17.1",
     "heroku-client": "^3.1.0",
-    "instagram-basic-display": "^1.0.2",
+    "instagram-basic-display": "^1.0.3",
+    "nodemailer": "^6.7.2",
     "socket.io": "^4.3.2",
     "spotify-web-api-node": "^5.0.2"
   },

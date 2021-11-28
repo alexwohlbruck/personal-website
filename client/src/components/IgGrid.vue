@@ -1,10 +1,11 @@
 <template lang="pug">
 .ig-grid
-  .row.align-center.m-b-20
+  a.row.align-center.m-b-20(:href='contact.instagram' target='_blank')
     img.m-r-10(:src="require(`@/assets/svg/instagram.svg`)", width="25")
     .col
-      h5.m-b-0 Latest photos
-      a.caption(:href='contact.instagram' target='_blank') Follow me on Instagram
+      h5.m-b-0
+        a.alt Latest photos
+      a.caption.text-light Follow me on Instagram
   .grid
     a.thumb.shadow-2(
       v-for="(thumb, i) in igGrid",

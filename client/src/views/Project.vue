@@ -159,12 +159,35 @@ export default {
         this.closeImageViewer()
       }
     },
-    setBoundingRect(el, rect) {
-      const { width, height, x, y } = rect
+    setBoundingRect(el, to) {
+      const { width, height, x, y } = to.getBoundingClientRect()
+
       el.style.width = `${width}px`
       el.style.height = `${height}px`
       el.style.top = `${y}px`
       el.style.left = `${x}px`
+    },
+    async animateToBoundingRect(el, from, to) {
+
+      // Hide the element and reset the transform values
+      // Hiding prevents animation from activating
+      const prevDisplayValue = el.style.display
+      el.style.display = 'none'
+      el.style.transform = 'translate(0,0) scale(1)'
+      this.setBoundingRect(el, from)
+
+      el.style.display = prevDisplayValue
+
+      const { width, height, x, y } = to.getBoundingClientRect()
+      const { width: oldWidth, height: oldHeight, x: oldX, y: oldY } = from.getBoundingClientRect()
+
+      // Calculate relative values
+      const translateX = x - oldX
+      const translateY = y - oldY
+      const scaleX = width / oldWidth
+      const scaleY = height / oldHeight
+
+      el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`
     },
     show(el) {
       el.style.visibility = 'visible'
@@ -183,16 +206,13 @@ export default {
       const preview = this.$refs.preview
       const set = this.$refs.set
 
-      // Show shared element transition
-      this.setBoundingRect(set, thumb.getBoundingClientRect())
-
       // Set visibilities
       this.hide(preview)
-      this.show(set)
       await this.delay(1)
+      this.show(set)
 
       // Animate SET
-      this.setBoundingRect(set, preview.getBoundingClientRect())
+      this.animateToBoundingRect(set, thumb, preview)
       await this.delay(transitionDuration)
 
       // Reset visibilities
@@ -205,15 +225,12 @@ export default {
       const set = this.$refs.set
 
       // Set visibilities
-      this.setBoundingRect(set, preview.getBoundingClientRect())
       this.show(set)
-      await this.delay(10) // Wait for shared element transition to show
       this.hide(preview)
       this.selectedImage = null
 
       // Animate SET
-      await this.delay(1)
-      this.setBoundingRect(set, thumb.getBoundingClientRect())
+      this.animateToBoundingRect(set, preview, thumb)
       await this.delay(transitionDuration)
 
       // Reset visibilities
@@ -321,9 +338,11 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
 }
 
 #set {
-  transition: $transition;
+  transition: transform $smooth-ease $transition-duration;
   position: fixed;
   border-radius: $thumb-radius;
+  transform-origin: top left;
+  transform: translate(0, 0) scale(1);
 }
 
 </style>

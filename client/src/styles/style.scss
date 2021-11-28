@@ -134,8 +134,8 @@ a {
   }
 }
 
-textarea {
-  border: $border-width * .8 solid $light;
+input[type="text"], input[type="email"], textarea {
+  border: $border-width * .6 solid $light;
   border-radius: $border-width;
   outline: none;
   resize: none;
@@ -146,13 +146,19 @@ textarea {
   background-color: transparent;
   transition: all ease-in-out .2s;
   font-size: 1rem;
+  margin-bottom: 10px;
 
   &:focus {
     border-color: $accent;
+    border-width: $border-width * .9;
   }
 }
 ::placeholder {
   color: $light;
+}
+input[type="text"], input[type="email"] {
+  width: fit-content;
+  min-width: 400px;
 }
 
 button {
