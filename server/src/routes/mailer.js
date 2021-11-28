@@ -24,7 +24,10 @@ router.post('/contact', async(req, res) => {
 
   catch (err) {
     log(err, 'FgRed')
-    res.status(500).json(err)
+    res.status(500).json({
+      message: err.message || 'Something went wrong.',
+      ...err
+    })
   }
 })
 
