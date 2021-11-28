@@ -3,8 +3,10 @@ import App from './App.vue'
 import store from './store'
 import router from './router'
 import VueGtag from 'vue-gtag'
-import VueSocketIOExt from 'vue-socket.io-extended';
-import { io } from 'socket.io-client';
+import VueSocketIOExt from 'vue-socket.io-extended'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { io } from 'socket.io-client'
 import './styles/style.scss'
 import { BACKEND_URL } from './globals'
 
@@ -25,6 +27,9 @@ Vue.use(VueSocketIOExt, socket, {
   actionPrefix: '',
   mutationPrefix: '',
 })
+
+dayjs.extend(relativeTime)
+Vue.prototype.$dayjs = dayjs
 
 new Vue({
   router,

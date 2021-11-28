@@ -17,6 +17,35 @@ const SpotifyWebApi = require('spotify-web-api-node')
 const InstagramBasicDisplayApi = require('instagram-basic-display')
 const HerokuApi = require('heroku-client')
 
+function log(text, color = 'FgCyan') {
+  const colors = {
+    'Reset': "\x1b[0m",
+    'Bright': "\x1b[1m",
+    'Dim': "\x1b[2m",
+    'Underscore': "\x1b[4m",
+    'Blink': "\x1b[5m",
+    'Reverse': "\x1b[7m",
+    'Hidden': "\x1b[8m",
+    'FgBlack': "\x1b[30m",
+    'FgRed': "\x1b[31m",
+    'FgGreen': "\x1b[32m",
+    'FgYellow': "\x1b[33m",
+    'FgBlue': "\x1b[34m",
+    'FgMagenta': "\x1b[35m",
+    'FgCyan': "\x1b[36m",
+    'FgWhite': "\x1b[37m",
+    'BgBlack': "\x1b[40m",
+    'BgRed': "\x1b[41m",
+    'BgGreen': "\x1b[42m",
+    'BgYellow': "\x1b[43m",
+    'BgBlue': "\x1b[44m",
+    'BgMagenta': "\x1b[45m",
+    'BgCyan': "\x1b[46m",
+    'BgWhite': "\x1b[47m",
+  }
+  console.info(colors[color], text)
+}
+
 // setTimeout modified to allow for larger intervals
 // https://catonmat.net/settimeout-setinterval
 function setTimeout_(fn, delay) {
@@ -123,14 +152,26 @@ function startIgAccessTokenCron() {
 
 // Retrieve Spotify player state
 let playbackTimeout
+let lastPlaybackState = null // TODO: store this in persistent storage, Heroku will kill memory on sleep
 async function getSpotifyPlaybackState() {
   const { body } = await spotify.getMyCurrentPlaybackState()
+
+  console.log(body)
+
+  if (!body.timestamp) {
+    log('Returning cached object')
+    // No playback state available, return cached state
+    lastPlaybackState.is_playing = false
+    return lastPlaybackState
+  }
+
+  lastPlaybackState = body
 
   const progress = parseInt(body.progress_ms)
   const duration = parseInt(body.item.duration_ms)
   const timeLeft = duration - progress
 
-  console.log(`Playing song: ${body?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
+  log(`Playing song: ${body?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
 
   // Rerun the function when the song is over
   clearTimeout(playbackTimeout)
@@ -166,7 +207,7 @@ async function initApp() {
   startIgAccessTokenCron()
 
   server.listen(port, () => {
-    console.log(`Server started on port ${port}!`);
+    log(`Server started on port ${port}!`, 'FgGreen');
   })
 }
 

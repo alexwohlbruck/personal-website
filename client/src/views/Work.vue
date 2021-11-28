@@ -2,7 +2,7 @@
 .work.col.container
   h3.m-b-50 My work
 
-  h4.text-accent Stuff I've made
+  h4.text-accent Things I've made
   projects.m-y-50(:projects='projects')
 
   h4.text-accent Experience

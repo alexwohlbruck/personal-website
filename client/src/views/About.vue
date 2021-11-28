@@ -68,7 +68,7 @@
       )
 
   .section
-    h4 Social
+    h4.m-b-30 Social
     spotify-playback
 
   .section

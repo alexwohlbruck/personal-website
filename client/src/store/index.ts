@@ -270,6 +270,8 @@ const state = {
         'illustrator',
         'client-side',
         'server-side',
+        'node',
+        'realtime',
         'apis',
         'graphic-design',
       ],

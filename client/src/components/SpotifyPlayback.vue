@@ -1,31 +1,38 @@
 <template lang="pug">
-.spotify-playback.row.align-center(v-if="spot && spot.item")
-  .album.shadow-2
-    img(
-      :src="spot.item.album.images[1].url",
-      :class="{ playing: spot.is_playing }"
-    )
-  .col.justify-center.m-l-15.m-t-15
-    .row.align-center.m-b-5
-      img.m-r-5(:src="require(`@/assets/svg/spotify.svg`)", width="18")
-      a.caption.m-b-2(:href="contact.spotify", target="_blank") Check out my Spotify
-
-    h5.m-b-0
-      a.alt(:href="spot.item.external_urls.spotify", target="_blank") {{ spot.item.name }}
-    p.caption.m-b-5
-      a.alt(
-        v-for="(artist, i) in spot.item.artists",
-        :key="i",
-        :href="spot.item.artists[i].external_urls.spotify",
-        target="_blank"
+.spotify-playback.col(v-if="spot && spot.item")
+  a.row.align-center.m-b-20(:href='contact.spotify' target='_blank')
+    img.m-r-10(:src="require(`@/assets/svg/spotify.svg`)", width="25")
+    .col
+      h5.m-b-0  
+        a.alt My Spotify
+      a.caption.text-light What I'm listening to
+  
+  .row.align-center
+    .album.shadow-2
+      img(
+        :src="spot.item.album.images[1].url",
+        :class="{ playing: spot.is_playing }"
       )
-        | {{ artist.name }}
-        span(v-if="i != spot.item.artists.length - 1") ,&nbsp;
+    .col.justify-center.m-l-15
+      .row.align-center.m-b-5
+        p.caption.m-b-2.text-accent {{ lastUpdated }}
 
-    progress-linear(
-      :value="spot.progress_ms + playbackProgress",
-      :max="spot.item.duration_ms"
-    )
+      h5.m-b-0
+        a.alt(:href="spot.item.external_urls.spotify", target="_blank") {{ spot.item.name }}
+      p.caption.m-b-5
+        a.alt(
+          v-for="(artist, i) in spot.item.artists",
+          :key="i",
+          :href="spot.item.artists[i].external_urls.spotify",
+          target="_blank"
+        )
+          | {{ artist.name }}
+          span(v-if="i != spot.item.artists.length - 1") ,&nbsp;
+
+      progress-linear(
+        :value="spot.progress_ms + playbackProgress",
+        :max="spot.item.duration_ms"
+      )
 </template>
 
 <script>
@@ -56,6 +63,9 @@ export default {
     ...mapState({
       spot: (state) => state.spotifyPlaybackState,
     }),
+    lastUpdated() {
+      return this.spot.is_playing ? 'Listening now' : this.$dayjs(this.spot.timestamp).fromNow()
+    }
   },
   watch: {
     spot: {
