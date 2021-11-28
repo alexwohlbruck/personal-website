@@ -32,6 +32,7 @@ Vue.use(VueSocketIOExt, socket, {
 Vue.use(Toasted, {
   position: 'bottom-center',
   className: 'toast',
+  duration: 5000,
 })
 
 dayjs.extend(relativeTime)
