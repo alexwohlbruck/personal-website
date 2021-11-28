@@ -17,34 +17,7 @@ const SpotifyWebApi = require('spotify-web-api-node')
 const InstagramBasicDisplayApi = require('instagram-basic-display')
 const HerokuApi = require('heroku-client')
 
-function log(text, color = 'FgCyan') {
-  const colors = {
-    'Reset': "\x1b[0m",
-    'Bright': "\x1b[1m",
-    'Dim': "\x1b[2m",
-    'Underscore': "\x1b[4m",
-    'Blink': "\x1b[5m",
-    'Reverse': "\x1b[7m",
-    'Hidden': "\x1b[8m",
-    'FgBlack': "\x1b[30m",
-    'FgRed': "\x1b[31m",
-    'FgGreen': "\x1b[32m",
-    'FgYellow': "\x1b[33m",
-    'FgBlue': "\x1b[34m",
-    'FgMagenta': "\x1b[35m",
-    'FgCyan': "\x1b[36m",
-    'FgWhite': "\x1b[37m",
-    'BgBlack': "\x1b[40m",
-    'BgRed': "\x1b[41m",
-    'BgGreen': "\x1b[42m",
-    'BgYellow': "\x1b[43m",
-    'BgBlue': "\x1b[44m",
-    'BgMagenta': "\x1b[45m",
-    'BgCyan': "\x1b[46m",
-    'BgWhite': "\x1b[47m",
-  }
-  console.info(colors[color], text)
-}
+const { log } = require('./util')
 
 // setTimeout modified to allow for larger intervals
 // https://catonmat.net/settimeout-setinterval
@@ -62,25 +35,6 @@ function setTimeout_(fn, delay) {
 
   return setTimeout.apply(undefined, arguments);
 }
-
-// https://github.com/loicnestler/instagram-basic-display/blob/528dc794bdf9178ba6baa504f614121383f68e78/lib/index.js#L25
-// The NPM package doesn't include this method even though it is in the codebase.
-// I have added it here manually.
-const axios = require('axios')
-const INSTAGRAM_GRAPH_BASE_URL = 'https://graph.instagram.com'
-Object.assign(InstagramBasicDisplayApi.prototype, {
-  refreshLongLivedToken: (accessToken) => {
-    const requestData = {
-      grant_type: 'ig_refresh_token',
-			access_token: accessToken,
-		}
-    const params = new URLSearchParams(requestData)
-		return axios
-			.get(`${INSTAGRAM_GRAPH_BASE_URL}/refresh_access_token?${params}`)
-			.then((res) => res.data)
-	}
-})
-
 
 // Initialize API clients
 
@@ -155,8 +109,6 @@ let playbackTimeout
 let lastPlaybackState = null // TODO: store this in persistent storage, Heroku will kill memory on sleep
 async function getSpotifyPlaybackState() {
   const { body } = await spotify.getMyCurrentPlaybackState()
-
-  console.log(body)
 
   if (!body.timestamp) {
     log('Returning cached object')
