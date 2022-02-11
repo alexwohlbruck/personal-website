@@ -50,6 +50,11 @@ export default {
         icon: 'spotify',
         href: contact.spotify,
       },
+      {
+        text: 'Musescore',
+        icon: 'musescore',
+        href: contact.musescore,
+      },
     ],
   }),
 }

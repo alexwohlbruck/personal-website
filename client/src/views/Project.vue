@@ -6,7 +6,7 @@
     //- Details
     .col
       //- Back button
-      a.m-b-15(@click='$router.go(-1)')
+      router-link.m-b-15(to='/')
         img(
           :src='require(`@/assets/svg/arrow-left.svg`)'
           width='30'

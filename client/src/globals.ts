@@ -13,5 +13,6 @@ export const contact = {
   github: 'https://github.com/alexwohlbruck',
   instagram: 'https://instagram.com/alexwohlbruck',
   spotify: 'https://open.spotify.com/user/alexwohlbruck',
+  musescore: 'https://musescore.com/user/29055565'
 }
 
