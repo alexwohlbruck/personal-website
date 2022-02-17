@@ -283,9 +283,9 @@ const state = {
       icon: 'svg/friendship-lamp.svg',
       description:
         'Using Firebase and an ESP8266 microcontroller, this project aims to connect friends who live far away with a lamp for each person, that will light up and pulse in sync when someone sends a message',
-      start: new Date('2021-11-03'),
+      start: new Date('2022-01-13'),
       // end: new Date(),
-      url: 'https://friendship-lamp-1ea8a.web.app',
+      url: 'https://project-friendship-lamp.web.app',
       images: ['lamp.png'],
       tags: [
         'html',
