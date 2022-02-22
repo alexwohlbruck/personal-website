@@ -23,7 +23,7 @@ async function getSpotifyPlaybackState(io) {
   if (!body.timestamp) {
     log('Returning cached object')
     // No playback state available, return cached state
-    lastPlaybackState.is_playing = false
+    if (lastPlaybackState) lastPlaybackState.is_playing = false
     return lastPlaybackState
   }
 

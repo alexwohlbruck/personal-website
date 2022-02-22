@@ -158,7 +158,8 @@ input[type="text"], input[type="email"], textarea {
 }
 input[type="text"], input[type="email"] {
   width: fit-content;
-  min-width: 400px;
+  width: 400px;
+  max-width: calc(100% - 22px)
 }
 
 button {
@@ -212,7 +213,9 @@ button {
   display: flex;
   flex-direction: row-reverse;
 }
-
+.wrap {
+  flex-wrap: wrap;
+}
 
 .spacer {
   flex: 1;

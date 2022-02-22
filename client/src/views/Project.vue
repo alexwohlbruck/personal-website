@@ -24,7 +24,7 @@
 
       p.m-y-15 {{ project.description }}
 
-      p.caption
+      .row.wrap.caption
         a.text-primary(v-for='(tag, index) in project.tags')
           | {{ tag }}
           span(v-if='index != project.tags.length - 1') ,&nbsp;
@@ -50,7 +50,7 @@
     .thumbs-container(:style='`transform: translateX(${carouselOffset}`' ref='thumbs')
       img.thumb(
         v-for='(image, i) in project.images'
-        :index='i'
+        :key='i'
         :src="require(`@/assets/portfolio/${project.name}/${image}`)"
         @click='thumbClick($event, i)'
         :class="{\
@@ -72,8 +72,8 @@
   transition(v-if='project.images' name='fade')
     .image-viewer(v-show='selectedImage' @click='closeImageViewer')
       button#close(@click='closeImageViewer') X
-      button#next(@click.stop='carouselNext' v-if='carouselCanNext') Next
-      button#prev(@click.stop='carouselPrev' v-if='carouselCanPrev') Prev
+      button#next(@click.stop='carouselNext' v-if='carouselCanNext' :class="{bottom: showButtonsAtBottom}") Next
+      button#prev(@click.stop='carouselPrev' v-if='carouselCanPrev' :class="{bottom: showButtonsAtBottom}") Prev
 
       img#preview.shadow-6(
         @click.stop='test'
@@ -99,11 +99,17 @@ export default {
   data: () => ({
     carouselIndex: 0,
     selectedImage: null,
+    mounted: false,
+    previewOffset: 0,
   }),
   created() {
     window.addEventListener('keydown', this.keydown)
+    window.addEventListener('resize', () => this.computePreviewOffset())
     if (this.$refs.thumbs)
       this.$refs.thumbs.addEventListener('wheel', e => console.log(e))
+  },
+  mounted() {
+    this.mounted = true
   },
   computed: {
     project() {
@@ -122,20 +128,26 @@ export default {
     carouselCanPrev() {
       return this.carouselIndex > 0
     },
+    showButtonsAtBottom() {
+      return this.previewOffset ? this.previewOffset < 80 : false
+    },
   },
   methods: {
-    test() {
-      console.log('test')
-    },
     carouselNext() {
       if (this.carouselCanNext) {
         this.carouselIndex++
+        this.computePreviewOffset()
       }
     },
     carouselPrev() {
       if (this.carouselCanPrev) {
         this.carouselIndex--
+        this.computePreviewOffset()
       }
+    },
+    async computePreviewOffset() {
+      await this.$nextTick()
+      this.previewOffset = this.$refs.preview.offsetLeft
     },
     thumbClick(e, clickedIndex) {
       if (clickedIndex == this.carouselIndex) {
@@ -218,6 +230,8 @@ export default {
       // Reset visibilities
       this.show(preview)
       this.hide(set)
+
+      this.computePreviewOffset()
     },
     async closeImageViewer() {
       const thumb = this.$refs.thumbs.children[this.carouselIndex]
@@ -243,8 +257,8 @@ export default {
 <style lang="scss">
 @import '@/styles/variables.scss';
 
-$thumb-width: 40vw;
-$thumb-margin: 8vw;
+$thumb-width: 42vw;
+$thumb-margin: 6vw;
 $thumb-radius: 10px;
 $transition-duration: 300ms;
 $transition: all $smooth-ease $transition-duration, visibility 0ms;
@@ -317,6 +331,13 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
       top: 50%;
       transform: translateY(-50%);
       left: 0;
+    }
+
+    #prev, #next {
+      &.bottom {
+        bottom: 0;
+        top: auto;
+      }
     }
 
     #close, #next, #prev {
