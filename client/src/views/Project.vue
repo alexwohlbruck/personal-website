@@ -1,5 +1,5 @@
 <template lang="pug">
-.work.col
+.work.col.full-height
   
   .container.p-y-50
     
@@ -44,7 +44,7 @@
   
   .spacer
 
-  .carousel.p-y-75(:style='`background-color: ${project.color}`' v-if='project.images')
+  .carousel.p-t-75.p-b-115(:style='`background-color: ${project.color}`' v-if='project.images')
 
     //- horizontal-scroll.container.scroll-x.p-y-75.row
     .thumbs-container(:style='`transform: translateX(${carouselOffset}`' ref='thumbs')

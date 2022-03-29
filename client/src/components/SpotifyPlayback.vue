@@ -30,6 +30,7 @@
           span(v-if="i != spot.item.artists.length - 1") ,&nbsp;
 
       progress-linear(
+        v-if='spot.is_playing',
         :value="spot.progress_ms + playbackProgress",
         :max="spot.item.duration_ms"
       )
