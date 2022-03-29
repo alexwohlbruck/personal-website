@@ -22,7 +22,10 @@
   }
 }
 
-html, body, #app, .full-height {
+html, body, #app {
+  height: 100%;
+}
+.full-height {
   min-height: 100%;
 }
 
