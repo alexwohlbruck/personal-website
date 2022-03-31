@@ -18,6 +18,7 @@ async function refreshSpotifyAccessToken() {
 let playbackTimeout
 async function getSpotifyPlaybackState(io) {
   const { body: playbackState } = await spotify.getMyCurrentPlaybackState()
+
   
   let response = {}
   
@@ -42,6 +43,8 @@ async function getSpotifyPlaybackState(io) {
       return null
     }
   }
+
+  if (!response) return null
 
   const progress = parseInt(response.progress_ms)
   const duration = parseInt(response.item.duration_ms)
