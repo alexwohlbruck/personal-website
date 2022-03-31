@@ -44,7 +44,7 @@ async function getSpotifyPlaybackState(io) {
     }
   }
 
-  if (!response) return null
+  if (!response || !response.item) return null
 
   const progress = parseInt(response.progress_ms)
   const duration = parseInt(response.item.duration_ms)
