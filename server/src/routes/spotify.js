@@ -19,10 +19,10 @@ let playbackTimeout
 async function getSpotifyPlaybackState(io) {
   const { body: playbackState } = await spotify.getMyCurrentPlaybackState()
 
-  
   let response = {}
-  
-  const currentlyPlaying = !!playbackState.timestamp
+
+  const isPlayingPodcast = playbackState.currently_playing_type === 'episode'
+  const currentlyPlaying = !isPlayingPodcast && !!playbackState.timestamp
 
   if (currentlyPlaying) {
     response = playbackState
@@ -53,10 +53,12 @@ async function getSpotifyPlaybackState(io) {
   log(`Playing song: ${response?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
 
   // Rerun the function when the song is over
-  clearTimeout(playbackTimeout)
-  playbackTimeout = setTimeout(() => {
-    return getSpotifyPlaybackState(io)
-  }, (timeLeft + 2000))
+  if (response.is_playing) {
+    clearTimeout(playbackTimeout)
+    playbackTimeout = setTimeout(() => {
+      return getSpotifyPlaybackState(io)
+    }, (timeLeft + 2000))
+  }
 
   io.emit('SET_SPOTIFY_PLAYBACK_STATE', response)
 
