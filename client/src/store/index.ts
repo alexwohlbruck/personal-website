@@ -390,8 +390,15 @@ const state = {
   ],
   timeline: [
     {
-      start: new Date(),
-      end: new Date('December 16, 2020'),
+      start: new Date('May 7, 2022'),
+      title: 'Appalachian State',
+      description:
+        'Graduated Appalachian State University, with a B.S. in computer science.',
+      icon: 'svg/appstate.svg',
+    },
+    {
+      start: new Date('December 16, 2020'),
+      // end: new Date(''),
       title: 'Worxstr',
       description:
         'Designed and developed the web frontend and mobile app for Worxstr, a digital labor management platform.',
