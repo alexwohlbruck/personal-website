@@ -253,11 +253,11 @@ const state = {
       color: '#141618',
       icon: 'svg/covalent.svg',
       description:
-        'Using Node and an ESP32 microcontroller, this project aims to connect friends who live far away with a lamp for each person, that will light up and pulse in sync when someone sends a message',
+        'Using Node.js and an ESP32 microcontroller, this project aims to connect friends who live far away with a lamp for each person, that will light up and pulse in sync when someone sends a message',
       start: new Date('2022-01-13'),
-      // end: new Date(),
-      url: 'https://project-friendship-lamp.web.app',
-      images: ['lamp.png'],
+      end: new Date('2022-05-11'),
+      url: 'https://www.projectcovalent.app',
+      images: ['home.png', 'empty.png', 'lamps.png', 'setup-1.png', 'setup-3.png', 'settings.png'],
       tags: [
         'html',
         'css',
@@ -266,7 +266,6 @@ const state = {
         'cpp',
         'vue',
         'node',
-        'firebase',
         'client-side',
         'realtime',
         'iot',

@@ -18,9 +18,10 @@
         .col
           h3.m-b-5.m-t-15 {{ project.title }}
           h6.text-primary
-            | {{ project.start.getFullYear() }}
+            | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
             span.text-primary(v-if='project.end')
-              | &nbsp;- {{ project.end.getFullYear() }}
+              | &nbsp;- {{ startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear() }}
+              span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
 
       p.m-y-15 {{ project.description }}
 
@@ -131,6 +132,10 @@ export default {
     showButtonsAtBottom() {
       return this.previewOffset ? this.previewOffset < 80 : false
     },
+    startAndEndAreSameYear() {
+      if (!this.project.end) return false
+      return this.project.start.getFullYear() === this.project.end.getFullYear()
+    }
   },
   methods: {
     carouselNext() {
