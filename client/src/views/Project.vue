@@ -6,7 +6,7 @@
     //- Details
     .col
       //- Back button
-      router-link.m-b-15(to='/')
+      a.m-b-15(@click='goBack')
         img(
           :src='require(`@/assets/svg/arrow-left.svg`)'
           width='30'
@@ -138,6 +138,9 @@ export default {
     }
   },
   methods: {
+    goBack() {
+      this.$router.go(-1)
+    },
     carouselNext() {
       if (this.carouselCanNext) {
         this.carouselIndex++
