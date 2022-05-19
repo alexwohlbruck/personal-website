@@ -32,7 +32,7 @@ export default {
         to: 'about',
       },
       {
-        name: 'Work',
+        name: 'My work',
         to: 'work',
       },
       {
