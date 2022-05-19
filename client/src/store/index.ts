@@ -244,7 +244,7 @@ const state = {
         'apis',
         'realtime',
         'graphic-design',
-        'ux',
+        'ux', 
       ],
     },
     {
@@ -253,10 +253,11 @@ const state = {
       color: '#141618',
       icon: 'svg/covalent.svg',
       description:
-        'Using Node.js and an ESP32 microcontroller, this project aims to connect friends who live far away with a lamp for each person, that will light up and pulse in sync when someone sends a message',
+        'For my final CS capstone course, using Node.js and an ESP32 microcontroller, this project aims to connect friends who live far away with a lamp for each person that will light up and pulse in sync when someone sends a message.',
       start: new Date('2022-01-13'),
       end: new Date('2022-05-11'),
       url: 'https://www.projectcovalent.app',
+      github: 'https://github.com/alexwohlbruck/covalent',
       images: ['slide-1.png', 'slide-2.png', 'slide-3.png', 'slide-4.png', 'slide-5.png'],
       tags: [
         'html',
