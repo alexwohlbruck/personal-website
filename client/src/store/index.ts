@@ -257,7 +257,7 @@ const state = {
       start: new Date('2022-01-13'),
       end: new Date('2022-05-11'),
       url: 'https://www.projectcovalent.app',
-      images: ['home.png', 'empty.png', 'lamps.png', 'setup-1.png', 'setup-3.png', 'settings.png'],
+      images: ['slide-1.png', 'slide-2.png', 'slide-3.png', 'slide-4.png', 'slide-5.png'],
       tags: [
         'html',
         'css',
