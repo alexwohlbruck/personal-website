@@ -191,6 +191,20 @@ const state = {
           'I have always thought realtime data was one of the coolest features of modern applications, and over the years I have learned how to integrate realtime data updates in my apps in a robust and reactive manner using Socket.io and Flux state management patterns.',
       },
       {
+        name: 'CI/CD',
+        tag: 'ci-cd',
+        proficiency: 7,
+        description:
+          'Continuous integration and deployment are integral to my workflow in many projects. I am familiar with Git CI and AWS CodePipeline for deploying my projects to the cloud.',
+      },
+      {
+        name: 'Testing',
+        tag: 'testing',
+        proficiency: 7,
+        description:
+          'I have integrated both unit tests and E2E tests in hobby and professional projects. Cypress is my favorite testing framework for writing automated tests for web and mobile apps.',
+      },
+      {
         name: 'Graphic design',
         tag: 'graphic-design',
         proficiency: 9,
@@ -243,6 +257,8 @@ const state = {
         'cross-platform',
         'apis',
         'realtime',
+        'ci-cd',
+        'testing',
         'graphic-design',
         'ux', 
       ],
@@ -273,6 +289,7 @@ const state = {
         'apis',
         'graphic-design',
         'realtime',
+        'ci-cd',
         'iot',
       ],
     },
@@ -301,6 +318,7 @@ const state = {
         'apis',
         'realtime',
         'graphic-design',
+        'ci-cd',
         'ux',
       ],
     },
@@ -354,6 +372,7 @@ const state = {
         'xd',
         'client-side',
         'cross-platform',
+        'testing',
       ],
     },
     {
