@@ -19,12 +19,7 @@ const initialParams = () => ({
   canvasWidth: 0,
   canvasHeight: 0,
   startTime: (new Date).getTime(),
-  mousePosition: {
-    x: 0,
-    y: 0,
-  },
   velocity: .1, // Velocity of movment
-  biasDirection: - Math.PI / 2, // Direction of bias
   /* 
     As the animation progresses,
     branches can either continue as normal, change direction, end, or split into two branches.
@@ -50,21 +45,14 @@ export default {
   },
 
   props: {
-    // Originating position in x direction
-    originX: {
+    biasDirection: {
       type: Number,
-      default: .5,
-    },
-    // Originating position in y direction
-    originY: {
-      type: Number,
-      default: 1,
+      default: - Math.PI / 2 // Overall direction of movement
     },
     color: {
       type: String,
       default: '#65FFB7',
     },
-
     resizeTimeout: null,
   },
 
@@ -88,7 +76,6 @@ export default {
           this.reset()
         }, 500)
       })
-      window.addEventListener('mousemove', this.mouseMove)
     },
 
     startEffect() {
@@ -131,7 +118,6 @@ export default {
         
         // Calculate overall movment vector
         this.calculateVelocity()
-        this.calculateDirection(branch.position)
 
         const startX = branch.position.x
         const startY = branch.position.y
@@ -213,12 +199,6 @@ export default {
       this.c.height = this.canvasHeight
     },
 
-    mouseMove(e) {
-      this.mousePosition.x = e.clientX
-      this.mousePosition.y = e.clientY
-      // this.calculateDirection()
-    },
-
     // Clear canvas
     clear() {
       this.ctx.clearRect(0,0, this.canvasWidth, this.canvasHeight)
@@ -245,17 +225,6 @@ export default {
       const velocity = 5 / (elapsed + 1) // Slow down speed over time https://www.desmos.com/calculator/g70oacauyv
       return velocity
     },
-
-    calculateDirection({ x, y }) {
-      const mouseX = this.mousePosition.x - this.c.offsetLeft
-      const mouseY = this.mousePosition.y - this.c.offsetTop
-
-      // Compute the new direction based on current position and mouse position
-      const direction = Math.atan2(mouseY - y, mouseX - x)
-      // Snap to 45 degree increments
-      const snapped = Math.floor(direction / (Math.PI / 4)) * (Math.PI / 4)
-      return snapped
-    }
   },
 }
 
