@@ -239,7 +239,7 @@ const state = {
       end: new Date(),
       url: 'https://worxstr.com',
       showPreview: true,
-      images: ['home.png', 'home-2.png', 'dashboard.png', 'shift.png', 'jobs.png', 'job.png', 'payments.png', 'payment.png', 'schedule.png', 'shift-assign.png', 'users.png', 'messages.png', 'settings.png', 'dark.png', 'pricing.png', 'blog.png', 'support.png'],
+      images: ['home.png', 'home-2.png', 'dashboard.png', 'shift.png', 'jobs.png', 'job.png', 'payments.png', 'payment.png', 'schedule.png', 'shift-assign.png', 'users.png', 'messages.png', 'settings.png', 'dark.png', 'pricing.png', 'support.png', 'blog.png'],
       tags: [
         'html',
         'css',
