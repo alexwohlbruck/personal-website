@@ -13,6 +13,33 @@ const MAX_GROUPS = 4
 const MAX_GROUP_COUNT = 7
 const MIN_GROUP_SEPARATION = 400
 
+const initialParams = () => ({
+  c: null,
+  ctx: null,
+  canvasWidth: 0,
+  canvasHeight: 0,
+  startTime: (new Date).getTime(),
+  mousePosition: {
+    x: 0,
+    y: 0,
+  },
+  velocity: .1, // Velocity of movment
+  biasDirection: - Math.PI / 2, // Direction of bias
+  /* 
+    As the animation progresses,
+    branches can either continue as normal, change direction, end, or split into two branches.
+    When continuing, the branch will appear as a line segment.
+    When ending, the the branch will end with a circle attached to the end of the segment.
+    When splitting, the branch will split into two branches, and the split will be angled 45 degrees from the root branch.
+    The split direction is based on the current direction that follows the mouse pointer.
+    Lines should never be drawn on top of existing ones. That is going to be a fun problem to solve :)
+  */
+  branches: [],
+  terminationProbability: .02, // Probability of a branch ending
+  splitProbability: .2, // Probability of a branch splitting
+  changeDirectionProbability: .15, // Probability of a branch changing direction
+})
+
 export default {
   name: 'Flourish',
   
@@ -37,34 +64,11 @@ export default {
       type: String,
       default: '#65FFB7',
     },
+
+    resizeTimeout: null,
   },
 
-  data: (instance) => ({
-    c: null,
-    ctx: null,
-    canvasWidth: 0,
-    canvasHeight: 0,
-    startTime: (new Date).getTime(),
-    mousePosition: {
-      x: 0,
-      y: 0,
-    },
-    velocity: .1, // Velocity of movment
-    biasDirection: - Math.PI / 2, // Direction of bias
-    /* 
-      As the animation progresses,
-      branches can either continue as normal, change direction, end, or split into two branches.
-      When continuing, the branch will appear as a line segment.
-      When ending, the the branch will end with a circle attached to the end of the segment.
-      When splitting, the branch will split into two branches, and the split will be angled 45 degrees from the root branch.
-      The split direction is based on the current direction that follows the mouse pointer.
-      Lines should never be drawn on top of existing ones. That is going to be a fun problem to solve :)
-    */
-    branches: [],
-    terminationProbability: .02, // Probability of a branch ending
-    splitProbability: .2, // Probability of a branch splitting
-    changeDirectionProbability: .15, // Probability of a branch changing direction
-  }),
+  data: (instance) => initialParams(),
 
   methods: {
     init() {
@@ -74,6 +78,20 @@ export default {
       this.ctx = ctx
       this.resize()
 
+      this.startEffect()
+
+      // Watchers
+      window.addEventListener('resize', () => {
+        this.clear()
+        clearTimeout(this.resizeTimeout)
+        this.resizeTimeout = setTimeout(() => {
+          this.reset()
+        }, 500)
+      })
+      window.addEventListener('mousemove', this.mouseMove)
+    },
+
+    startEffect() {
       const numGroups = Math.floor(Math.random() * MAX_GROUPS) + 1
 
       const previousGroupPositions = []
@@ -104,10 +122,6 @@ export default {
       }
 
       this.draw()
-
-      // Watchers
-      window.addEventListener('resize', this.resize)
-      window.addEventListener('mousemove', this.mouseMove)
     },
 
     // Draw new frame
@@ -186,17 +200,17 @@ export default {
       if (this.branches.length) {
         setTimeout(() => {
           window.requestAnimationFrame(this.draw)
-        }, 500 * this.velocity)
+        }, 700 * this.velocity)
       }
     },
 
     // Window has resized
     resize() {
+      console.log('resize')
       this.canvasWidth = this.$refs.canvas.parentNode.offsetWidth
       this.canvasHeight = this.$refs.canvas.parentNode.offsetHeight
       this.c.width = this.canvasWidth
       this.c.height = this.canvasHeight
-      this.clear()
     },
 
     mouseMove(e) {
@@ -208,7 +222,12 @@ export default {
     // Clear canvas
     clear() {
       this.ctx.clearRect(0,0, this.canvasWidth, this.canvasHeight)
-      // TODO: Restart animation
+    },
+
+    reset() {
+      Object.assign(this.$data, initialParams())
+      this.init()
+      this.startEffect()
     },
 
     // Resolve relative percentage position to canvas coordinates
