@@ -65,7 +65,7 @@ const state = {
         tag: 'cpp',
         proficiency: 4,
         description:
-          'We learned C and C++ in our systems classes in university, which were not easy at all. What got me to dread the language less was a number of experiments I did with the Arduino and ESP8266 computer boards. Programming those is mainly what kickstarted my interest in IoT.',
+          'We learned C and C++ in our systems classes in university, which were not easy at all. What got me to dread the language less was a number of experiments I did with the Arduino and ESP8266 computer boards. Programming those is partly what kickstarted my interest in IoT and embedded systems.',
       },
       {
         name: 'SQL',
@@ -239,7 +239,7 @@ const state = {
       end: new Date(),
       url: 'https://worxstr.com',
       showPreview: true,
-      images: ['home.png', 'home-2.png', 'pricing.png', 'clock.png', 'jobs.png', 'job.png', 'payments.png', 'schedule.png', 'users.png', 'messages.png', 'settings.png'],
+      images: ['home.png', 'home-2.png', 'dashboard.png', 'shift.png', 'jobs.png', 'job.png', 'payments.png', 'payment.png', 'schedule.png', 'shift-assign.png', 'users.png', 'messages.png', 'settings.png', 'dark.png', 'pricing.png', 'blog.png', 'support.png'],
       tags: [
         'html',
         'css',
@@ -269,7 +269,7 @@ const state = {
       color: '#141618',
       icon: 'svg/covalent.svg',
       description:
-        'For my final CS capstone course, using Node.js and an ESP32 microcontroller, this project aims to connect friends who live far away with a lamp for each person that will light up and pulse in sync when someone sends a message.',
+        'For my final CS capstone course, using Node.js and the ESP32 microcontroller, this project aims to connect friends who live far away with a lamp for each person that will light up and pulse in sync when someone sends a message.',
       start: new Date('2022-01-13'),
       end: new Date('2022-05-11'),
       url: 'https://www.projectcovalent.app',
