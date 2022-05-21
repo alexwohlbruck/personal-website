@@ -3,15 +3,19 @@
     navigation
     .col.align-stretch
       section#home.justify-center(ref='home')
+        flourish
         jumbo
       
       section#about.primary(ref='about')
+        //- flourish
         about
 
       section#work(ref='work')
+        //- flourish
         work
 
       section#contact.primary(ref='contact')
+        //- flourish
         contact
 </template>
 
@@ -19,6 +23,7 @@
 // import { gsap } from 'gsap'
 import { EventBus } from '@/event-bus'
 import Navigation from '@/components/Navigation.vue'
+import Flourish from '@/components/Flourish.vue'
 import Jumbo from '@/views/Jumbo.vue'
 import About from '@/views/About.vue'
 import Work from '@/views/Work.vue'
@@ -34,6 +39,7 @@ export default {
     About,
     Work,
     Contact,
+    Flourish,
   },
   mounted() {
     this.calculateAnchor()
@@ -66,5 +72,6 @@ section {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 </style>
