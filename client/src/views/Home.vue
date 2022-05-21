@@ -7,15 +7,15 @@
         jumbo
       
       section#about.primary(ref='about')
-        //- flourish
+        flourish
         about
 
       section#work(ref='work')
-        //- flourish
+        flourish
         work
 
       section#contact.primary(ref='contact')
-        //- flourish
+        flourish
         contact
 </template>
 
