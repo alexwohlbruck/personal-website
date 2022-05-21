@@ -9,8 +9,8 @@
 const SEGMENT_LENGTH = 25
 const SEGMENT_WIDTH = 5
 const SEGMENT_SEPARATION = 10
-const MAX_GROUPS = 5
-const MAX_GROUP_COUNT = 8
+const MAX_GROUPS = 4
+const MAX_GROUP_COUNT = 7
 const MIN_GROUP_SEPARATION = 400
 
 export default {
@@ -61,7 +61,7 @@ export default {
       Lines should never be drawn on top of existing ones. That is going to be a fun problem to solve :)
     */
     branches: [],
-    terminationProbability: .05, // Probability of a branch ending
+    terminationProbability: .02, // Probability of a branch ending
     splitProbability: .2, // Probability of a branch splitting
     changeDirectionProbability: .15, // Probability of a branch changing direction
   }),
