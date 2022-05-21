@@ -25,6 +25,9 @@
 html, body, #app {
   height: 100%;
 }
+.full-height {
+  min-height: 100%;
+}
 
 h1, h2, h3, h4, h5, h6, p, span, div {
   font-family: 'Roboto Mono', monospace;
@@ -112,9 +115,11 @@ a, .pointer {
   cursor: pointer;
   font-weight: bold;
   color: $light;
-  transition: color .2s;
   text-decoration: none;
   transition: color .2s;
+  -webkit-transition: color .2s;
+  -moz-transition: color .2s;
+  -o-transition: color .2s;
 }
 a {
   &:hover {
@@ -144,9 +149,12 @@ input[type="text"], input[type="email"], textarea {
   padding: 0.5rem;
   color: $white;
   background-color: transparent;
-  transition: all ease-in-out .2s;
   font-size: 1rem;
   margin-bottom: 10px;
+  transition: all ease-in-out .2s;
+  -webkit-transition: all ease-in-out .2s;
+  -moz-transition: all ease-in-out .2s;
+  -o-transition: all ease-in-out .2s;
 
   &:focus {
     border-color: $accent;
@@ -158,7 +166,8 @@ input[type="text"], input[type="email"], textarea {
 }
 input[type="text"], input[type="email"] {
   width: fit-content;
-  min-width: 400px;
+  width: 400px;
+  max-width: calc(100% - 22px)
 }
 
 button {
@@ -172,6 +181,9 @@ button {
   color: $accent;
   background-color: transparent;
   transition: all ease-in-out .2s;
+  -webkit-transition: all ease-in-out .2s;
+  -moz-transition: all ease-in-out .2s;
+  -o-transition: all ease-in-out .2s;
 
   &:active {
     border-color: $accent;
@@ -212,7 +224,9 @@ button {
   display: flex;
   flex-direction: row-reverse;
 }
-
+.wrap {
+  flex-wrap: wrap;
+}
 
 .spacer {
   flex: 1;
@@ -273,7 +287,7 @@ $justifications: (flex-start, center, flex-end, space-between, space-around);
 //     Margin top 100px:      .m-t-100
 
 $spacingtypes: (margin, padding);
-$spaceamounts: (0, 1, 2, 3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 200, 300, 400, 500);
+$spaceamounts: (0, 1, 2, 3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 115, 125, 150, 175, 200, 250, 300, 400, 500);
 $sides: (top, bottom, left, right);
 
 @each $type in $spacingtypes {
@@ -309,9 +323,12 @@ $blur-values: (4px, 6px, 10px, 15px, 20px, 25px, 30px);
 // fade
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 200ms
+  transition: opacity 200ms;
+  -webkit-transition: opacity 200ms;
+  -moz-transition: opacity 200ms;
+  -o-transition: opacity 200ms;
 }
 .fade-enter,
 .fade-leave-to {
-  opacity: 0
+  opacity: 0;
 }

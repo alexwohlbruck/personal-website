@@ -40,13 +40,11 @@
           | {{ artist.name }}
           span(v-if="i != spot.item.artists.length - 1") ,&nbsp;
 
-      .row.align-center
-        progress-linear(
-          :value="playbackProgress",
-          :max="spot.item.duration_ms"
-        )
-        a
-          img.m-l-10(:src="require(`@/assets/svg/volume-${muted ? 'off' : 'high'}.svg`)" width='20' @click='toggleMute')
+      progress-linear(
+        v-if='spot.is_playing',
+        :value="spot.progress_ms + playbackProgress",
+        :max="spot.item.duration_ms"
+      )
 </template>
 
 <script>

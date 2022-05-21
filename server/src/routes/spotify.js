@@ -16,34 +16,53 @@ async function refreshSpotifyAccessToken() {
 
 // Retrieve Spotify player state
 let playbackTimeout
-let lastPlaybackState = null // TODO: store this in persistent storage, Heroku will kill memory on sleep
 async function getSpotifyPlaybackState(io) {
-  const { body } = await spotify.getMyCurrentPlaybackState()
+  const { body: playbackState } = await spotify.getMyCurrentPlaybackState()
 
-  if (!body.timestamp) {
-    log('Returning cached object')
-    // No playback state available, return cached state
-    lastPlaybackState.is_playing = false
-    return lastPlaybackState
+  let response = {}
+
+  const isPlayingPodcast = playbackState.currently_playing_type === 'episode'
+  const currentlyPlaying = !isPlayingPodcast && !!playbackState.timestamp
+
+  if (currentlyPlaying) {
+    response = playbackState
+  }
+  else {
+    // No playback state available, get last item in history
+    const { body: history } = await spotify.getMyRecentlyPlayedTracks({ limit: 1 })
+
+    if (history.items.length) {
+      const item = history.items[0]
+
+      response.is_playing = false
+      response.timestamp = item.played_at
+      response.item = item.track
+      response.progress_ms = item.track.duration_ms
+    }
+    else {
+      return null
+    }
   }
 
-  lastPlaybackState = body
+  if (!response || !response.item) return null
 
-  const progress = parseInt(body.progress_ms)
-  const duration = parseInt(body.item.duration_ms)
+  const progress = parseInt(response.progress_ms)
+  const duration = parseInt(response.item.duration_ms)
   const timeLeft = duration - progress
 
-  log(`Playing song: ${body?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
+  log(`Playing song: ${response?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
 
   // Rerun the function when the song is over
-  clearTimeout(playbackTimeout)
-  playbackTimeout = setTimeout(() => {
-    return getSpotifyPlaybackState(io)
-  }, (timeLeft + 2000))
+  if (response.is_playing) {
+    clearTimeout(playbackTimeout)
+    playbackTimeout = setTimeout(() => {
+      return getSpotifyPlaybackState(io)
+    }, (timeLeft + 2000))
+  }
 
-  io.emit('SET_SPOTIFY_PLAYBACK_STATE', body)
+  io.emit('SET_SPOTIFY_PLAYBACK_STATE', response)
 
-  return body
+  return response
 }
 
 /* Spotify routes */
@@ -52,6 +71,21 @@ router.get('/playback-state', async (req, res) => {
   const io = req.app.get('socketio')
   const playbackState = await getSpotifyPlaybackState(io)
   res.status(200).json(playbackState)
+})
+
+router.get('/authorize', async (req, res) => {
+  const url = await spotify.createAuthorizeURL([
+    'user-read-playback-state',
+    'user-read-recently-played',
+  ])
+  console.log(url)
+  res.status(200).json({url})
+})
+
+router.get('/token', async (req, res) => {
+  const { code } = req.query
+  const data = await spotify.getRefreshToken(code)
+  res.status(200).json(data) 
 })
 
 async function init() {

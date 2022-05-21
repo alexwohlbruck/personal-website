@@ -67,12 +67,13 @@
         small
       )
 
-  .section
-    h4.m-b-30 Social
-    spotify-playback
+  #social
+    .section
+      h4.m-b-30 Social
+      spotify-playback
 
-  .section
-    ig-grid
+    .section
+      ig-grid
 </template>
 
 <script>
