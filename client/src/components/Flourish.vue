@@ -6,12 +6,25 @@
 </template>
 
 <script>
+const UP = - Math.PI / 2        // TODO: Generalize this for any direction
+const VEER_RIGHT  = Math.PI / 4 // Add 45 degrees to an angle
+const VEER_LEFT = - Math.PI / 4 // Subtract 45 degrees from an angle
+
+const ANIMATION_START_DELAY = 1000
+const ANIMATION_RELOAD_DELAY = 500
+
 const SEGMENT_LENGTH = 25
 const SEGMENT_WIDTH = 5
 const SEGMENT_SEPARATION = 10
-const MAX_GROUPS = 4
-const MAX_GROUP_COUNT = 7
+const MAX_GROUPS = 1
+const MAX_GROUP_COUNT = 1
 const MIN_GROUP_SEPARATION = 400
+
+const INITIAL_TERMINAL_PROBABILITY = .02
+const INITIAL_SPLIT_PROBABILITY = .2
+const INITIAL_CHANGE_DIRECTION_PROBABILITY = .15
+const SPLIT_PROBABILITY_INCREMENT = -.02    // Decrease the probability of a split each time a split occurs
+const TERMINAL_PROBABILITY_INCREMENT = .005 // Increase the probability of a terminal each time a terminal occurs
 
 const initialParams = () => ({
   c: null,
@@ -23,16 +36,28 @@ const initialParams = () => ({
   /* 
     As the animation progresses,
     branches can either continue as normal, change direction, end, or split into two branches.
-    When continuing, the branch will appear as a line segment.
-    When ending, the the branch will end with a circle attached to the end of the segment.
-    When splitting, the branch will split into two branches, and the split will be angled 45 degrees from the root branch.
-    The split direction is based on the current direction that follows the mouse pointer.
-    Lines should never be drawn on top of existing ones. That is going to be a fun problem to solve :)
+    - When continuing normally, the branch will appear as a line segment.
+    - When changing direction, the branch will veer 45 degrees from the bias direction for a few iterations
+      and then return to the bias direction. This should only happen occasionally.
+    - When ending, the the branch will end with a circle attached to the end of the segment.
+    - When splitting, the branch will split into two branches, and the split will be angled 45 degrees from the root branch.
+      Splits can only happen when the branch is pointing in the same direction as the bias.
+    - Lines should never be drawn on top of existing ones. If a line is about to be drawn on top of an existing line,
+      it will veer 45 degrees to an area with free space. If there is no free space, the line will end.
   */
   branches: [],
-  terminationProbability: .02, // Probability of a branch ending
-  splitProbability: .2, // Probability of a branch splitting
-  changeDirectionProbability: .15, // Probability of a branch changing direction
+  terminalProbability: INITIAL_TERMINAL_PROBABILITY,                // Probability of a branch ending
+  splitProbability: INITIAL_SPLIT_PROBABILITY,                      // Probability of a branch splitting
+  changeDirectionProbability: INITIAL_CHANGE_DIRECTION_PROBABILITY, // Probability of a branch changing direction
+})
+
+const newBranch = (x, y, direction) => ({
+  position: {
+    x,
+    y,
+  },
+  direction,
+  progress: 0
 })
 
 export default {
@@ -41,13 +66,13 @@ export default {
   mounted() {
     setTimeout(() => {
       this.init()
-    }, 1000)
+    }, ANIMATION_START_DELAY)
   },
 
   props: {
     biasDirection: {
       type: Number,
-      default: - Math.PI / 2 // Overall direction of movement
+      default: UP // Overall direction of movement
     },
     color: {
       type: String,
@@ -74,7 +99,7 @@ export default {
         clearTimeout(this.resizeTimeout)
         this.resizeTimeout = setTimeout(() => {
           this.reset()
-        }, 500)
+        }, ANIMATION_RELOAD_DELAY)
       })
     },
 
@@ -101,11 +126,10 @@ export default {
               x: (j * (SEGMENT_WIDTH + SEGMENT_SEPARATION)) + groupPosition,
               y: this.canvasHeight * 1,
             },
-            direction: -Math.PI / 2,
+            direction: UP,
             progress: 0
           })
         }
-
       }
 
       this.draw()
@@ -123,37 +147,29 @@ export default {
         const startY = branch.position.y
         const direction = branch.direction
 
-        
         const isEqualToBias = direction == this.biasDirection
-        const randomDelta = (Math.random() < .5 ? Math.PI / 4 : -Math.PI / 4) 
+        const veerDirection = (Math.random() < .5 ? VEER_RIGHT : VEER_LEFT) 
 
         let ended = false
         // Determine if branch should end
-        if (Math.random() < this.terminationProbability) {
+        if (Math.random() < this.terminalProbability) {
           this.branches.splice(i, 1)
-          this.terminationProbability += .005
+          this.terminalProbability += TERMINAL_PROBABILITY_INCREMENT
           ended = true
         }
 
         // Determine if branch should split
         else if (Math.random() < this.splitProbability) {
           // Choose a direction. Never stray more than 45 degress from bias direction
-          const angleDelta = isEqualToBias ? randomDelta : (this.biasDirection - direction)
+          const angleDelta = isEqualToBias ? veerDirection : (this.biasDirection - direction)
 
-          this.branches.push({
-            position: {
-              x: startX,
-              y: startY,
-            },
-            direction: direction + angleDelta,
-            progress: 0
-          })
-          this.splitProbability -= .02
+          this.branches.push(newBranch(startX, startY, direction + angleDelta))
+          this.splitProbability += SPLIT_PROBABILITY_INCREMENT
         }
 
         // Determine if branch should change direction
         else if (isEqualToBias && Math.random() < this.changeDirectionProbability) {
-          branch.direction += randomDelta
+          branch.direction += veerDirection
         }
         else if (!isEqualToBias && Math.random() < this.changeDirectionProbability * 2) {
           branch.direction = this.biasDirection
@@ -161,22 +177,13 @@ export default {
 
         if (ended) {
           // Draw a white circle at the end of the segment
-          this.ctx.beginPath()
-          this.ctx.arc(startX, startY, SEGMENT_WIDTH, 0, 2 * Math.PI)
-          this.ctx.fillStyle = this.color
-          this.ctx.fill()
+          this.drawEndSegment(startX, startY)
         }
         else {
           const endX = startX + Math.cos(direction) * SEGMENT_LENGTH
           const endY = startY + Math.sin(direction) * SEGMENT_LENGTH
-  
-          // Draw a 5px white line segment in the direction of the branch
-          this.ctx.beginPath()
-          this.ctx.moveTo(startX, startY)
-          this.ctx.lineTo(endX, endY)
-          this.ctx.strokeStyle = this.color
-          this.ctx.lineWidth = SEGMENT_WIDTH
-          this.ctx.stroke()
+          
+          this.drawLineSegment(startX, startY, endX, endY)
   
           branch.position.x = endX
           branch.position.y = endY
@@ -188,6 +195,24 @@ export default {
           window.requestAnimationFrame(this.draw)
         }, 700 * this.velocity)
       }
+    },
+
+    // Draw a line segment
+    drawLineSegment(startX, startY, endX, endY) {
+      this.ctx.beginPath()
+      this.ctx.moveTo(startX, startY)
+      this.ctx.lineTo(endX, endY)
+      this.ctx.strokeStyle = this.color
+      this.ctx.lineWidth = SEGMENT_WIDTH
+      this.ctx.stroke()
+    },
+
+    // Draw the end cap for a line segment
+    drawEndSegment(x, y) {
+      this.ctx.beginPath()
+      this.ctx.arc(x, y, SEGMENT_WIDTH, 0, 2 * Math.PI)
+      this.ctx.fillStyle = this.color
+      this.ctx.fill()
     },
 
     // Window has resized
