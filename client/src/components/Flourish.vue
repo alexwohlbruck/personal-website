@@ -9,17 +9,20 @@
 
 const DEBUG = false
 
-// Useful math constants
-const UP = 'u'
-const DOWN = 'd'
-const LEFT = 'l'
-const RIGHT = 'r'
-const UP_LEFT = 'ul'
-const UP_RIGHT = 'ur'
-const DOWN_LEFT = 'dl'
-const DOWN_RIGHT = 'dr'
+// Direction constants
+const UP = 1
+const DOWN = 2
+const LEFT = 3
+const LEFT2 = 4
+const RIGHT = 5
+const RIGHT2 = 6
+const UP_LEFT = 7
+const UP_RIGHT = 8
+const DOWN_LEFT = 9
+const DOWN_RIGHT = 10
 
 // Timing constants
+const ANIMATION_SPEED = 2
 const ANIMATION_START_DELAY = 1000
 const ANIMATION_RELOAD_DELAY = 500
 
@@ -33,8 +36,8 @@ const MAX_GROUPS = Math.floor(window.innerWidth / (MIN_GROUP_SEPARATION * SEGMEN
 // Probabilities
 const INITIAL_TERMINAL_PROBABILITY = .01
 const INITIAL_SPLIT_PROBABILITY = .2
-const INITIAL_CHANGE_DIRECTION_PROBABILITY = .15
-const INITIAL_REVERT_DIRECTION_PROBABILITY = .5
+const INITIAL_CHANGE_DIRECTION_PROBABILITY = .1
+const INITIAL_REVERT_DIRECTION_PROBABILITY = .1
 const SPLIT_PROBABILITY_INCREMENT = -.02    // Decrease the probability of a split each time a split occurs
 const TERMINAL_PROBABILITY_INCREMENT = .001 // Increase the probability of a terminal each time a terminal occurs
 
@@ -94,7 +97,7 @@ export default {
 
   props: {
     biasDirection: {
-      type: String,
+      type: Number,
       default: UP // Overall direction of movement
     },
     color: {
@@ -137,8 +140,6 @@ export default {
       const numGroups = Math.floor(Math.random() * MAX_GROUPS) + 1
       const previousGroupPositions = []
 
-      console.log(numGroups)
-
       for (let i = 0; i < numGroups; i++) {
         const numBranches = Math.floor(Math.random() * MAX_GROUP_COUNT) + 1
         let groupPosition = Math.floor(Math.random() * this.gridWidth)
@@ -165,10 +166,9 @@ export default {
     draw() {
 
       for (const [id, branch] of Object.entries(this.branches)) {
-        
+
         const isEqualToBias = branch.direction == this.biasDirection
         const veerDirection = (Math.random() < .5 ? UP_RIGHT : UP_LEFT) // Randomly choose a potential veer direction
-
         
         // Determine if branch should end
         if (isEqualToBias && Math.random() < this.terminalProbability) {
@@ -202,7 +202,7 @@ export default {
       if (Object.keys(this.branches).length > 0) {
         setTimeout(() => {
           window.requestAnimationFrame(this.draw)
-        }, 2 * this.calculateVelocity())
+        }, ANIMATION_SPEED * this.calculateVelocity())
       }
     },
 
@@ -236,7 +236,18 @@ export default {
     },
 
     changeBranchDirection(id, direction, updateProbability = true) {
+      // Check that the new direction will not intersect with another branch
+      if (direction === UP_RIGHT && this.offsetCellWasVisited(this.branches[id].position.x, this.branches[id].position.y, RIGHT2, UP_LEFT)) {
+        this.endBranch(id)
+        return
+      }
+      else if (direction === UP_LEFT && this.offsetCellWasVisited(this.branches[id].position.x, this.branches[id].position.y, LEFT2, UP_RIGHT)) {
+        this.endBranch(id)
+        return
+      } 
+
       this.branches[id].direction = direction
+
       if (updateProbability) {
         this.changeDirectionProbability += TERMINAL_PROBABILITY_INCREMENT
       }
@@ -244,9 +255,33 @@ export default {
 
     continueBranch(id) {
 
+      if (!this.branches[id]) return
+
       let { direction } = this.branches[id]
       const { position } = this.branches[id]
       const { x: startX, y: startY } = position
+
+      // Prevent intersections
+      // If there is a branch to the left and the direction is UP_LEFT, or the same but to the right, stop the branch
+      if (this.offsetCellWasVisited(startX, startY, LEFT, UP_RIGHT)) {
+        if (direction === UP_LEFT) {
+          this.endBranch(id)
+          return
+        }
+        if (direction === this.biasDirection) {
+          direction = UP_RIGHT
+        }
+      }
+
+      if (this.offsetCellWasVisited(startX, startY, RIGHT, UP_LEFT)) {
+        if (direction === UP_RIGHT) {
+          this.endBranch(id)
+          return
+        }
+        if (direction === this.biasDirection) {
+          direction = UP_LEFT
+        }
+      }
       
       // If the cell was already visited, try other directions.
       // If no directions work, end the branch
@@ -274,16 +309,6 @@ export default {
         }
       }
 
-      // Prevent intersections
-      // If there is a branch to the left and the direction is UP_LEFT, or the same but to the right, stop the branch
-      if (
-        (direction === UP_LEFT && this.offsetCellWasVisited(startX, startY, LEFT)) ||
-        (direction === UP_RIGHT && this.offsetCellWasVisited(startX, startY, RIGHT))
-      ) {
-        this.endBranch(id)
-        return
-      }
-
       const offset = this.directionToGridOffset(direction)
       const endX = startX + offset[0]
       const endY = startY + offset[1]
@@ -294,14 +319,14 @@ export default {
         return
       }
 
-      this.drawLineSegment(startX, startY, endX, endY)
+      this.drawLineSegment(startX, startY, endX, endY, direction)
 
       position.x = endX
       position.y = endY
     },
 
     // Draw a line segment
-    drawLineSegment(startX, startY, endX, endY) {
+    drawLineSegment(startX, startY, endX, endY, direction) {
       const halfCellSize = this.gridCellSize / 2
       const canvasStartX = startX * this.gridCellSize + halfCellSize
       const canvasStartY = startY * this.gridCellSize + halfCellSize
@@ -322,7 +347,7 @@ export default {
       this.ctx.fillStyle = this.color
       this.ctx.fill()
 
-      this.setCellVisited(endX, endY)
+      this.setCellVisited(endX, endY, direction)
     },
 
     // Draw the end cap for a line segment
@@ -350,9 +375,9 @@ export default {
       }
     },
 
-    setCellVisited(x, y) {
+    setCellVisited(x, y, direction) {
       if (this.cellDoesntExist(x, y)) return
-      this.grid[x][y] = true
+      this.grid[x][y] = direction
       
       // Color in cell if it was visited
       if (DEBUG) {
@@ -363,17 +388,20 @@ export default {
       }
     },
 
-    cellWasVisited(x, y) {
+    cellWasVisited(x, y, direction) {
       if (this.cellDoesntExist(x, y)) return false
-      return this.grid[x][y]
+      if (direction) {
+        return this.grid[x][y] === direction
+      }
+      return !!this.grid[x][y]
     },
 
     // Take a cell and direction and find out if the cell in that direction was visited already
-    offsetCellWasVisited(x, y, direction) {
+    offsetCellWasVisited(x, y, direction, otherCellDirection) {
       const offset = this.directionToGridOffset(direction)
       const newX = x + offset[0]
       const newY = y + offset[1]
-      return this.cellWasVisited(newX, newY)
+      return this.cellWasVisited(newX, newY, otherCellDirection)
     },
 
 
@@ -432,7 +460,7 @@ export default {
     calculateVelocity() {
       const now = (new Date).getTime()
       const elapsed = now - this.startTime
-      const velocity = (elapsed / 500) ** 2 // Slow down speed over time https://www.desmos.com/calculator/g70oacauyv
+      const velocity = (elapsed / 500) ** 2 // Slow down speed over time https://www.desmos.com/calculator/b3y2ex7hvv
       return velocity
     },
     
@@ -447,6 +475,8 @@ export default {
           return [1, -1]
         case RIGHT:
           return [1, 0]
+        case RIGHT2:
+          return [2, 0]
         case DOWN_RIGHT:
           return [1, 1]
         case DOWN:
@@ -455,6 +485,8 @@ export default {
           return [-1, 1]
         case LEFT:
           return [-1, 0]
+        case LEFT2:
+          return [-2, 0]
         case UP_LEFT:
           return [-1, -1]
         default:
