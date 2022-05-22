@@ -22,7 +22,7 @@ const DOWN_LEFT = 9
 const DOWN_RIGHT = 10
 
 // Timing constants
-const ANIMATION_SPEED = 1
+const ANIMATION_SPEED = 2
 const ANIMATION_START_DELAY = 1000
 const ANIMATION_RELOAD_DELAY = 500
 
@@ -202,7 +202,7 @@ export default {
       if (Object.keys(this.branches).length > 0) {
         setTimeout(() => {
           window.requestAnimationFrame(this.draw)
-        }, ANIMATION_SPEED*20)// * this.calculateVelocity())
+        }, ANIMATION_SPEED * this.calculateVelocity())
       }
     },
 
