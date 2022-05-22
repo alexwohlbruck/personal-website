@@ -1,6 +1,6 @@
 <template lang="pug">
 
-.flourish(:style='{zIndex: `z-index: ${zIndex}`}')
+.flourish
   canvas(ref='canvas')
   
 </template>
@@ -103,10 +103,6 @@ export default {
     color: {
       type: String,
       default: '#3A9CFF',
-    },
-    zIndex: {
-      type: Number,
-      default: 1,
     },
     resizeTimeout: null,
   },
@@ -510,6 +506,7 @@ export default {
   top: 0;
   width: 100%;
   height: 100%;
+  z-index: -1;
 
   canvas {
     opacity: .1;
