@@ -34,12 +34,12 @@ const MAX_GROUP_COUNT = 20
 const MAX_GROUPS = Math.floor(window.innerWidth / (MIN_GROUP_SEPARATION * SEGMENT_SEPARATION)) + 1
 
 // Probabilities
-const INITIAL_TERMINAL_PROBABILITY = .01
+const INITIAL_TERMINAL_PROBABILITY = .008
 const INITIAL_SPLIT_PROBABILITY = .2
-const INITIAL_CHANGE_DIRECTION_PROBABILITY = .1
-const INITIAL_REVERT_DIRECTION_PROBABILITY = .1
+const INITIAL_CHANGE_DIRECTION_PROBABILITY = .04
+const INITIAL_REVERT_DIRECTION_PROBABILITY = .2
 const SPLIT_PROBABILITY_INCREMENT = -.02    // Decrease the probability of a split each time a split occurs
-const TERMINAL_PROBABILITY_INCREMENT = .001 // Increase the probability of a terminal each time a terminal occurs
+const TERMINAL_PROBABILITY_INCREMENT = .0008 // Increase the probability of a terminal each time a terminal occurs
 
 let lastWindowWidth = window.innerWidth
 
