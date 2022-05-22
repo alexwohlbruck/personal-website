@@ -274,7 +274,7 @@ const state = {
       end: new Date('2022-05-11'),
       url: 'https://www.projectcovalent.app',
       github: 'https://github.com/alexwohlbruck/covalent',
-      images: ['slide-1.png', 'slide-2.png', 'slide-3.png', 'slide-4.png', 'slide-5.png'],
+      images: ['slide-1.png', 'slide-2.png', 'slide-3.png', 'slide-4.png', 'slide-5.png', 'progress-1.jpg', 'progress-2.jpg', 'progress-3.jpg', 'progress-4.jpg', 'progress-5.jpg', 'final.jpg'],
       tags: [
         'html',
         'css',
