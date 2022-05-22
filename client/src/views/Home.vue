@@ -3,19 +3,19 @@
     navigation
     .col.align-stretch
       section#home.justify-center(ref='home')
-        flourish(:z-index='-1')
+        flourish
         jumbo
       
       section#about.primary(ref='about')
-        flourish(color='white')
+        flourish(color='#CEF1FF')
         about
 
       section#work(ref='work')
-        flourish(:z-index='-1')
+        flourish
         work
 
       section#contact.primary(ref='contact')
-        flourish(color='white')
+        flourish(color='#CEF1FF')
         contact
 </template>
 
@@ -73,5 +73,6 @@ section {
   display: flex;
   flex-direction: column;
   position: relative;
+  z-index: 1;
 }
 </style>
