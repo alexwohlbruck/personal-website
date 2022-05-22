@@ -1,6 +1,6 @@
 <template lang="pug">
 
-.flourish
+.flourish(:style='{zIndex: `z-index: ${zIndex}`}')
   canvas(ref='canvas')
   
 </template>
@@ -103,6 +103,10 @@ export default {
     color: {
       type: String,
       default: '#3A9CFF',
+    },
+    zIndex: {
+      type: Number,
+      default: 1,
     },
     resizeTimeout: null,
   },
@@ -417,7 +421,7 @@ export default {
       this.c.height = this.canvasHeight
 
       const gridCellSize = SEGMENT_WIDTH + SEGMENT_SEPARATION
-      const gridWidth = Math.ceil(this.canvasWidth / gridCellSize) + 1
+      const gridWidth = Math.floor(this.canvasWidth / gridCellSize)
       const gridHeight = Math.ceil(this.canvasHeight / gridCellSize) + 1
 
       this.gridCellSize = gridCellSize
@@ -506,7 +510,6 @@ export default {
   top: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
 
   canvas {
     opacity: .1;

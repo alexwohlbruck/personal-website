@@ -3,19 +3,19 @@
     navigation
     .col.align-stretch
       section#home.justify-center(ref='home')
-        flourish
+        flourish(:z-index='-1')
         jumbo
       
       section#about.primary(ref='about')
-        flourish
+        flourish(color='white')
         about
 
       section#work(ref='work')
-        flourish
+        flourish(:z-index='-1')
         work
 
       section#contact.primary(ref='contact')
-        flourish
+        flourish(color='white')
         contact
 </template>
 
