@@ -38,6 +38,8 @@ const INITIAL_REVERT_DIRECTION_PROBABILITY = .5
 const SPLIT_PROBABILITY_INCREMENT = -.02    // Decrease the probability of a split each time a split occurs
 const TERMINAL_PROBABILITY_INCREMENT = .001 // Increase the probability of a terminal each time a terminal occurs
 
+let lastWindowWidth = window.innerWidth
+
 const initialParams = () => ({
   c: null,
   ctx: null,
@@ -116,6 +118,13 @@ export default {
 
       // Watchers
       window.addEventListener('resize', () => {
+
+        if (window.innerWidth === lastWindowWidth) {
+          return
+        }
+
+        lastWindowWidth = window.innerWidth
+        
         this.clear()
         clearTimeout(this.resizeTimeout)
         this.resizeTimeout = setTimeout(() => {
