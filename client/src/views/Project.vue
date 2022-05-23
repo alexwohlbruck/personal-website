@@ -17,14 +17,16 @@
           project-tile(:project='project')
           
         .col
-          h3.m-b-5.m-t-15
-            | {{ project.title }}
+          slide-transition
+            h3.m-b-5.m-t-15
+              | {{ project.title }}
 
-          h6.text-primary
-            | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
-            span.text-primary(v-if='project.end')
-              | &nbsp;- {{ startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear() }}
-              span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
+          slide-transition(:delay='.2')
+            h6.text-primary
+              | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
+              span.text-primary(v-if='project.end')
+                | &nbsp;- {{ startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear() }}
+                span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
 
       p.m-y-15 {{ project.description }}
 
@@ -91,6 +93,7 @@
 <script>
 import HorizontalScroll from 'vue-horizontal-scroll'
 import ProjectTile from '@/components/ProjectTile.vue'
+import SlideTransition from '@/components/transitions/SlideTransition.vue'
 
 const transitionDuration = 300
 
@@ -99,6 +102,7 @@ export default {
   components: {
     ProjectTile,
     HorizontalScroll,
+    SlideTransition,
   },
   data: () => ({
     carouselIndex: 0,
