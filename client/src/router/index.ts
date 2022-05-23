@@ -21,13 +21,15 @@ const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes,
-  scrollBehavior (to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else {
-      return { x: 0, y: 0 }
-    }
-  }
+  scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
+    router.app.$root.$once('triggerScroll', () => {
+      const position = savedPosition || { x: 0, y: 0 }
+      router.app.$nextTick(() => resolve({
+        x: position.x,
+        y: position.y
+      }));
+    });
+  })
 })
 
 export default router

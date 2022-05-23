@@ -15,33 +15,41 @@
       .row.align-center.m-y-15
         .icon.m-r-30
           project-tile(:project='project')
+          
         .col
-          h3.m-b-5.m-t-15 {{ project.title }}
-          h6.text-primary
-            | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
-            span.text-primary(v-if='project.end')
-              | &nbsp;- {{ startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear() }}
-              span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
+          slide-transition
+            h3.m-b-5.m-t-15
+              | {{ project.title }}
 
-      p.m-y-15 {{ project.description }}
+          slide-transition(:delay='.2')
+            h6.text-primary
+              | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
+              span.text-primary(v-if='project.end')
+                | &nbsp;- {{ startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear() }}
+                span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
 
-      .row.wrap.caption
-        a.text-primary(v-for='(tag, index) in project.tags')
-          | {{ tag }}
-          span(v-if='index != project.tags.length - 1') ,&nbsp;
+      slide-transition(direction='up' :delay='.2')
+        p.m-y-15 {{ project.description }}
 
-      .m-y-15
-        a.text-accent(
-          v-if='project.url'
-          :href="`${project.url}`"
-          target='_blank'
-        ) Visit site
-        br
-        a.text-accent(
-          v-if='project.github'
-          :href="`${project.github}`"
-          target='_blank'
-        ) View on GitHub
+      slide-transition(direction='up' :delay='.3')
+        .row.wrap.caption
+          a.text-primary(v-for='(tag, index) in project.tags')
+            | {{ tag }}
+            span(v-if='index != project.tags.length - 1') ,&nbsp;
+
+      slide-transition(direction='up' :delay='.4')
+        .m-y-15
+          a.text-accent(
+            v-if='project.url'
+            :href="`${project.url}`"
+            target='_blank'
+          ) Visit site
+          br
+          a.text-accent(
+            v-if='project.github'
+            :href="`${project.github}`"
+            target='_blank'
+          ) View on GitHub
   
   .spacer
 
@@ -49,17 +57,27 @@
 
     //- horizontal-scroll.container.scroll-x.p-y-75.row
     .thumbs-container(:style='`transform: translateX(${carouselOffset}`' ref='thumbs')
-      img.thumb(
+      div(
         v-for='(image, i) in project.images'
         :key='i'
-        :src="require(`@/assets/portfolio/${project.name}/${image}`)"
-        @click='thumbClick($event, i)'
-        :class="{\
-          large: i == carouselIndex,\
-          'shadow-6': i == carouselIndex,\
-          'shadow-3': i != carouselIndex,\
-        }"
       )
+        slide-transition(
+          
+          direction='right'
+          :delay='.2 * i'
+          :shift='100'
+          :duration='1.2'
+        )
+          div
+            img.thumb(
+              :src="require(`@/assets/portfolio/${project.name}/${image}`)"
+              @click='thumbClick($event, i)'
+              :class="{\
+                large: i == carouselIndex,\
+                'shadow-6': i == carouselIndex,\
+                'shadow-3': i != carouselIndex,\
+              }"
+            )
   
 
   //- Shared element transition: used for animating the image when opening it in the preview
@@ -88,6 +106,7 @@
 <script>
 import HorizontalScroll from 'vue-horizontal-scroll'
 import ProjectTile from '@/components/ProjectTile.vue'
+import SlideTransition from '@/components/transitions/SlideTransition.vue'
 
 const transitionDuration = 300
 
@@ -96,6 +115,7 @@ export default {
   components: {
     ProjectTile,
     HorizontalScroll,
+    SlideTransition,
   },
   data: () => ({
     carouselIndex: 0,

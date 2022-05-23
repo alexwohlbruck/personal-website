@@ -4,5 +4,9 @@
   "scripts": {
     "postinstall": "npm install --prefix server"
   },
-  "dependencies": {}
+  "dependencies": {
+    "gsap": "^3.10.4",
+    "v-shared-element": "^3.1.0",
+    "vue-router-view-transition": "^0.0.1"
+  }
 }

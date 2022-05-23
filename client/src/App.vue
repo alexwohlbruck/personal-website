@@ -1,6 +1,7 @@
 <template lang='pug'>
   #app.flex.color
-    router-view
+    transition(name='crossfade' mode='out-in' @after-leave="$root.$emit('triggerScroll')")
+      router-view
 </template>
 
 <script lang='ts'>

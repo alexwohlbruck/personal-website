@@ -1,5 +1,5 @@
 <template lang="pug">
-  .project-tile
+  .project-tile(v-shared-element:[project.icon])
     .fill.shadow-2(:style='`background-color: ${project.color}`')
       img(:src='require(`@/assets/${project.icon}`)')
 </template>

@@ -22,6 +22,10 @@
   }
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html, body, #app {
   height: 100%;
 }
@@ -330,5 +334,17 @@ $blur-values: (4px, 6px, 10px, 15px, 20px, 25px, 30px);
 }
 .fade-enter,
 .fade-leave-to {
+  opacity: 0;
+}
+
+// Vue router crossfade transition
+.crossfade-enter-active {
+  transition: all .5s ease-in-out;
+}
+.crossfade-leave-active {
+  transition: all .1s ease-in-out;
+}
+.crossfade-enter, .crossfade-leave-to
+  /* .slide-fade-leave-active below version 2.1.8 */ {
   opacity: 0;
 }
