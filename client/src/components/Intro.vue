@@ -1,15 +1,22 @@
 <template lang="pug">
   #intro
-    h4.text-primary Hi, I'm
-    h2 Alex
-      br
-      | Wohlbruck,
-    h4.text-primary
-      | and I'm a {{ occupation }}
-      span.cursor.accent
+    slide-transition(direction='up' :delay='.1')
+      h4.text-primary Hi, I'm
+
+    slide-transition(direction='up' :delay='.2')
+      h2 Alex
+        br
+        | Wohlbruck,
+      
+    slide-transition(direction='up' :delay='.3')
+      h4.text-primary
+        | and I'm a {{ occupation }}
+        span.cursor.accent
 </template>
 
 <script>
+import SlideTransition from '@/components/transitions/SlideTransition.vue'
+
 const occupations = [
   'web developer',
   'graphic designer',
@@ -31,6 +38,9 @@ async function timeout(ms) {
 
 export default {
   name: 'intro',
+  components: {
+    SlideTransition,
+  },
   async mounted() {
     for (let i = 0; true; i++) {
       await this.writeWord(occupations[i % occupations.length])

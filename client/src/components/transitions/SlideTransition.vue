@@ -1,6 +1,8 @@
 <template lang="pug">
+div(ref='target')
   transition(appear @before-enter='beforeEnter' @enter='enter')
-    slot
+    div(v-if='!onScroll || animate')
+      slot
 </template>
 
 <script>
@@ -8,6 +10,23 @@ import gsap from 'gsap'
 
 export default {
   name: '',
+  data: () => ({
+    animate: false,
+  }),
+  mounted() {
+    // If onScroll is set, only play the animation when the item is in view
+    if (this.onScroll) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            this.animate = true
+            observer.unobserve(this.$refs.target)
+          }
+        })
+      })
+      observer.observe(this.$refs.target)
+    }    
+  },
   props: {
     delay: {
       type: Number,
@@ -24,6 +43,10 @@ export default {
     duration: {
       type: Number,
       default: 1,
+    },
+    onScroll: {
+      type: Boolean,
+      default: false,
     },
   },
   methods: {

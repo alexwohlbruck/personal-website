@@ -7,19 +7,24 @@
       target='_blank'
       :class="{'col-reverse': row, 'row': !row }"
     )
-      a.text.text-accent(:class='{absolute: row}') {{ social.text }}
-      img(
-        :class="{'m-l-15': !row, 'm-r-25': row}"
-        :src='require(`@/assets/svg/${social.icon}.svg`)'
-        width='30'
-      )
+      slide-transition(:delay='.1 * i' direction='right' onScroll)
+        a.text.text-accent(:class='{absolute: row}') {{ social.text }}
+        img(
+          :class="{'m-l-15': !row, 'm-r-25': row}"
+          :src='require(`@/assets/svg/${social.icon}.svg`)'
+          width='30'
+        )
 </template>
 
 <script>
 import { contact } from '@/globals'
+import SlideTransition from '@/components/transitions/SlideTransition.vue'
 
 export default {
   name: 'socials',
+  components: {
+    SlideTransition,
+  },
   props: {
     row: Boolean,
   },

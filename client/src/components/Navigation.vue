@@ -1,19 +1,25 @@
 <template lang="pug">
   #nav.row.justify-center
-    h6.nav-item(
+    .nav-item(
       v-for='(link, i) in links'
       :key='i'
       v-scroll-to="{ el: `#${link.to}` }"
     )
-      a.p-y-20.p-x-20(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
+      slide-transition(:delay='.1 * i' direction='up')
+        h6
+          a.p-y-20.p-x-20(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
       
 </template>
 
 <script>
 import { EventBus } from '@/event-bus'
+import SlideTransition from '@/components/transitions/SlideTransition.vue'
 
 export default {
   name: 'navigation',
+  components: {
+    SlideTransition,
+  },
   mounted() {
     EventBus.$on('clicked', a => {
       this.currentAnchor = a
