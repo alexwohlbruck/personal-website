@@ -20,3 +20,8 @@ v-shared-element@^3.1.0:
   integrity sha512-/I9MbRKGE9NAo6YkwfMgC3onC7nLW15GAqEiEzq/smRok0NlXZE7mqqh3N5FzM/J9f6Cn1GkpIWNS5C92mEprw==
   dependencies:
     illusory "^2.0.3"
+
+vue-router-view-transition@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/vue-router-view-transition/-/vue-router-view-transition-0.0.1.tgz#8689471a3bc612417499f08a011677886e65cf27"
+  integrity sha512-9/6magjOkbxzo8Hup69NIdcTu8himvebrWbAqiyMtwI8DtzpmoUspfDtHkcA3lVHQRHf8ExjAs4TQuXBdntoSQ==

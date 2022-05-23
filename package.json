@@ -5,6 +5,7 @@
     "postinstall": "npm install --prefix server"
   },
   "dependencies": {
-    "v-shared-element": "^3.1.0"
+    "v-shared-element": "^3.1.0",
+    "vue-router-view-transition": "^0.0.1"
   }
 }

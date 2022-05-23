@@ -41,7 +41,10 @@ Vue.use(Toasted, {
   duration: 5000,
 })
 
-Vue.use(SharedElementDirective)
+Vue.use(SharedElementDirective, {
+  ease: 'cubic-bezier(.02,.6,.47,1)',
+  duration: '300ms'
+})
 router.beforeEach(SharedElementRouteGuard)
 
 dayjs.extend(relativeTime)
