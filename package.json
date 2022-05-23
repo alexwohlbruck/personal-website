@@ -4,5 +4,7 @@
   "scripts": {
     "postinstall": "npm install --prefix server"
   },
-  "dependencies": {}
+  "dependencies": {
+    "v-shared-element": "^3.1.0"
+  }
 }

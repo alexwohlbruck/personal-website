@@ -15,8 +15,11 @@
       .row.align-center.m-y-15
         .icon.m-r-30
           project-tile(:project='project')
+          
         .col
-          h3.m-b-5.m-t-15 {{ project.title }}
+          h3.m-b-5.m-t-15
+            | {{ project.title }}
+
           h6.text-primary
             | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
             span.text-primary(v-if='project.end')

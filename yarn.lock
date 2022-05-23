@@ -2,3 +2,21 @@
 # yarn lockfile v1
 
 
+illusory@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/illusory/-/illusory-2.0.3.tgz#97015d60438f6ca594fb1437cdac25b89377fb9f"
+  integrity sha512-UKGUKGy2JjgqVtJkii4QY6VwJTa0bNKA0r3YehWip9DcK/Q0z190Vx7yDDDd4tPWqZ+j9zsZQ0iVSmYKCUgxwg==
+  dependencies:
+    rematrix "^0.7.0"
+
+rematrix@^0.7.0:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/rematrix/-/rematrix-0.7.2.tgz#09b59118a6b46fc054ff64b6992e4865f5569077"
+  integrity sha512-NYLmE17dX15eUPhngLMTKlRYwATxEhcRdn9LKtk/iOXHxDKglCZnD2MrMLKwLlB5FX8u9kF/9yMhlQJpeDcuPw==
+
+v-shared-element@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/v-shared-element/-/v-shared-element-3.1.0.tgz#636d0dd96bea5c2564ae2955f03ca118c625c36f"
+  integrity sha512-/I9MbRKGE9NAo6YkwfMgC3onC7nLW15GAqEiEzq/smRok0NlXZE7mqqh3N5FzM/J9f6Cn1GkpIWNS5C92mEprw==
+  dependencies:
+    illusory "^2.0.3"

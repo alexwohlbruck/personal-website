@@ -2,14 +2,20 @@ import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
 import router from './router'
-import VueGtag from 'vue-gtag'
+import { BACKEND_URL } from './globals'
+import './styles/style.scss'
+
+import { io } from 'socket.io-client'
 import VueSocketIOExt from 'vue-socket.io-extended'
+import VueGtag from 'vue-gtag'
 import dayjs from 'dayjs'
 import Toasted from 'vue-toasted'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { io } from 'socket.io-client'
-import './styles/style.scss'
-import { BACKEND_URL } from './globals'
+import {
+  SharedElementRouteGuard,
+  SharedElementDirective,
+  createSharedElementDirective,
+} from 'v-shared-element'
 
 const VueScrollTo = require('vue-scrollto')
 
@@ -34,6 +40,9 @@ Vue.use(Toasted, {
   className: 'toast',
   duration: 5000,
 })
+
+Vue.use(SharedElementDirective)
+router.beforeEach(SharedElementRouteGuard)
 
 dayjs.extend(relativeTime)
 Vue.prototype.$dayjs = dayjs
