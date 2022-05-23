@@ -22,14 +22,13 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes,
   scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
-
-    console.log(router.app)
     router.app.$root.$once('triggerScroll', () => {
       const position = savedPosition || { x: 0, y: 0 }
-      router.app.$nextTick(() => resolve(savedPosition));
+      router.app.$nextTick(() => resolve({
+        x: position.x,
+        y: position.y
+      }));
     });
-
-    
   })
 })
 

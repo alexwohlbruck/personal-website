@@ -30,8 +30,9 @@ export default {
     beforeEnter(el) {
       el.style.opacity = 0
 
-      const sign = this.direction === 'left' ? '-' : ''
-      el.style.transform = `translatex(${sign}${this.shift}px)`
+      const sign = this.direction === 'left' || this.direction === 'up' ? '-' : ''
+      const axis = this.direction === 'left' || this.direction === 'right' ? 'X' : 'Y'
+      el.style.transform = `translate${axis}(${sign}${this.shift}px)`
     },
 
     enter(el, done) {
