@@ -1,21 +1,21 @@
 <template lang="pug">
   #intro
-    slide-transition(direction='up' :delay='.2')
+    enter-transition(direction='up' :delay='.2')
       h4.text-primary Hi, I'm
 
-    slide-transition(direction='up' :delay='.3')
+    enter-transition(direction='up' :delay='.3')
       h2 Alex
         br
         | Wohlbruck,
       
-    slide-transition(direction='up' :delay='.4')
+    enter-transition(direction='up' :delay='.4')
       h4.text-primary.line-2
         | and I'm a {{ occupation }}
         span.cursor.accent
 </template>
 
 <script>
-import SlideTransition from '@/components/transitions/SlideTransition.vue'
+import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
 const occupations = [
   'web developer',
@@ -39,7 +39,7 @@ async function timeout(ms) {
 export default {
   name: 'intro',
   components: {
-    SlideTransition,
+    EnterTransition,
   },
   async mounted() {
     for (let i = 0; true; i++) {

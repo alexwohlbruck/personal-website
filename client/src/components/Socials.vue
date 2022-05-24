@@ -7,7 +7,7 @@
       target='_blank'
       :class="{'col-reverse': row, 'row': !row }"
     )
-      slide-transition(:delay='.1 * i + .1' direction='right' on-scroll)
+      enter-transition(:delay='.1 * i + .1' direction='right' on-scroll)
         a.text.text-accent(:class='{absolute: row}') {{ social.text }}
         img(
           :class="{'m-l-15': !row, 'm-r-25': row}"
@@ -18,12 +18,12 @@
 
 <script>
 import { contact } from '@/globals'
-import SlideTransition from '@/components/transitions/SlideTransition.vue'
+import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
 export default {
   name: 'socials',
   components: {
-    SlideTransition,
+    EnterTransition,
   },
   props: {
     row: Boolean,

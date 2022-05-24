@@ -17,27 +17,27 @@
           project-tile(:project='project')
           
         .col
-          slide-transition
+          enter-transition
             h3.m-b-5.m-t-15
               | {{ project.title }}
 
-          slide-transition(:delay='.2')
+          enter-transition(:delay='.2')
             h6.text-primary
               | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
               span.text-primary(v-if='project.end')
                 | &nbsp;- {{ startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear() }}
                 span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
 
-      slide-transition(direction='up' :delay='.2')
+      enter-transition(direction='up' :delay='.2')
         p.m-y-15 {{ project.description }}
 
-      slide-transition(direction='up' :delay='.3')
+      enter-transition(direction='up' :delay='.3')
         .row.wrap.caption
           a.text-primary(v-for='(tag, index) in project.tags')
             | {{ tag }}
             span(v-if='index != project.tags.length - 1') ,&nbsp;
 
-      slide-transition(direction='up' :delay='.4')
+      enter-transition(direction='up' :delay='.4')
         .m-y-15
           a.text-accent(
             v-if='project.url'
@@ -61,7 +61,7 @@
         v-for='(image, i) in project.images'
         :key='i'
       )
-        slide-transition(
+        enter-transition(
           
           direction='right'
           :delay='.2 * i'
@@ -106,7 +106,7 @@
 <script>
 import HorizontalScroll from 'vue-horizontal-scroll'
 import ProjectTile from '@/components/ProjectTile.vue'
-import SlideTransition from '@/components/transitions/SlideTransition.vue'
+import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
 const transitionDuration = 300
 
@@ -115,7 +115,7 @@ export default {
   components: {
     ProjectTile,
     HorizontalScroll,
-    SlideTransition,
+    EnterTransition,
   },
   data: () => ({
     carouselIndex: 0,

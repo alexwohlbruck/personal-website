@@ -3,18 +3,18 @@
   .section
     img.profile-photo(:src='require(`@/assets/img/me.jpg`)')
 
-  slide-transition(direction='up' on-scroll)
+  enter-transition(direction='up' on-scroll)
     .section
       h3 About me
       p.text-light I love designing and developing websites and web applications. I have a passion for clean, elegant and modern designs. I am a self-taught front-end developer and I am always learning new things.
 
-  slide-transition(direction='up' on-scroll :delay='.1')
+  enter-transition(direction='up' on-scroll :delay='.1')
     .section
       h4 Skills
       p.text-light Here is a brief list of things I've learned and worked with. Click or tap for more info.
 
   .section.row-mobile.justify-space-between
-    slide-transition(on-scroll :delay='.3')
+    enter-transition(on-scroll :delay='.3')
       .col
         h6.m-b-0 Languages
         ul.col
@@ -26,7 +26,7 @@
               :class="selectedSkill && language.tag == selectedSkill.tag ? 'text-accent' : 'text-white'"
             ) {{ language.name }}
 
-    slide-transition(on-scroll :delay='.5')
+    enter-transition(on-scroll :delay='.5')
       .col
         h6.m-b-0 Tools and technologies
         ul.col
@@ -38,7 +38,7 @@
               :class="selectedSkill && tool.tag == selectedSkill.tag ? 'text-accent' : 'text-white'"
             ) {{ tool.name }}
 
-    slide-transition(on-scroll :delay='.7')
+    enter-transition(on-scroll :delay='.7')
         .col
           h6.m-b-0 High-level concepts
           ul.col
@@ -74,10 +74,10 @@
 
   #social
     .section
-      slide-transition(direction='up' on-scroll)
+      enter-transition(direction='up' on-scroll)
         h4.m-b-30 Social
 
-      slide-transition(direction='up' on-scroll)
+      enter-transition(direction='up' on-scroll)
         spotify-playback
 
     .section
@@ -92,7 +92,7 @@ import ProjectTile from '@/components/ProjectTile'
 import ProgressLinear from '@/components/ProgressLinear'
 import SpotifyPlayback from '@/components/SpotifyPlayback'
 import IgGrid from '@/components/IgGrid'
-import SlideTransition from '@/components/transitions/SlideTransition'
+import EnterTransition from '@/components/transitions/EnterTransition'
 
 export default {
   name: 'about',
@@ -102,7 +102,7 @@ export default {
     ProgressLinear,
     SpotifyPlayback,
     IgGrid,
-    SlideTransition,
+    EnterTransition,
   },
   computed: {
     ...mapState(['skills']),

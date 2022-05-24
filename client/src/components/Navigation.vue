@@ -5,7 +5,7 @@
       :key='i'
       v-scroll-to="{ el: `#${link.to}` }"
     )
-      slide-transition(:delay='.1 * i + .3' direction='up')
+      enter-transition(:delay='.1 * i + .3' direction='up')
         h6
           a.p-y-20.p-x-20(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
       
@@ -13,12 +13,12 @@
 
 <script>
 import { EventBus } from '@/event-bus'
-import SlideTransition from '@/components/transitions/SlideTransition.vue'
+import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
 export default {
   name: 'navigation',
   components: {
-    SlideTransition,
+    EnterTransition,
   },
   mounted() {
     EventBus.$on('clicked', a => {

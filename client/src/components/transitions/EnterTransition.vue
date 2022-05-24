@@ -9,10 +9,28 @@ div(ref='target')
 import gsap from 'gsap'
 
 export default {
-  name: '',
+  name: 'enterTransition',
   data: () => ({
     animate: false,
+    afterStyle: {
+      opacity: 1,
+      transform: 'translate(0px, 0px)',
+    }
   }),
+  computed: {
+    beforeStyle() {
+      switch (this.transition) {
+        case 'slide-fade': 
+        default: 
+          const sign = this.direction === 'left' || this.direction === 'up' ? '-' : ''
+          const axis = this.direction === 'left' || this.direction === 'right' ? 'X' : 'Y'
+          return {
+            opacity: 0,
+            transform: `translate${axis}(${sign}${this.shift}px)`
+          }
+      }
+    },
+  },
   mounted() {
     // If onScroll is set, only play the animation when the item is in view
     if (this.onScroll) {
@@ -28,6 +46,10 @@ export default {
     }    
   },
   props: {
+    transition: {
+      type: String,
+      default: 'slide-fade',
+    },
     delay: {
       type: Number,
       default: 0,
@@ -55,17 +77,20 @@ export default {
   },
   methods: {
     beforeEnter(el) {
-      const sign = this.direction === 'left' || this.direction === 'up' ? '-' : ''
-      const axis = this.direction === 'left' || this.direction === 'right' ? 'X' : 'Y'
-      el.style.transform = `translate${axis}(${sign}${this.shift}px)`
-      console.log(el.style.transform)
-      el.style.opacity = 0
+      console.log(Object.entries(this.beforeStyle))
+      for (const [key, value] of Object.entries(this.beforeStyle)) {
+        el.style[key] = value
+      }
     },
 
     enter(el, done) {
+      const after = Object.keys(this.beforeStyle).reduce((obj, key) => {
+        obj[key] = this.afterStyle[key]
+        return obj
+      }, {})
+
       gsap.to(el, {
-        opacity: 1,
-        transform: 'translate(0px, 0px)',
+        ...after,
         duration: this.duration,
         delay: .1 + this.delay,
         onComplete: done,
