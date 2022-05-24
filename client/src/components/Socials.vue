@@ -1,6 +1,6 @@
 <template lang="pug">
   .socials.col.align-flex-end(:class='{row}')
-    a.social-link.align-center.m-y-20(
+    a(
       v-for='(social, i) in socials'
       :key='i'
       :href='social.href'
@@ -8,12 +8,13 @@
       :class="{'col-reverse': row, 'row': !row }"
     )
       enter-transition(:delay='.1 * i + .1' direction='right' on-scroll)
-        a.text.text-accent(:class='{absolute: row}') {{ social.text }}
-        img(
-          :class="{'m-l-15': !row, 'm-r-25': row}"
-          :src='require(`@/assets/svg/${social.icon}.svg`)'
-          width='30'
-        )
+        .social-link.row.align-center.m-y-20
+          a.text.text-accent(:class='{absolute: row}') {{ social.text }}
+          img(
+            :class="{'m-l-15': !row, 'm-r-25': row}"
+            :src='require(`@/assets/svg/${social.icon}.svg`)'
+            width='30'
+          )
 </template>
 
 <script>
@@ -77,7 +78,7 @@ export default {
 
     &.absolute {
       position: absolute;
-      transform: translate(calc(50% - 25px), 40px);
+      transform: translateY(40px);
     }
 
     @media (max-width: $mobile-breakpoint) {
@@ -91,7 +92,7 @@ export default {
       transform: translateX(0);
 
       &.absolute {
-        transform: translate(calc(50% - 25px), 30px);
+        transform: translateY(30px);
       }
     }
   }
