@@ -1,6 +1,6 @@
 <template lang="pug">
 .work.col.container
-  slide-transition(direction='down' :delay='.4' on-scroll)
+  slide-transition(direction='down' :delay='.1' on-scroll)
     h3.m-b-50 My work
 
     h4.text-accent Things I've made

@@ -284,6 +284,7 @@ const state = {
         'cpp',
         'vue',
         'node',
+        'python',
         'client-side',
         'server-side',
         'apis',

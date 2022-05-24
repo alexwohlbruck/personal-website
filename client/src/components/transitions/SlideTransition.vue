@@ -38,7 +38,7 @@ export default {
     },
     shift: {
       type: Number,
-      default: 30,
+      default: 15,
     },
     duration: {
       type: Number,
