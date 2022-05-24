@@ -7,19 +7,22 @@
       :to="{ name: 'project', params: { name: project.name } }"
       :class='{small}'
     )
-      project-tile.m-r-15.m-b-15(:project='project')
-      .m-r-10
-        p(v-if='small') {{ project.title }}
-        h6(v-else) {{ project.title }}
+      slide-transition(:delay='i * .04' direction='down' on-scroll :duration='.5')
+        project-tile.m-r-15.m-b-15(:project='project')
+        .m-r-10
+          p(v-if='small') {{ project.title }}
+          h6(v-else) {{ project.title }}
 </template>
 
 <script>
 import ProjectTile from '@/components/ProjectTile.vue'
+import SlideTransition from '@/components/transitions/SlideTransition.vue'
 
 export default {
   name: 'projects',
   components: {
-    ProjectTile
+    ProjectTile,
+    SlideTransition,
   },
   props: {
     projects: Array,

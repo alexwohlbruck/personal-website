@@ -1,15 +1,15 @@
 <template lang="pug">
   #intro
-    slide-transition(direction='up' :delay='.1')
+    slide-transition(direction='up' :delay='.2')
       h4.text-primary Hi, I'm
 
-    slide-transition(direction='up' :delay='.2')
+    slide-transition(direction='up' :delay='.3')
       h2 Alex
         br
         | Wohlbruck,
       
-    slide-transition(direction='up' :delay='.3')
-      h4.text-primary
+    slide-transition(direction='up' :delay='.4')
+      h4.text-primary.line-2
         | and I'm a {{ occupation }}
         span.cursor.accent
 </template>
@@ -109,4 +109,9 @@ $cursor-width: 3.5px;
     transform: translateX(0);
   }
 }
+
+.line-2 {
+  height: 2em;
+}
+
 </style>

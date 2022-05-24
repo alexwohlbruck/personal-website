@@ -1,7 +1,7 @@
 <template lang="pug">
 div(ref='target')
-  transition(appear @before-enter='beforeEnter' @enter='enter')
-    div(v-if='!onScroll || animate')
+  transition(:appear='!onScroll' @before-enter='beforeEnter' @enter='enter')
+    div(v-visible='!onScroll || animate' ref='container')
       slot
 </template>
 
@@ -38,7 +38,7 @@ export default {
     },
     shift: {
       type: Number,
-      default: 10,
+      default: 30,
     },
     duration: {
       type: Number,
@@ -48,25 +48,28 @@ export default {
       type: Boolean,
       default: false,
     },
+    ease: {
+      type: String,
+      default: 'power4.out',
+    },
   },
   methods: {
     beforeEnter(el) {
-      el.style.opacity = 0
-
       const sign = this.direction === 'left' || this.direction === 'up' ? '-' : ''
       const axis = this.direction === 'left' || this.direction === 'right' ? 'X' : 'Y'
       el.style.transform = `translate${axis}(${sign}${this.shift}px)`
+      console.log(el.style.transform)
+      el.style.opacity = 0
     },
 
     enter(el, done) {
-      console.log('enter')
       gsap.to(el, {
         opacity: 1,
-        transform: 'translateY(0px)',
+        transform: 'translate(0px, 0px)',
         duration: this.duration,
         delay: .1 + this.delay,
         onComplete: done,
-        ease: 'power4.out'
+        ease: this.ease
       })
     },
   },

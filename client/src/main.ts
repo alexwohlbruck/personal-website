@@ -5,6 +5,8 @@ import router from './router'
 import { BACKEND_URL } from './globals'
 import './styles/style.scss'
 
+import VisibleDirective from './directives/VisibleDirective'
+
 import { io } from 'socket.io-client'
 import VueSocketIOExt from 'vue-socket.io-extended'
 import VueGtag from 'vue-gtag'
@@ -43,15 +45,17 @@ Vue.use(Toasted, {
 
 Vue.use(SharedElementDirective, {
   ease: 'cubic-bezier(.02,.6,.47,1)',
-  duration: '300ms'
+  duration: '600ms'
 })
 router.beforeEach(SharedElementRouteGuard)
 
 dayjs.extend(relativeTime)
 Vue.prototype.$dayjs = dayjs
 
+Vue.directive('visible', (VisibleDirective as any))
+
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
 }).$mount('#app')

@@ -1,26 +1,33 @@
 <template lang="pug">
 .ig-grid
-  a.row.align-center.m-b-20(:href='contact.instagram' target='_blank')
-    img.m-r-10(:src="require(`@/assets/svg/instagram.svg`)", width="25")
-    .col
-      h5.m-b-0
-        a.alt Latest photos
-      a.caption.text-light Follow me on Instagram
+  slide-transition(direction='up' on-scroll :delay='.1')
+    a.row.align-center.m-b-20(:href='contact.instagram' target='_blank')
+      img.m-r-10(:src="require(`@/assets/svg/instagram.svg`)", width="25")
+      .col
+        h5.m-b-0
+          a.alt Latest photos
+        a.caption.text-light Follow me on Instagram
+
   .grid
-    a.thumb.shadow-2(
-      v-for="(thumb, i) in igGrid",
-      :key="i",
-      :style="{ backgroundImage: 'url(' + thumb.media_url + ')' }",
-      :href="thumb.permalink",
+    a(
+      v-for="(thumb, i) in igGrid"
+      :key="i"
+      :href="thumb.permalink"
       target="_blank"
     )
+      slide-transition(:delay='.12 * i + .2' direction='right' on-scroll)
+        .thumb.shadow-2(:style="{ backgroundImage: 'url(' + thumb.media_url + ')' }")
 </template>
 
 <script>
 import { contact } from '@/globals'
+import SlideTransition from '@/components/transitions/SlideTransition.vue'
 
 export default {
   name: "IgGrid",
+  components: {
+    SlideTransition,
+  },
   mounted() {
     this.$store.dispatch("getIgGrid");
   },

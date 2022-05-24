@@ -7,7 +7,7 @@
       target='_blank'
       :class="{'col-reverse': row, 'row': !row }"
     )
-      slide-transition(:delay='.1 * i' direction='right' onScroll)
+      slide-transition(:delay='.1 * i + .1' direction='right' on-scroll)
         a.text.text-accent(:class='{absolute: row}') {{ social.text }}
         img(
           :class="{'m-l-15': !row, 'm-r-25': row}"

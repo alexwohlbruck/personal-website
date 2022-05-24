@@ -5,7 +5,7 @@
       :key='i'
       v-scroll-to="{ el: `#${link.to}` }"
     )
-      slide-transition(:delay='.1 * i' direction='up')
+      slide-transition(:delay='.1 * i + .3' direction='up')
         h6
           a.p-y-20.p-x-20(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
       
