@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
+import { preloadImage } from '@/util'
 
 Vue.use(VueRouter)
 
@@ -13,7 +14,12 @@ const routes: Array<RouteConfig> = [
   {
     name: 'project',
     path: '/project/:name',
-    component: () => import('@/views/Project.vue')
+    component: () => import('@/views/Project.vue'),
+    beforeEnter: (to, from, next) => {
+      const path = require('@/assets/svg/arrow-left.svg')
+      preloadImage(path)
+      next()
+    }
   }
 ]
 

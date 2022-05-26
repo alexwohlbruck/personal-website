@@ -1,5 +1,5 @@
 <template lang="pug">
-  #intro
+  #intro.m-t-35
     enter-transition(direction='up' :delay='.2')
       h4.text-primary Hi, I'm
 
