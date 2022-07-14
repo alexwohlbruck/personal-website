@@ -505,6 +505,13 @@ const state = {
   ],
   timeline: [
     {
+      start: new Date("July 16, 2022"),
+      title: "Xenial",
+      description:
+        "Junior full stack web developer at Xenial, a Charlotte-based restaurant and hospitality services company.",
+      icon: "svg/xenial.svg",
+    },
+    {
       start: new Date("May 7, 2022"),
       title: "Appalachian State",
       description:
@@ -512,8 +519,8 @@ const state = {
       icon: "svg/appstate.svg",
     },
     {
-      start: new Date("December 16, 2020"),
-      // end: new Date(''),
+      end: new Date("December 16, 2020"),
+      start: new Date("May 6, 2022"),
       title: "Worxstr",
       description:
         "Designed and developed the web frontend and mobile app for Worxstr, a digital labor management platform.",
