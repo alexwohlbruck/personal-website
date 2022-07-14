@@ -43,7 +43,7 @@ export default class Calendar extends Vue {
   // Get next 7 days from today
   get days() {
     const today = new Date()
-    const days = []
+    const days: any = []
     for (let i = 0; i < 7; i++) {
       const day = new Date(today)
       day.setDate(today.getDate() + i)
@@ -53,7 +53,7 @@ export default class Calendar extends Vue {
   }
 
   get hours() {
-    const hours = []
+    const hours: any = []
     for (let i = 0; i < 24; i++) {
       const hour = i % 12 + 1
       const ampm = i < 12 ? 'AM' : 'PM'

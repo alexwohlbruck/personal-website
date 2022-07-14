@@ -18,7 +18,8 @@ import Calendar from '@/components/calendar/Calendar.vue'
 })
 export default class Availability extends Vue {
   get timezone() {
-    return new Date().toString().match(/([A-Z]+[\+-][0-9]+.*)/)[1]
+    const match = (new Date()).toString()?.match(/([A-Z]+[\+-][0-9]+.*)/)
+    return match ? match[1] : 'UTC'
   }
 }
 </script>
