@@ -6,6 +6,7 @@
         p.text-light You can reach me on these social platforms:
         socials(row)
 
+      p.text-light.m-b-15 Or send me a message:
       input(
         type='text'
         required
@@ -28,16 +29,20 @@
       .row
         .spacer
         button(type='submit') Send message
+    
+      availability
 </template>
 
 <script>
 import { sendMessage } from '@/store/actions'
 import Socials from '@/components/Socials.vue'
+import Availability from '@/components/Availability.vue'
 
 export default {
   name: 'Contact',
   components: {
-    Socials
+    Socials,
+    Availability,
   },
   data: () => ({
     name: '',
