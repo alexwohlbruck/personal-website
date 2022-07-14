@@ -30,7 +30,7 @@
         .spacer
         button(type='submit') Send message
     
-      availability
+      availability#availability
 </template>
 
 <script>

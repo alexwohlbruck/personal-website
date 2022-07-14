@@ -72,7 +72,7 @@ export default class Calendar extends Vue {
       // Get event duration rounded to nearest 15 minutes in hour
       const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 15))
       const col = (start.getDay() + dayOfWeek - 1) % 7 + 3
-      const row = (start.getHours() + 1) * 4 - 1
+      const row = start.getHours() * 4 + Math.floor(start.getMinutes() / 15) + 1
 
       if (start.getDate() == 18) {
         console.log(start.getHours(), start.getMinutes(), duration, col, row)
