@@ -14,7 +14,11 @@ export const getIgGrid = async ({ commit }) => {
 };
 
 export const getCalendarEvents = async ({ commit }) => {
-  const { data } = await axios.get("calendar");
+  const { data } = await axios.get("calendar", {
+    params: {
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
+  });
   commit("SET_CALENDAR_EVENTS", data.events);
 };
 
