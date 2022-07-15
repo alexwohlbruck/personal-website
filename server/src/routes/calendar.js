@@ -3,6 +3,8 @@ const calendar = require('../apis/calendar')
 
 router.get('/', async (req, res) => {
 
+  const timezone = req.query.timezone || 'America/New_York'
+
   // Get beginning and end of the current week (today plus 7 days)
   const today = (new Date()).setHours(0, 0, 0, 0)
   const oneDay = 1000 * 60 * 60 * 24
@@ -15,6 +17,7 @@ router.get('/', async (req, res) => {
     calendarId: process.env.GOOGLE_CALENDAR_ID,
     timeMin: weekStart,
     timeMax: weekEnd,
+    timeZone: timezone,
   })
 
   const events = []
