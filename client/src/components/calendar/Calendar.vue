@@ -66,20 +66,25 @@ export default class Calendar extends Vue {
   get eventsRelative() {
     return this.$store.state.calendarEvents?.map(event => {
       
+      const today = new Date()
+      const dayOfWeek = today.getDay()
       const start = new Date(event.start)
       const end = new Date(event.end)
-      const dayOfWeek = (new Date()).getDay()
       // Get event duration rounded to nearest 15 minutes in hour
       const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 15))
-      const col = (start.getDay() + dayOfWeek - 1) % 7 + 3
+
+      // Calculate which column the event starts in depending on the day of the week
+      const col = (start.getDay() + dayOfWeek - 1) % 7 + 1
       const row = start.getHours() * 4 + Math.floor(start.getMinutes() / 15) + 1
 
+      console.log({dayOfWeek, start, col})
+
       if (start.getDate() == 18) {
-        console.log(start.getHours(), start.getMinutes(), duration, col, row)
+        console.log(start.getHours(), start.getMinutes(), duration, row)
       }
 
       return {
-        col,
+        col: col + 2,
         row,
         span: duration,
         summary: event.summary,
