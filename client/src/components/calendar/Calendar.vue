@@ -74,7 +74,7 @@ export default class Calendar extends Vue {
       const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 15))
 
       // Calculate which column the event starts in depending on the day of the week
-      const col = (start.getDay() + dayOfWeek - 1) % 7 + 1
+      const col = this.days.findIndex(day => day.getDay() === start.getDay())
       const row = start.getHours() * 4 + Math.floor(start.getMinutes() / 15) + 1
 
       console.log({dayOfWeek, start, col})
@@ -84,7 +84,7 @@ export default class Calendar extends Vue {
       }
 
       return {
-        col: col + 2,
+        col: col + 3,
         row,
         span: duration,
         summary: event.summary,
