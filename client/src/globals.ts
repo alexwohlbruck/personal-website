@@ -1,4 +1,4 @@
-export const BACKEND_URL = process.env.NODE_ENV === 'production' ? 'https://alexwohlbruckcom.herokuapp.com' : 'http://localhost:3000'
+export const BACKEND_URL = process.env.NODE_ENV === 'production' ? process.env.BACKEND_URL : 'http://localhost:3000'
 export const BREAKPOINT_SIZE = 900
 
 const subject = 'Contacting you from your website'
@@ -15,4 +15,3 @@ export const contact = {
   spotify: 'https://open.spotify.com/user/alexwohlbruck',
   musescore: 'https://musescore.com/user/29055565'
 }
-
