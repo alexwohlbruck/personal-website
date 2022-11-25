@@ -66,8 +66,6 @@ export default class Calendar extends Vue {
   get eventsRelative() {
     return this.$store.state.calendarEvents?.map(event => {
       
-      const today = new Date()
-      const dayOfWeek = today.getDay()
       const start = new Date(event.start)
       const end = new Date(event.end)
       // Get event duration rounded to nearest 15 minutes in hour
@@ -76,12 +74,6 @@ export default class Calendar extends Vue {
       // Calculate which column the event starts in depending on the day of the week
       const col = this.days.findIndex(day => day.getDay() === start.getDay())
       const row = start.getHours() * 4 + Math.floor(start.getMinutes() / 15) + 1
-
-      console.log({dayOfWeek, start, col})
-
-      if (start.getDate() == 18) {
-        console.log(start.getHours(), start.getMinutes(), duration, row)
-      }
 
       return {
         col: col + 3,

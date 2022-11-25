@@ -55,7 +55,7 @@ $gap: 10px;
     @media screen and (min-width: $mobile-breakpoint) and (max-width: $tablet-breakpoint) {
       grid-template-columns: auto auto auto auto;
       // Show 8 images
-      .thumb:nth-child(n + 9) {
+      a:nth-child(n + 9) .thumb {
         display: none;
       }
     }
@@ -63,11 +63,10 @@ $gap: 10px;
     @media screen and (max-width: $mobile-breakpoint) {
       grid-template-columns: auto auto auto;
       // Show 9 images
-      .thumb:nth-child(n + 10) {
+      a:nth-child(n + 10) .thumb {
         display: none;
       }
     }
-
 
     .thumb {
       border-radius: 10px;

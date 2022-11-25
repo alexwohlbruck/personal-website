@@ -1,5 +1,4 @@
 export const BACKEND_URL = process.env.NODE_ENV === 'production' ? process.env.VUE_APP_BACKEND_URL : 'http://localhost:3000'
-console.log({BACKEND_URL, env: process.env.NODE_ENV})
 export const BREAKPOINT_SIZE = 900
 
 const subject = 'Contacting you from your website'

@@ -77,7 +77,6 @@ export default {
   },
   methods: {
     beforeEnter(el) {
-      console.log(Object.entries(this.beforeStyle))
       for (const [key, value] of Object.entries(this.beforeStyle)) {
         el.style[key] = value
       }
