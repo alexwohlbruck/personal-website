@@ -237,7 +237,7 @@ const state = {
       description:
         "Worxstr is a digital labor management and payments platform for temporary contract work. Since it was started, I have been designing and developing our website and mobile app. I developed our brand design guidelines and logo, and I am the frontend development lead on the project.",
       start: new Date("2020-12-06"),
-      end: new Date("2022-12-14"),
+      end: new Date("2022-05-06"),
       url: "https://worxstr.netlify.app",
       showPreview: true,
       images: [
