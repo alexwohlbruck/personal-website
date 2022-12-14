@@ -505,6 +505,7 @@ const state = {
   ],
   timeline: [
     {
+      end: new Date(),
       start: new Date("July 16, 2022"),
       title: "Xenial",
       description:
