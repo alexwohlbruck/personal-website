@@ -52,6 +52,11 @@ export default {
         href: contact.instagram,
       },
       {
+        text: 'Twitter',
+        icon: 'twitter',
+        href: contact.twitter,
+      },
+      {
         text: 'Spotify',
         icon: 'spotify',
         href: contact.spotify,

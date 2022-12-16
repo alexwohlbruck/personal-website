@@ -509,7 +509,7 @@ const state = {
       start: new Date("July 16, 2022"),
       title: "Xenial",
       description:
-        "Junior full stack engineer at Xenial, a Charlotte-based restaurant and hospitality services company.",
+        "Junior full stack engineer at Xenial, a Charlotte-based restaurant and payments services company.",
       icon: "svg/xenial.svg",
     },
     {
