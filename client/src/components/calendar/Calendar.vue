@@ -1,5 +1,5 @@
 <template lang="pug">
-.calendar(@scroll='handleScroll')
+.calendar(ref='cal' @scroll='handleScroll')
   .days
     .filler
     .filler
@@ -51,6 +51,7 @@ export default class Calendar extends Vue {
   mounted() {
     this.$store.dispatch('getCalendarEvents')
     window.addEventListener('resize', this.handleResize)
+    this.$refs.cal.scrollTop = 7 / 24 * this.$refs.cal.scrollHeight // Scroll to 7am
   }
 
   handleScroll(event) {
@@ -145,7 +146,7 @@ $current-time-color: #ea4335;
   width: 100%;
   display: grid;
   grid-template-rows: $days-height auto;
-  max-height: 80vh;
+  max-height: 73vh;
   overflow-y: auto;
   border: $border-width solid $light;
   border-radius: $border-width;
