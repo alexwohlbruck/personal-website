@@ -60,7 +60,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { BREAKPOINT_SIZE } from '@/globals'
+import { MOBILE_BREAKPOINT } from '@/globals'
 
 const months = [
   'Jan',
@@ -104,11 +104,11 @@ export default {
   },
   mounted() {
     window.onresize = () => {
-      this.mobile = window.innerWidth <= BREAKPOINT_SIZE
+      this.mobile = window.innerWidth <= MOBILE_BREAKPOINT
     }
   },
   data: () => ({
-    mobile: window.innerWidth <= BREAKPOINT_SIZE,
+    mobile: window.innerWidth <= MOBILE_BREAKPOINT,
   }),
 }
 </script>

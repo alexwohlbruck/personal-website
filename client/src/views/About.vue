@@ -86,7 +86,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { BREAKPOINT_SIZE } from '@/globals'
+import { MOBILE_BREAKPOINT } from '@/globals'
 import Projects from '@/components/Projects'
 import ProjectTile from '@/components/ProjectTile'
 import ProgressLinear from '@/components/ProgressLinear'
@@ -118,7 +118,7 @@ export default {
   methods: {
     select(skill) {
       this.selectedSkill = skill
-      if (window.innerWidth <= BREAKPOINT_SIZE) {
+      if (window.innerWidth <= MOBILE_BREAKPOINT) {
         this.$scrollTo('#skill-info', { offset: -150 })
       }
     },

@@ -33,8 +33,9 @@
       | {{ event.summary || 'Busy' }}
 </template>
 
-<script lang="ts">
+<script>
 import { Vue, Component } from 'vue-property-decorator'
+import { MOBILE_BREAKPOINT } from '@/globals'
 
 @Component({
   filters: {
@@ -45,9 +46,11 @@ import { Vue, Component } from 'vue-property-decorator'
 })
 export default class Calendar extends Vue {
   scrolledDown = false
+  show2Days = false
 
   mounted() {
     this.$store.dispatch('getCalendarEvents')
+    window.addEventListener('resize', this.handleResize)
   }
 
   handleScroll(event) {
@@ -55,11 +58,16 @@ export default class Calendar extends Vue {
     this.scrolledDown = event.target.scrollTop !== 0
   }
 
+  handleResize() {
+    this.show2Days = window.innerWidth < MOBILE_BREAKPOINT
+  }
+
   // Get next 7 days from today
   get days() {
     const today = new Date()
-    const days: any = []
-    for (let i = 0; i < 7; i++) {
+    const days = []
+    const numDays = this.show2Days ? 2 : 7
+    for (let i = 0; i < numDays; i++) {
       const day = new Date(today)
       day.setDate(today.getDate() + i)
       days.push(day)
@@ -68,7 +76,7 @@ export default class Calendar extends Vue {
   }
 
   get hours() {
-    const hours: any = []
+    const hours = []
     for (let i = 0; i < 24; i++) {
       const hour = i % 12 + 1
       let meridiem = i < 12  ? 'AM' : 'PM'
@@ -81,24 +89,28 @@ export default class Calendar extends Vue {
 
   // Translate event start and end times into grid positions
   get eventsRelative() {
-    return this.$store.state.calendarEvents?.map(event => {
-      
-      const start = new Date(event.start)
-      const end = new Date(event.end)
-      // Get event duration rounded to nearest 15 minutes in hour
-      const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 15))
+    console.log('eventsRelative')
+    return this.$store.state.calendarEvents
+      .map(event => {
+        const start = new Date(event.start)
+        const end = new Date(event.end)
+        // Get event duration rounded to nearest 15 minutes in hour
+        const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 15))
 
-      // Calculate which column the event starts in depending on the day of the week
-      const col = this.days.findIndex(day => day.getDay() === start.getDay())
-      const row = start.getHours() * 4 + Math.floor(start.getMinutes() / 15) + 1
+        // Calculate which column the event starts in depending on the day of the week
+        const col = this.days.findIndex(day => day.getDay() === start.getDay())
+        const row = start.getHours() * 4 + Math.floor(start.getMinutes() / 15) + 1
 
-      return {
-        col: col + 3,
-        row,
-        span: duration,
-        summary: event.summary,
-      }
-    })
+        if ((this.show2Days && col > 1) || col < 0) return null
+
+        return {
+          col: col + 3,
+          row,
+          span: duration,
+          summary: event.summary,
+        }
+      })
+      .filter(event => event) // Filter out null events
   }
 
   // Return decimal percentage between 0-100 of how much of the current day is passed
@@ -124,7 +136,8 @@ $days-height: 4em;
 $time-width: 3.75em;
 $time-height: 3em;
 $grid-color: rgba($light, .5);
-$calendar-template: $time-width 10px repeat(7, 1fr);
+$grid-7d: $time-width 10px repeat(7, 1fr);
+$grid-2d: $time-width 10px repeat(2, 1fr);
 $current-time-color: #ea4335;
 
 .calendar {
@@ -143,7 +156,7 @@ $current-time-color: #ea4335;
     display: grid;
     place-content: center;
     text-align: center;
-    grid-template-columns: $calendar-template;
+    grid-template-columns: $grid-7d;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -167,8 +180,14 @@ $current-time-color: #ea4335;
 
   .content {
     display: grid;
-    grid-template-columns: $calendar-template;
-    grid-template-rows: repeat(96, $time-height / 4);
+    grid-template-columns: $grid-7d;
+    grid-template-rows: repeat(24 * 4, $time-height / 4);
+  }
+
+  @media (max-width: $mobile-breakpoint) {
+    .days, .content {
+      grid-template-columns: $grid-2d;
+    }
   }
 
   .time {
