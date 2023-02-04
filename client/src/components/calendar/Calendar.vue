@@ -1,15 +1,23 @@
 <template lang="pug">
-.calendar
+.calendar(@scroll='handleScroll')
   .days
     .filler
     .filler
-    .day(v-for='day in days')
+    .day(
+      v-for='(day, i) in days'
+      :key='i'
+      :class='{ border: scrolledDown }'
+      :style='`transition-delay: ${i * 30}ms`'
+    )
       p.caption {{ day.getDay() | weekday }}
       h6.m-b-0 {{ day.getDate() }}
+
+  .current-time-marker(:style='`top: ${percentDayCompleted}%`')
       
   .content
     template(v-for='(hour, i) in hours')
       .time(:style='`grid-row:${(i+1) * 4}`') {{ hour }}
+  
     .filler-col
     - var n = 3;
     while n < 8
@@ -36,8 +44,15 @@ import { Vue, Component } from 'vue-property-decorator'
   }
 })
 export default class Calendar extends Vue {
+  scrolledDown = false
+
   mounted() {
     this.$store.dispatch('getCalendarEvents')
+  }
+
+  handleScroll(event) {
+    console.log(event)
+    this.scrolledDown = event.target.scrollTop !== 0
   }
 
   // Get next 7 days from today
@@ -56,8 +71,10 @@ export default class Calendar extends Vue {
     const hours: any = []
     for (let i = 0; i < 24; i++) {
       const hour = i % 12 + 1
-      const ampm = i < 12 ? 'AM' : 'PM'
-      hours.push(`${hour} ${ampm}`)
+      let meridiem = i < 12  ? 'AM' : 'PM'
+      if (i == 11) meridiem = 'PM' // For some cursed reason noon is 12PM
+      if (i == 23) meridiem = 'AM' // Same with midnight
+      hours.push(`${hour} ${meridiem}`)
     }
     return hours
   }
@@ -82,6 +99,20 @@ export default class Calendar extends Vue {
         summary: event.summary,
       }
     })
+  }
+
+  // Return decimal percentage between 0-100 of how much of the current day is passed
+  get percentDayCompleted() {
+    const now = new Date('2023-02-04 24:00')
+    const startOfDay = new Date()
+    startOfDay.setHours(0)
+    startOfDay.setMinutes(0)
+    startOfDay.setSeconds(0)
+    startOfDay.setMilliseconds(0)
+    const diff = now.getTime() - startOfDay.getTime()
+    const millisecondsInDay = 24 * 60 * 60 * 1000
+    console.log({now, startOfDay, diff, millisecondsInDay})
+    return Math.round(diff / millisecondsInDay * 100)
   }
 }
 </script>
@@ -116,6 +147,22 @@ $current-time-color: #ea4335;
     position: sticky;
     top: 0;
     z-index: 10;
+
+    .day {
+      width: auto;
+      margin: 0 auto;
+      border: 0px solid;
+      border-radius: 6px;
+      padding: 5px 12px;
+      background: #3a9cff;
+      transition: all 0.2s ease-in-out;
+      transform: translateY(0);
+    }
+
+    .day.border {
+      border: #65ffb7 solid 3px;
+      transform: translateY(10px);
+    }
   }
 
   .content {
@@ -135,7 +182,9 @@ $current-time-color: #ea4335;
   }
 
   .col {
-    border-right: 1px solid $grid-color;
+    border-width: 1px 1px 1px 0;
+    border-color: $grid-color;
+    border-style: solid;
     grid-row: 1 / span 96;
     grid-column: span 1;
   }
@@ -144,6 +193,16 @@ $current-time-color: #ea4335;
     grid-row: 1 / -1;
     grid-column: 2;
     border-right: 1px solid $grid-color;
+  }
+
+  .current-time-marker {
+    display: none;
+    grid-row: 1 / span 96;
+    grid-column: 3 / auto;
+    height: 3px;
+    background-color: $accent;
+    border-radius: 3px;
+    position: absolute;
   }
 
   .row {
