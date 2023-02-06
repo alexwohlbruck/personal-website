@@ -10,24 +10,42 @@
       
     enter-transition(direction='up' :delay='.4')
       h4.text-primary.line-2
-        | and I'm a {{ occupation }}
+        | and I'm a{{ occupation }}
         span.cursor.accent
 </template>
 
 <script>
 import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
+function log(data) {
+  console.log({log: data})
+}
+
 const occupations = [
   'web developer',
   'graphic designer',
   'photographer',
   'software engineer',
-  'student',
   'pianist',
   'cat owner',
+  'urbanist',
   'cheese lover',
+  'nerd',
+  'musician',
+  'environmentalist',
+  'programmer',
+  'designer',
+  'coffee shop frequenter',
+  'traveler',
+  'cyclist',
   'techie',
+  'problem solver',
 ]
+// We don't include the shared letter 'a' since this part doesn't have to be retyped
+const articles = {
+  a: ' ',
+  an: 'n ',
+}
 const typingSpeed = 60,
   readWait = 1500,
   emptyWait = 200
@@ -41,40 +59,70 @@ export default {
   components: {
     EnterTransition,
   },
-  async mounted() {
-    for (let i = 0; true; i++) {
-      await this.writeWord(occupations[i % occupations.length])
-    }
-  },
   data: () => ({
     occupation: '',
+    lastArticle: null,
   }),
+  async mounted() {
+    this.lastOccupation = this.occupation
+    this.occupation = '  ' // Start with buffer to be backspaced
+
+    for (let i = 0; true; i++) {
+      await this.sequence(occupations[i % occupations.length])
+    }
+  },
   methods: {
     async backspace() {
       this.occupation = this.occupation.slice(0, -1)
     },
+
     async type(character) {
       this.occupation += character
     },
-    async writeWord(word) {
-      const arr = (word + '.').split('')
 
-      // Type characters
-      for (const character of arr) {
-        this.type(character)
+    article(word) {
+      const isVowelWord = ['a', 'e', 'i', 'o', 'u'].includes(word[0])
+      return isVowelWord ? articles.an : articles.a
+    },
+
+    async typeWord(word, backspace = false) {
+      const charArray = word.split('')
+      for (const character of charArray) {
+        if (backspace) {
+          await this.backspace()
+        } else {
+          await this.type(character)
+        }
         await timeout(typingSpeed)
       }
+    },
 
-      // Wait so user can read
+    async backspaceWord(word) {
+      // Accept a number length to backspace
+      if (typeof word === 'number') {
+        word = '.'.repeat(word)
+      }
+      await this.typeWord(word, true)
+    },
+
+    async sequence(occupation) {
+      const word = `${occupation}.`
+      log(word)
+      const article = this.article(occupation)
+      const retypeArticle = this.article(this.lastOccupation) !== article
+      const articleBackspaceCount = retypeArticle
+        ? (article === articles.a ? 2 : 1)
+        : 0
+
+      await this.backspaceWord(this.lastOccupation.length + 1)
+      await this.backspaceWord(articleBackspaceCount)
+      await timeout(emptyWait)
+
+      if (retypeArticle) await this.typeWord(article)
+      await this.typeWord(word)
       await timeout(readWait)
 
-      // Backspace characters
-      for (const character of arr) {
-        this.backspace()
-        await timeout(typingSpeed)
-      }
-
-      await timeout(emptyWait)
+      this.lastOccupation = occupation
     },
   },
 }
