@@ -6,7 +6,7 @@
     //- Details
     .col
       //- Back button
-      a.m-b-15(@click='goBack')
+      a.back.m-b-15(@click='goBack')
         img(
           :src='require(`@/assets/svg/arrow-left.svg`)'
           width='30'
@@ -292,6 +292,12 @@ $transition-duration: 300ms;
 $transition: all $smooth-ease $transition-duration, visibility 0ms;
 
 .work {
+
+  .back {
+    position: relative;
+    z-index: 3;
+  }
+
   .icon {
     width: 90px;
 

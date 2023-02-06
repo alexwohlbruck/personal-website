@@ -1,10 +1,8 @@
 <template lang='pug'>
   #app.flex
+    navigation
     transition(name='crossfade' mode='out-in' @after-leave="$root.$emit('triggerScroll')")
-      div
-        navigation
-        .col.align-stretch
-          router-view
+      router-view
 
 </template>
 
