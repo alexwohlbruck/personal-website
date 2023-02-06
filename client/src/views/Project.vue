@@ -296,6 +296,7 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
   .back {
     position: relative;
     z-index: 3;
+    width: fit-content;
   }
 
   .icon {
