@@ -19,15 +19,15 @@ import {
   createSharedElementDirective,
 } from 'v-shared-element'
 
-const VueScrollTo = require('vue-scrollto')
-
 Vue.config.productionTip = false
 
-Vue.use(VueScrollTo)
-
-Vue.use(VueGtag, {
-  config: { id: 'G-MNXNSBCLCN' },
-}, router)
+Vue.use(
+  VueGtag,
+  {
+    config: { id: 'G-MNXNSBCLCN' },
+  },
+  router,
+)
 
 const socket = io(BACKEND_URL)
 
@@ -45,17 +45,17 @@ Vue.use(Toasted, {
 
 Vue.use(SharedElementDirective, {
   ease: 'cubic-bezier(.02,.6,.47,1)',
-  duration: '600ms'
+  duration: '600ms',
 })
 router.beforeEach(SharedElementRouteGuard)
 
 dayjs.extend(relativeTime)
 Vue.prototype.$dayjs = dayjs
 
-Vue.directive('visible', (VisibleDirective as any))
+Vue.directive('visible', VisibleDirective as any)
 
 new Vue({
   router,
   store,
-  render: h => h(App),
+  render: (h) => h(App),
 }).$mount('#app')

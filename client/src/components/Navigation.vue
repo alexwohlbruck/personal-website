@@ -1,9 +1,9 @@
 <template lang="pug">
   #nav.row.justify-center
-    .nav-item(
+    router-link.nav-item(
       v-for='(link, i) in links'
       :key='i'
-      v-scroll-to="{ el: `#${link.to}` }"
+      :to='{ name: link.to }'
     )
       enter-transition(:delay='.1 * i + .3' direction='up')
         h6
@@ -20,13 +20,7 @@ export default {
   components: {
     EnterTransition,
   },
-  mounted() {
-    EventBus.$on('clicked', a => {
-      this.currentAnchor = a
-    })
-  },
   data: () => ({
-    currentAnchor: '',
     links: [
       {
         name: 'Home',

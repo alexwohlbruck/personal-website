@@ -55,7 +55,6 @@ export default class Calendar extends Vue {
   }
 
   handleScroll(event) {
-    console.log(event)
     this.scrolledDown = event.target.scrollTop !== 0
   }
 

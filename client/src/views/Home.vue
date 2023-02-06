@@ -1,22 +1,10 @@
 <template lang="pug">
-  div
-    navigation
-    .col.align-stretch
-      section#home.justify-center(ref='home')
-        flourish
-        jumbo
+  section#home.justify-center(ref='home')
+    flourish
+    jumbo
+
+
       
-      section#about.primary(ref='about')
-        flourish(color='#CEF1FF')
-        about
-
-      section#work(ref='work')
-        flourish
-        work
-
-      section#contact.primary(ref='contact')
-        flourish(color='#CEF1FF')
-        contact
 </template>
 
 <script>

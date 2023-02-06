@@ -1,4 +1,7 @@
 <template lang="pug">
+section#contact.primary(ref='contact')
+  flourish(color='#CEF1FF')
+  
   .contact.container
     form(@submit.prevent='sendMessage').col
       .section
