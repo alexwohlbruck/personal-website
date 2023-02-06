@@ -65,8 +65,8 @@ section#about.primary(ref='about')
             :max='10'
           )
 
-      .section-dense
-        p.text-light {{ selectedSkill.description }}
+      //- .section-dense
+      //-   p.text-light {{ selectedSkill.description }}
 
       div(v-if='relatedProjects.length')
         h6 Related projects

@@ -7,12 +7,11 @@
     )
       enter-transition(:delay='.1 * i + .3' direction='up')
         h6
-          a.p-y-20.p-x-20(href='' :class="`${link.to == currentAnchor ? 'text-accent' : ''}`") {{ link.name }}
+          a.link.p-y-20.p-x-20(href='') {{ link.name }}
       
 </template>
 
 <script>
-import { EventBus } from '@/event-bus'
 import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
 export default {
@@ -69,14 +68,16 @@ export default {
   display: inline;
   cursor: pointer;
 
-  &:hover {
-    a {
-      color: $white;
-    }
+  &.router-link-exact-active a {
+    color: $accent;
   }
   
-  a {
+  .link {
     display: inline-block;
+  }
+
+  &:hover .link {
+    color: $white;
   }
 }
 

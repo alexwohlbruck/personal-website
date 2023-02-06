@@ -17,10 +17,6 @@
 <script>
 import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
-function log(data) {
-  console.log({log: data})
-}
-
 const occupations = [
   'web developer',
   'graphic designer',
@@ -107,7 +103,6 @@ export default {
 
     async sequence(occupation) {
       const word = `${occupation}.`
-      log(word)
       const article = this.article(occupation)
       const retypeArticle = this.article(this.lastOccupation) !== article
       const articleBackspaceCount = retypeArticle
