@@ -4,26 +4,46 @@ import { preloadImage } from '@/util'
 
 Vue.use(VueRouter)
 
+enum Color {
+  Dark = 'dark',
+  Light = 'light',
+  White = 'white',
+  Primary = 'primary',
+  Accent = 'accent',
+}
+
 const routes: Array<RouteConfig> = [
   {
     name: 'home',
     path: '/',
     component: () => import('@/views/Home.vue'),
+    meta: {
+      color: Color.Dark,
+    },
   },
   {
     name: 'about',
     path: '/about',
     component: () => import('@/views/About.vue'),
+    meta: {
+      color: Color.Primary,
+    },
   },
   {
     name: 'work',
     path: '/work',
     component: () => import('@/views/Work.vue'),
+    meta: {
+      color: Color.Dark,
+    },
   },
   {
     name: 'contact',
     path: '/contact',
     component: () => import('@/views/Contact.vue'),
+    meta: {
+      color: Color.Primary,
+    },
   },
   {
     name: 'project',

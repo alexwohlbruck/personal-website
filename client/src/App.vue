@@ -1,5 +1,5 @@
 <template lang='pug'>
-  #app.flex.color
+  #app.flex
     transition(name='crossfade' mode='out-in' @after-leave="$root.$emit('triggerScroll')")
       div
         navigation
@@ -20,6 +20,12 @@ export default {
     Jumbo,
     Flourish,
   },
+  watch: {
+    $route (to) {
+      document.querySelector('html').className = ''
+      document.querySelector('html').classList.add(to.meta.color)
+    }
+  }
 }
 </script>
 

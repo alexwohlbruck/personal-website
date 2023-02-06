@@ -9,16 +9,35 @@
   background-color: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: $primary;
   border-radius: 20px;
   border: 7px solid transparent;
   background-clip: content-box;
+}
 
-  &:hover {
-    background-color: $accent;
+// Themed scrollbars for different page colors
+html.dark {
+  ::-webkit-scrollbar-thumb {
+    background-color: $primary;
+
+    &:hover {
+      background-color: $accent;
+    }
+    &:active {
+      background-color: $light;
+    }
   }
-  &:active {
+}
+
+html.primary {
+  ::-webkit-scrollbar-thumb {
     background-color: $light;
+
+    &:hover {
+      background-color: $accent;
+    }
+    &:active {
+      background-color: $white;
+    }
   }
 }
 

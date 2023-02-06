@@ -1,5 +1,6 @@
 <template lang="pug">
-  #nav.row.justify-center
+.nav
+  #navbar.row.justify-center
     router-link.nav-item(
       v-for='(link, i) in links'
       :key='i'
@@ -8,7 +9,6 @@
       enter-transition(:delay='.1 * i + .3' direction='up')
         h6
           a.link.p-y-20.p-x-20(href='') {{ link.name }}
-      
 </template>
 
 <script>
@@ -46,7 +46,7 @@ export default {
 <style lang="scss">
 @import '@/styles/variables.scss';
 
-#nav {
+#navbar {
   position: fixed;
   width: 100%;
   z-index: 2;
