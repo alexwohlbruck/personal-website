@@ -24,18 +24,18 @@ const occupations = [
   'software engineer',
   'pianist',
   'cat owner',
-  'urbanist',
   'cheese lover',
-  'nerd',
   'musician',
   'environmentalist',
+  'problem solver',
+  'urbanist',
   'programmer',
   'designer',
-  'coffee shop frequenter',
   'traveler',
+  'coffee shop frequenter',
+  'nerd',
   'cyclist',
   'techie',
-  'problem solver',
 ]
 // We don't include the shared letter 'a' since this part doesn't have to be retyped
 const articles = {
