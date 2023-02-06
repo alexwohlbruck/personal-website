@@ -38,12 +38,14 @@ section#contact.primary(ref='contact')
 
 <script>
 import { sendMessage } from '@/store/actions'
+import Flourish from '@/components/Flourish.vue'
 import Socials from '@/components/Socials.vue'
 import Availability from '@/components/Availability.vue'
 
 export default {
   name: 'Contact',
   components: {
+    Flourish,
     Socials,
     Availability,
   },

@@ -91,6 +91,7 @@ section#about.primary(ref='about')
 <script>
 import { mapState } from 'vuex'
 import { MOBILE_BREAKPOINT } from '@/globals'
+import Flourish from '@/components/Flourish.vue'
 import Projects from '@/components/Projects'
 import ProjectTile from '@/components/ProjectTile'
 import ProgressLinear from '@/components/ProgressLinear'
@@ -101,6 +102,7 @@ import EnterTransition from '@/components/transitions/EnterTransition'
 export default {
   name: 'about',
   components: {
+    Flourish,
     ProjectTile,
     Projects,
     ProgressLinear,

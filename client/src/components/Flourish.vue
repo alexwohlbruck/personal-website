@@ -499,6 +499,14 @@ export default {
 </script>
 
 <style lang="scss">
+section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
 .flourish {
   width: 100px;
   height: 100px;
@@ -513,5 +521,4 @@ export default {
     opacity: .1;
   }
 }
-
 </style>

@@ -16,14 +16,16 @@ section#work(ref='work')
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import Flourish from '@/components/Flourish.vue'
 import Timeline from '@/components/Timeline.vue'
 import Projects from '@/components/Projects.vue'
-import { mapState } from 'vuex'
 import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
 export default {
   name: 'work',
   components: {
+    Flourish,
     Timeline,
     Projects,
     EnterTransition,
