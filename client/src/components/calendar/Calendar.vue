@@ -51,7 +51,7 @@ export default class Calendar extends Vue {
   mounted() {
     this.$store.dispatch('getCalendarEvents')
     window.addEventListener('resize', this.handleResize)
-    this.$refs.cal.scrollTop = 7 / 24 * this.$refs.cal.scrollHeight // Scroll to 7am
+    this.handleResize()
   }
 
   handleScroll(event) {
@@ -61,6 +61,7 @@ export default class Calendar extends Vue {
 
   handleResize() {
     this.show2Days = window.innerWidth < MOBILE_BREAKPOINT
+    this.$refs.cal.scrollTop = 7 / 24 * this.$refs.cal.scrollHeight // Scroll to 7am
   }
 
   // Get next 7 days from today
