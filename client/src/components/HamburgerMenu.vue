@@ -4,11 +4,11 @@
     img(:src='require(`@/assets/svg/menu.svg`)' width='25' @click='openMenu')
     
   Transition(name='fade')
-    .menu.p-a-20.col(v-if='menuOpen')
-      button.icon.p-a-0.m-b-20
+    .menu.col(v-if='menuOpen')
+      button.icon.p-a-0.m-a-20
         img(:src='require(`@/assets/svg/close.svg`)' width='25' @click='closeMenu')
 
-      .col.gap-15.align-center.justify-center
+      .col.gap-15.align-center.justify-center.flex-1
         router-link.nav-item(
           v-for='(link, i) in links'
           :key='i'
