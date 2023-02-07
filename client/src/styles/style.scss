@@ -125,7 +125,7 @@ h6, .text-h6 {
 .light { background-color: $light; }
 .white { background-color: $white; }
 .primary { background-color: $primary; }
-.accent { background-color: $accent; }
+.accent:not(.link) { background-color: $accent; }
 
 body {
   background-color: $dark;
@@ -134,7 +134,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a, .pointer {
+a, .link, .pointer {
   cursor: pointer;
   font-weight: bold;
   color: $light;
@@ -144,7 +144,7 @@ a, .pointer {
   -moz-transition: color .2s;
   -o-transition: color .2s;
 }
-a {
+a, .link {
   &:hover {
     color: $white;
   }
@@ -158,6 +158,14 @@ a {
 
     &:hover {
       color: $accent;
+    }
+  }
+
+  &.accent {
+    color: $accent;
+
+    &:hover {
+      color: $white;
     }
   }
 }

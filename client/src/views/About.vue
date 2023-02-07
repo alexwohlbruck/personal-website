@@ -75,17 +75,6 @@ section#about.primary(ref='about')
           :projects='relatedProjects'
           small
         )
-
-    #social
-      .section
-        enter-transition(direction='up' on-scroll)
-          h4.m-b-30 Social
-
-        enter-transition(direction='up' on-scroll)
-          spotify-playback
-
-      .section
-        ig-grid
 </template>
 
 <script>
@@ -95,8 +84,6 @@ import Flourish from '@/components/Flourish.vue'
 import Projects from '@/components/Projects'
 import ProjectTile from '@/components/ProjectTile'
 import ProgressLinear from '@/components/ProgressLinear'
-import SpotifyPlayback from '@/components/SpotifyPlayback'
-import IgGrid from '@/components/IgGrid'
 import EnterTransition from '@/components/transitions/EnterTransition'
 
 export default {
@@ -106,8 +93,6 @@ export default {
     ProjectTile,
     Projects,
     ProgressLinear,
-    SpotifyPlayback,
-    IgGrid,
     EnterTransition,
   },
   computed: {
@@ -119,8 +104,11 @@ export default {
     },
   },
   data: () => ({
-    selectedSkill: null,
+    selectedSkill: null
   }),
+  mounted() {
+    this.select(this.skills.languages[0])
+  },
   methods: {
     select(skill) {
       this.selectedSkill = skill

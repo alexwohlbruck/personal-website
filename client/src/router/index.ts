@@ -46,6 +46,14 @@ const routes: Array<RouteConfig> = [
     },
   },
   {
+    name: 'social',
+    path: '/social',
+    component: () => import('@/views/Social.vue'),
+    meta: {
+      color: Color.Primary,
+    },
+  },
+  {
     name: 'project',
     path: '/project/:name',
     component: () => import('@/views/Project.vue'),

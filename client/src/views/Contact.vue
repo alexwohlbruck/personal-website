@@ -6,10 +6,12 @@ section#contact.primary(ref='contact')
     form(@submit.prevent='sendMessage').col
       .section
         h3 Contact me
-        p.text-light You can reach me on these social platforms:
-        socials(row)
+        p.text-light
+          | Find me on social media&nbsp;
+          router-link(:to='{ name: "social" }')
+            a(class='link accent') here
+          | , or send me a message:
 
-      p.text-light.m-b-15 Or send me a message:
       input(
         type='text'
         required
@@ -39,14 +41,12 @@ section#contact.primary(ref='contact')
 <script>
 import { sendMessage } from '@/store/actions'
 import Flourish from '@/components/Flourish.vue'
-import Socials from '@/components/Socials.vue'
 import Availability from '@/components/Availability.vue'
 
 export default {
   name: 'Contact',
   components: {
     Flourish,
-    Socials,
     Availability,
   },
   data: () => ({

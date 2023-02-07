@@ -44,6 +44,10 @@ export default class Navigation extends Vue {
       to: 'work',
     },
     {
+      name: 'Social',
+      to: 'social',
+    },
+    {
       name: 'Contact',
       to: 'contact',
     },
