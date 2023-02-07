@@ -42,7 +42,7 @@ export default class HamburgerMenu extends Vue {
   closeMenuDelay() {
     setTimeout(() => {
       this.closeMenu()
-    }, 50)
+    }, 100)
   }
 }
 </script>
