@@ -70,22 +70,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
-h1 {
+h1, .text-h1 {
   font-size: 5em;
 }
-h2 {
+h2, .text-h2 {
   font-size: 4em;
 }
-h3 {
+h3, .text-h3 {
   font-size: 3em;
 }
-h4 {
+h4, .text-h4 {
   font-size: 2em;
 }
-h5 {
+h5, .text-h5 {
   font-size: 1.5em;
 }
-h6 {
+h6, .text-h6 {
   font-size: 1.15em;
 }
 .caption {
@@ -93,25 +93,25 @@ h6 {
 }
 
 @media (max-width: $mobile-breakpoint) {
-  h1 {
+  h1, .text-h1 {
     font-size: 4em;
     font-weight: 700;
   }
-  h2 {
+  h2, .text-h2 {
     font-size: 3em;
     font-weight: 700;
   }
-  h3 {
+  h3, .text-h3 {
     font-size: 2em;
     font-weight: 700;
   }
-  h4 {
+  h4, .text-h4 {
     font-size: 1.5em;
   }
-  h5 {
+  h5, .text-h5 {
     font-size: 1.15em;
   }
-  h6 {
+  h6, .text-h6 {
     font-size: 1em;
   }
 }
@@ -214,6 +214,12 @@ button {
 
   &:hover {
     background-color: rgba($light, 0.2);
+  }
+
+  &.icon {
+    border: none;
+    padding: 5px;
+    width: fit-content;
   }
 }
 
@@ -331,6 +337,14 @@ $sides: (top, bottom, left, right);
       #{$type}-top: #{$space}px !important;
       #{$type}-bottom: #{$space}px !important;
     }
+  }
+}
+
+// Generate flex-gaps
+// ex. .gap-10 { gap: 10px; }
+@each $space in $spaceamounts {
+  .gap-#{$space} {
+    gap: #{$space}px;
   }
 }
 
