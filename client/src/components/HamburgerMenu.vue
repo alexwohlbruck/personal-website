@@ -16,7 +16,7 @@
           :class='{"text-accent": $router.currentRoute.name === link.to}'
         )
           Transition(name='fade' mode='out-in')
-            h5(v-if='menuOpen' @click='closeMenu')
+            h5(v-if='menuOpen' @click='closeMenuDelay')
               a.link(:to='{ name: link.to }') {{ link.name }}
 
 </template>
@@ -31,12 +31,18 @@ export default class HamburgerMenu extends Vue {
 
   menuOpen: boolean = false
 
+  openMenu() {
+    this.menuOpen = true
+  }
+
   closeMenu() {
     this.menuOpen = false
   }
 
-  openMenu() {
-    this.menuOpen = true
+  closeMenuDelay() {
+    setTimeout(() => {
+      this.closeMenu()
+    }, 50)
   }
 }
 </script>
