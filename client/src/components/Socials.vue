@@ -1,10 +1,10 @@
 <template lang="pug">
   .socials.col.align-flex-end(:class='{row}')
-    a(
+    router-link(
       v-for='(social, i) in socials'
       :key='i'
-      :href='social.href'
-      target='_blank'
+      to
+      @click.native='navigate(social)'
       :class="{'col-reverse': row, 'row': !row }"
     )
       enter-transition(:delay='.1 * i + .1' direction='right' on-scroll)
@@ -32,9 +32,11 @@ export default {
   data: () => ({
     socials: [
       {
-        text: contact.email,
+        text: 'Email',
         icon: 'at',
-        href: contact.mailto(),
+        to: {
+          name: 'contact',
+        },
       },
       {
         text: 'LinkedIn',
@@ -68,6 +70,16 @@ export default {
       },
     ],
   }),
+  methods: {
+    navigate(social) {
+      if (social.to) {
+        this.$router.push(social.to)
+      }
+      if (social.href) {
+        window.open(social.href, '_blank')
+      }
+    },
+  },
 }
 </script>
 

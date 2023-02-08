@@ -1,5 +1,5 @@
 <template lang="pug">
-.availability
+#availability
   h5 My availability
 
   calendar
