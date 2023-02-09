@@ -1,6 +1,6 @@
 <template lang="pug">
 
-.flourish
+.flourish(:class='placement')
   canvas(ref='canvas')
   
 </template>
@@ -99,6 +99,10 @@ export default {
     biasDirection: {
       type: Number,
       default: UP // Overall direction of movement
+    },
+    placement: {
+      type: String,
+      default: 'bottom',
     },
     color: {
       type: String,
@@ -500,7 +504,7 @@ export default {
 
 <style lang="scss">
 section {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -508,14 +512,17 @@ section {
 }
 
 .flourish {
-  width: 100px;
-  height: 100px;
   position: absolute;
-  top: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   z-index: -1;
   overflow: hidden;
+
+  &.top {
+    top: 0;
+    transform: rotate(180deg);
+  }
 
   canvas {
     opacity: .1;

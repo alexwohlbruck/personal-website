@@ -2,6 +2,7 @@
 
 section#work(ref='work')
   flourish
+  flourish(placement='top')
   
   .work.col.container
     enter-transition(direction='down' :delay='.1' on-scroll)

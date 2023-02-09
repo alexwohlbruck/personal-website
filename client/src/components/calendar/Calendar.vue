@@ -146,7 +146,7 @@ $current-time-color: #ea4335;
   width: 100%;
   display: grid;
   grid-template-rows: $days-height auto;
-  max-height: 75vh;
+  max-height: 75dvh;
   overflow-y: auto;
   border: $border-width solid $light;
   border-radius: $border-width;
@@ -154,7 +154,7 @@ $current-time-color: #ea4335;
   background: rgba($primary, .85);
 
   @media (max-width: $mobile-breakpoint) {
-    max-height: 65vh;
+    max-height: 65dvh;
   }
 
   .days {

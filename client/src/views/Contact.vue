@@ -1,5 +1,6 @@
 <template lang="pug">
 section#contact.primary(ref='contact')
+  flourish(color='#CEF1FF' placement='top')
   flourish(color='#CEF1FF')
   
   .contact.container
