@@ -1,10 +1,18 @@
-$dark: #0F1923;
+$dark: #0f1423;
 $light: #CEF1FF;
 $white: #FFFFFF;
-$primary: #3A9CFF;
-$accent: #65FFB7;
+$primary: #0f83ff;
+$accent: #34ffa0;
 
 $mobile-breakpoint: 900px;
 $tablet-breakpoint: 1200px;
 $border-width: 5px;
 $smooth-ease: cubic-bezier(.38,.01,.01,1);
+
+// TODO: Use this for z-indexes
+$z-index: (
+  'background': 0,
+  'content': 1,
+  'header': 2,
+  'overlay': 3,
+)
