@@ -11,6 +11,7 @@
     "core-js": "^3.6.5",
     "dayjs": "^1.10.7",
     "gsap": "^3.7.1",
+    "jsonwebtoken": "^9.0.0",
     "socket.io-client": "^4.3.2",
     "v-shared-element": "^3.1.0",
     "vue": "^2.6.14",

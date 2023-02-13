@@ -42,7 +42,7 @@ yarn install
 ### Start the server
 ```bash
 cd server
-yarn start
+yarn run dev
 ```
 
 ### Start the frontend
@@ -53,7 +53,14 @@ yarn serve
 ```
 
 ## Building for production
-### Frontend compiles and minifies for production
+
+### Run the server
+```bash
+cd server
+yarn start
+```
+
+### Frontend compiles and minifies to static site for production
 ```bash
 cd client
 yarn build

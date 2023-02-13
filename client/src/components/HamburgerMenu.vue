@@ -1,7 +1,8 @@
 <template lang="pug">
 .hamburger-menu
-  button.icon.trigger-icon.p-a-0
-    img(:src='require(`@/assets/svg/menu.svg`)' width='25' @click='openMenu')
+  enter-transition(:delay='delay' direction='up')
+    button.icon.trigger-icon.p-a-0
+      img(:src='require(`@/assets/svg/menu.svg`)' width='25' @click='openMenu')
     
   Transition(name='fade')
     .menu.col(v-if='menuOpen')
@@ -22,12 +23,18 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
+import EnterTransition from '@/components/transitions/EnterTransition.vue'
 
-@Component
+@Component({
+  components: {
+    EnterTransition,
+  },
+})
 export default class HamburgerMenu extends Vue {
 
   @Prop({ type: Array, required: true }) links!: any[]
+  @Prop({ type: Number, default: 0 }) delay!: number
 
   menuOpen: boolean = false
 

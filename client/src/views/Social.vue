@@ -1,7 +1,7 @@
 <template lang="pug">
 
 section#social.primary(ref='social')
-  flourish(color='#CEF1FF')
+  flourish(color='#CEF1FF' placement='top')
 
   #social.container
     .section
@@ -20,14 +20,16 @@ section#social.primary(ref='social')
 
 <script>
 import { Vue, Component } from 'vue-property-decorator'
+import EnterTransition from '@/components/transitions/EnterTransition'
+import Flourish from '@/components/Flourish' 
 import SpotifyPlayback from '@/components/SpotifyPlayback'
 import IgGrid from '@/components/IgGrid'
 import Socials from '@/components/Socials.vue'
-import EnterTransition from '@/components/transitions/EnterTransition'
 
 @Component({
   components: {
     EnterTransition,
+    Flourish,
     SpotifyPlayback,
     IgGrid,
     Socials,

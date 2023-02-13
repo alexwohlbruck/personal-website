@@ -1,5 +1,6 @@
 var router = require('express').Router()
 
+router.use('/auth', require('./auth'))
 router.use('/spotify', require('./spotify'))
 router.use('/ig', require('./ig'))
 router.use('/mailer', require('./mailer'))

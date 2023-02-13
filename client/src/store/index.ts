@@ -3,10 +3,12 @@ import Vuex from 'vuex'
 import * as getters from './getters'
 import * as actions from './actions'
 import mutations from './mutations'
+import { syncLocalStorage } from './localStorageSync'
 
 Vue.use(Vuex)
 
 const state = {
+  me: null,
   spotifyPlaybackState: {},
   igGrid: null,
   calendarEvents: [],
@@ -232,7 +234,7 @@ const state = {
     {
       name: 'worxstr',
       title: 'Worxstr',
-      color: '#18202d',
+      color: '#e7edf7',
       icon: 'svg/worxstr.svg',
       description:
         'Worxstr is a digital labor management and payments platform for temporary contract work. Since it was started, I have been designing and developing our website and mobile app. I developed our brand design guidelines and logo, and I am the frontend development lead on the project.',
@@ -572,9 +574,13 @@ const state = {
   ],
 }
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
   state,
   getters,
   actions,
   mutations,
 })
+
+syncLocalStorage(store)
+
+export default store

@@ -53,31 +53,31 @@
   
   .spacer
 
-  .carousel.p-t-75.p-b-115(:style='`background-color: ${project.color}`' v-if='project.images')
+  enter-transition(direction='down' :shift='100' :delay='.3' :duration='2.5')
+    .carousel.p-t-75.p-b-115(:style='`background-color: ${project.color}`' v-if='project.images')
 
-    //- horizontal-scroll.container.scroll-x.p-y-75.row
-    .thumbs-container(:style='`transform: translateX(${carouselOffset}`' ref='thumbs')
-      div(
-        v-for='(image, i) in project.images'
-        :key='i'
-      )
-        enter-transition(
-          
-          direction='right'
-          :delay='.2 * i'
-          :shift='100'
-          :duration='1.2'
+      //- horizontal-scroll.container.scroll-x.p-y-75.row
+      .thumbs-container(:style='`transform: translateX(${carouselOffset}`' ref='thumbs')
+        div(
+          v-for='(image, i) in project.images'
+          :key='i'
         )
-          div
-            img.thumb(
-              :src="require(`@/assets/portfolio/${project.name}/${image}`)"
-              @click='thumbClick($event, i)'
-              :class="{\
-                large: i == carouselIndex,\
-                'shadow-6': i == carouselIndex,\
-                'shadow-3': i != carouselIndex,\
-              }"
-            )
+          enter-transition(
+            direction='right'
+            :delay='.2 * i + .7'
+            :shift='100'
+            :duration='1.2'
+          )
+            div
+              img.thumb(
+                :src="require(`@/assets/portfolio/${project.name}/${image}`)"
+                @click='thumbClick($event, i)'
+                :class="{\
+                  large: i == carouselIndex,\
+                  'shadow-6': i == carouselIndex,\
+                  'shadow-3': i != carouselIndex,\
+                }"
+              )
   
 
   //- Shared element transition: used for animating the image when opening it in the preview
