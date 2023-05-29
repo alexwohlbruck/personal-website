@@ -12,4 +12,5 @@ export const contact = {
   spotify: 'https://open.spotify.com/user/alexwohlbruck',
   musescore: 'https://musescore.com/user/29055565',
   twitter: 'https://twitter.com/alexwohlbruck',
+  strava: 'https://www.strava.com/athletes/95789735',
 }

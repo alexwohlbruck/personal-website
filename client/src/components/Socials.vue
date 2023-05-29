@@ -68,6 +68,11 @@ export default {
         icon: 'musescore',
         href: contact.musescore,
       },
+      {
+        text: 'Strava',
+        icon: 'strava',
+        href: contact.strava,
+      },
     ],
   }),
   methods: {
