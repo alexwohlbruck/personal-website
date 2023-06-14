@@ -38,7 +38,7 @@
             span(v-if='index != project.tags.length - 1') ,&nbsp;
 
       enter-transition(direction='up' :delay='.4')
-        .m-y-15
+        .m-y-15.row.gap-15
           a.text-accent(
             v-if='project.url'
             :href="`${project.url}`"

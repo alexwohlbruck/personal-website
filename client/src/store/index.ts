@@ -239,6 +239,7 @@ const state = {
       start: new Date('2020-12-06'),
       end: new Date('2022-05-06'),
       url: 'https://worxstr.netlify.app',
+      github: 'https://github.com/Worxstr',
       showPreview: true,
       images: [
         'home.png',
