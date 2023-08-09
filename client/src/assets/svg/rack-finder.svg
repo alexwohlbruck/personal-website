@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 102.4 131.67">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #131313;
+      }
+
+      .cls-2 {
+        fill: none;
+        mask: url(#mask);
+      }
+
+      .cls-3 {
+        filter: url(#luminosity-noclip);
+      }
+
+      .cls-4 {
+        fill: #231f20;
+      }
+    </style>
+    <filter id="luminosity-noclip" x="-2" y="0" width="104.4" height="133.67" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="mask" x="-2" y="0" width="104.4" height="133.67" maskUnits="userSpaceOnUse">
+      <g class="cls-3">
+        <path class="cls-4" d="m35.52,23.91c19.62,0,35.52,15.9,35.52,35.52h0v68.58c0,2.03-3.63,3.67-8.12,3.67s-8.12-1.64-8.12-3.67V59.43c0-10.65-8.63-19.28-19.28-19.28s-19.28,8.63-19.28,19.28v68.58c0,2.03-3.63,3.67-8.12,3.67S0,130.03,0,128.01V59.43C0,39.81,15.9,23.91,35.52,23.91m0-2C14.83,21.91-2,38.74-2,59.43v68.58c0,3.28,4.25,5.67,10.12,5.67s10.12-2.38,10.12-5.67V59.43c0-9.53,7.75-17.28,17.28-17.28s17.28,7.75,17.28,17.28v68.58c0,3.28,4.25,5.67,10.12,5.67s10.12-2.38,10.12-5.67V59.43c0-20.69-16.83-37.52-37.52-37.52h0Z"/>
+      </g>
+    </mask>
+  </defs>
+  <g class="cls-2">
+    <g>
+      <rect class="cls-1" x="31.36" y="35.52" width="16.23" height="68.58"/>
+      <rect class="cls-1" x="86.16" y="35.52" width="16.23" height="68.58"/>
+      <path class="cls-1" d="m66.88,16.23c10.65,0,19.28,8.63,19.28,19.28h16.23C102.4,15.9,86.5,0,66.88,0S31.36,15.9,31.36,35.52h16.23c0-10.65,8.63-19.28,19.28-19.28Z"/>
+      <ellipse class="cls-1" cx="39.48" cy="104.1" rx="8.12" ry="3.67"/>
+      <ellipse class="cls-1" cx="94.28" cy="104.1" rx="8.12" ry="3.67"/>
+    </g>
+  </g>
+  <g>
+    <rect class="cls-1" y="59.43" width="16.23" height="68.58"/>
+    <rect class="cls-1" x="54.8" y="59.43" width="16.23" height="68.58"/>
+    <path class="cls-1" d="m35.52,40.14c10.65,0,19.28,8.63,19.28,19.28h16.23c0-19.62-15.9-35.52-35.52-35.52S0,39.81,0,59.43h16.23c0-10.65,8.63-19.28,19.28-19.28Z"/>
+    <ellipse class="cls-1" cx="8.12" cy="128.01" rx="8.12" ry="3.67"/>
+    <ellipse class="cls-1" cx="62.92" cy="128.01" rx="8.12" ry="3.67"/>
+  </g>
+</svg>

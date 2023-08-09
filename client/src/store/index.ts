@@ -78,7 +78,7 @@ const state = {
     ],
     tools: [
       {
-        name: 'Vue.js',
+        name: 'Vue',
         tag: 'vue',
         proficiency: 10,
         description:
@@ -90,6 +90,16 @@ const state = {
         proficiency: 7,
         description:
           "I have used React in some open source contributions and I tried my hand with it a number of times. Although I have not used it for a major project, I am fairly familiar with it's paradigms and design patterns.",
+      },
+      {
+        name: 'Angular',
+        tag: 'angular',
+        proficiency: 8,
+      },
+      {
+        name: 'Svelte',
+        tag: 'svelte',
+        proficiency: 6,
       },
       {
         name: 'Node.js',
@@ -229,6 +239,29 @@ const state = {
     ],
   },
   projects: [
+    {
+      name: 'rack-finder',
+      title: 'Rack Finder',
+      color: '#fce047',
+      icon: 'svg/rack-finder.svg',
+      description: 'Easily find nearby bike racks in your city!',
+      start: new Date('2023-07-30'),
+      url: 'https://rackfinder.netlify.app',
+      github: 'https://github.com/alexwohlbruck/rack-finder',
+      showPreview: true,
+      images: ['light.png', 'contribute.png', 'dark.png'],
+      tags: [
+        'html',
+        'css',
+        'js',
+        'ts',
+        'svelte',
+        'git',
+        'illustrator',
+        'client-side',
+        'apis',
+      ],
+    },
     {
       name: 'worxstr',
       title: 'Worxstr',
@@ -506,7 +539,7 @@ const state = {
   ],
   timeline: [
     {
-      start: new Date(),
+      start: new Date('August 2, 2023'),
       end: new Date('July 16, 2022'),
       title: 'Xenial',
       description:
