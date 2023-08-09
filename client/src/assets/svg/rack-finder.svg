@@ -1,48 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 102.4 131.67">
-  <defs>
-    <style>
-      .cls-1 {
-        fill: #131313;
-      }
-
-      .cls-2 {
-        fill: none;
-        mask: url(#mask);
-      }
-
-      .cls-3 {
-        filter: url(#luminosity-noclip);
-      }
-
-      .cls-4 {
-        fill: #231f20;
-      }
-    </style>
-    <filter id="luminosity-noclip" x="-2" y="0" width="104.4" height="133.67" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
-      <feFlood flood-color="#fff" result="bg"/>
-      <feBlend in="SourceGraphic" in2="bg"/>
-    </filter>
-    <mask id="mask" x="-2" y="0" width="104.4" height="133.67" maskUnits="userSpaceOnUse">
-      <g class="cls-3">
-        <path class="cls-4" d="m35.52,23.91c19.62,0,35.52,15.9,35.52,35.52h0v68.58c0,2.03-3.63,3.67-8.12,3.67s-8.12-1.64-8.12-3.67V59.43c0-10.65-8.63-19.28-19.28-19.28s-19.28,8.63-19.28,19.28v68.58c0,2.03-3.63,3.67-8.12,3.67S0,130.03,0,128.01V59.43C0,39.81,15.9,23.91,35.52,23.91m0-2C14.83,21.91-2,38.74-2,59.43v68.58c0,3.28,4.25,5.67,10.12,5.67s10.12-2.38,10.12-5.67V59.43c0-9.53,7.75-17.28,17.28-17.28s17.28,7.75,17.28,17.28v68.58c0,3.28,4.25,5.67,10.12,5.67s10.12-2.38,10.12-5.67V59.43c0-20.69-16.83-37.52-37.52-37.52h0Z"/>
-      </g>
-    </mask>
-  </defs>
-  <g class="cls-2">
-    <g>
-      <rect class="cls-1" x="31.36" y="35.52" width="16.23" height="68.58"/>
-      <rect class="cls-1" x="86.16" y="35.52" width="16.23" height="68.58"/>
-      <path class="cls-1" d="m66.88,16.23c10.65,0,19.28,8.63,19.28,19.28h16.23C102.4,15.9,86.5,0,66.88,0S31.36,15.9,31.36,35.52h16.23c0-10.65,8.63-19.28,19.28-19.28Z"/>
-      <ellipse class="cls-1" cx="39.48" cy="104.1" rx="8.12" ry="3.67"/>
-      <ellipse class="cls-1" cx="94.28" cy="104.1" rx="8.12" ry="3.67"/>
-    </g>
-  </g>
-  <g>
-    <rect class="cls-1" y="59.43" width="16.23" height="68.58"/>
-    <rect class="cls-1" x="54.8" y="59.43" width="16.23" height="68.58"/>
-    <path class="cls-1" d="m35.52,40.14c10.65,0,19.28,8.63,19.28,19.28h16.23c0-19.62-15.9-35.52-35.52-35.52S0,39.81,0,59.43h16.23c0-10.65,8.63-19.28,19.28-19.28Z"/>
-    <ellipse class="cls-1" cx="8.12" cy="128.01" rx="8.12" ry="3.67"/>
-    <ellipse class="cls-1" cx="62.92" cy="128.01" rx="8.12" ry="3.67"/>
-  </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.6.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 200 200" style="enable-background:new 0 0 200 200;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#131313;}
+	.st1{filter:url(#Adobe_OpacityMaskFilter);}
+	.st2{mask:url(#SVGID_1_);fill:#131313;}
+</style>
+<rect x="76.1" y="77.7" class="st0" width="17.5" height="58.6"/>
+<rect x="135.2" y="77.7" class="st0" width="17.5" height="58.6"/>
+<defs>
+	<filter id="Adobe_OpacityMaskFilter" filterUnits="userSpaceOnUse" x="76.1" y="39.4" width="76.7" height="38.4">
+		<feFlood  style="flood-color:white;flood-opacity:1" result="back"/>
+		<feBlend  in="SourceGraphic" in2="back" mode="normal"/>
+	</filter>
+</defs>
+<mask maskUnits="userSpaceOnUse" x="76.1" y="39.4" width="76.7" height="38.4" id="SVGID_1_">
+	<g class="st1">
+		<g>
+			<path d="M80.5,65.2c21.2,0,38.4,17.2,38.4,38.4h0v58.6c0,2.2-3.9,4-8.8,4c-4.8,0-8.8-1.8-8.8-4v-58.6c0-11.5-9.3-20.8-20.8-20.8
+				c-11.5,0-20.8,9.3-20.8,20.8v58.6c0,2.2-3.9,4-8.8,4c-4.8,0-8.8-1.8-8.8-4v-58.6C42.2,82.4,59.4,65.2,80.5,65.2 M80.5,63.2
+				c-22.3,0-40.4,18.1-40.4,40.4v58.6c0,3.9,5.4,6,10.8,6c5.3,0,10.8-2,10.8-6v-58.6c0-10.4,8.4-18.8,18.8-18.8
+				c10.4,0,18.8,8.4,18.8,18.8v58.6c0,3.9,5.4,6,10.8,6c5.3,0,10.8-2,10.8-6v-58.6C120.9,81.3,102.8,63.2,80.5,63.2L80.5,63.2z"/>
+		</g>
+	</g>
+</mask>
+<path class="st2" d="M114.4,56.9c11.5,0,20.8,9.3,20.8,20.8h17.5c0-21.2-17.2-38.4-38.4-38.4S76.1,56.6,76.1,77.7h17.5
+	C93.6,66.2,102.9,56.9,114.4,56.9z"/>
+<ellipse class="st0" cx="84.8" cy="136.3" rx="8.8" ry="4"/>
+<ellipse class="st0" cx="144" cy="136.3" rx="8.8" ry="4"/>
+<g>
+	<rect x="42.2" y="103.6" class="st0" width="17.5" height="58.6"/>
+	<rect x="101.4" y="103.6" class="st0" width="17.5" height="58.6"/>
+	<path class="st0" d="M80.5,82.7c11.5,0,20.8,9.3,20.8,20.8h17.5c0-21.2-17.2-38.4-38.4-38.4s-38.4,17.2-38.4,38.4h17.5
+		C59.7,92.1,69,82.7,80.5,82.7z"/>
+	<ellipse class="st0" cx="51" cy="162.1" rx="8.8" ry="4"/>
+	<ellipse class="st0" cx="110.1" cy="162.1" rx="8.8" ry="4"/>
+</g>
 </svg>
