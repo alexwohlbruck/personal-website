@@ -244,7 +244,8 @@ const state = {
       title: 'Rack Finder',
       color: '#fce047',
       icon: 'svg/rack-finder.svg',
-      description: 'Easily find nearby bike racks in your city!',
+      description:
+        'Easily find nearby bike racks in your city! This simple app uses OpenStreetMap data to locate nearby bike racks, and allows you to contribute new ones to the OSM database.',
       start: new Date('2023-07-30'),
       url: 'https://rackfinder.netlify.app',
       github: 'https://github.com/alexwohlbruck/rack-finder',
