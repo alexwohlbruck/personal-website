@@ -8,7 +8,7 @@ section#social.primary(ref='social')
       enter-transition(direction='up' on-scroll)
         h3 Follow me
         p.text-light You can reach me on these social platforms:
-        socials(row)
+        socials.m-y-25(row)
 
     .section
       enter-transition(direction='up' on-scroll)

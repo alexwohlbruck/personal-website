@@ -366,7 +366,7 @@ const state = {
       color: '#65ffb7',
       icon: 'svg/portfolio.svg',
       description:
-        "This is website you're looking at right now! It is built entirely custom with Vue.js and SASS. On this site I host a list of my portfolio projects, some information about me including media sourced from the Instagram and Spotify API, and links and a contact form to reach me. Go ahead and explore the rest!",
+        "This is website you're looking at right now! It is built entirely custom with Vue.js and SCSS. On this site I host a list of my portfolio projects, some information about me including media sourced from the Instagram and Spotify API, and links and a contact form to reach me. Go ahead and explore the rest!",
       start: new Date('2021-07-16'),
       end: new Date(),
       github: 'https://github.com/alexwohlbruck/personal-website',

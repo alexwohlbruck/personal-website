@@ -1,5 +1,5 @@
 <template lang="pug">
-  .socials.col.align-flex-end(:class='{row}')
+  .socials.col.align-flex-end.gap-25(:class='{row}')
     router-link(
       v-for='(social, i) in socials'
       :key='i'
@@ -8,10 +8,9 @@
       :class="{'col-reverse': row, 'row': !row }"
     )
       enter-transition(:delay='.1 * i + .1' direction='right' on-scroll)
-        .social-link.row.align-center.m-y-20
+        .social-link.row.align-center.gap-20
           a.text.text-accent(:class='{absolute: row}') {{ social.text }}
           img(
-            :class="{'m-l-15': !row, 'm-r-25': row}"
             :src='require(`@/assets/svg/${social.icon}.svg`)'
             width='30'
           )
@@ -91,6 +90,14 @@ export default {
 <style lang='scss'>
 @import '@/styles/variables.scss';
 
+.socials {
+  width: 100%;
+
+  &.row {
+    overflow-x: scroll;
+    overflow-y: hidden;
+  }
+}
 
 .social-link {
   .text {

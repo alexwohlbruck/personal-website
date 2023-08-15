@@ -1,5 +1,5 @@
-<template lang="pug">
-.hamburger-menu
+f<template lang="pug">
+.hamburger-menu(v-if='!$route.meta.secondaryNav')
   button.icon.trigger-icon.p-a-0
     img(:src='require(`@/assets/svg/menu.svg`)' width='25' @click='openMenu')
     

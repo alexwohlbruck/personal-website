@@ -62,6 +62,9 @@ const routes: Array<RouteConfig> = [
       preloadImage(path)
       next()
     },
+    meta: {
+      secondaryNav: true,
+    },
   },
 ]
 

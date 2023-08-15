@@ -1,18 +1,19 @@
 <template lang="pug">
-.work.col.full-height
+.work.col
   
-  .container.p-y-50
+  .container.p-y-20.p-b-50
     
     //- Details
     .col
       //- Back button
+      //- TODO: Change this to portal component
       a.back.m-b-15(@click='goBack')
         img(
           :src='require(`@/assets/svg/arrow-left.svg`)'
           width='30'
         )
 
-      .row.align-center.m-y-15
+      .row.align-center.m-y-30
         .icon.m-r-30
           project-tile(:project='project')
           
@@ -53,31 +54,25 @@
   
   .spacer
 
-  .carousel.p-t-75.p-b-115(:style='`background-color: ${project.color}`' v-if='project.images')
-
-    //- horizontal-scroll.container.scroll-x.p-y-75.row
-    .thumbs-container(:style='`transform: translateX(${carouselOffset}`' ref='thumbs')
-      div(
+  .project-images.p-y-50(:style='`background-color: ${project.color}`' v-if='project.images')
+    .carousel(ref='carousel')
+      //- enter-transition(
+      //-   direction='right'
+      //-   :delay='.2 * i'
+      //-   :shift='100'
+      //-   :duration='1.2'
+      //- )
+      img(
         v-for='(image, i) in project.images'
         :key='i'
+        :src="require(`@/assets/portfolio/${project.name}/${image}`)"
+        @click='thumbClick($event, i)'
       )
-        enter-transition(
-          
-          direction='right'
-          :delay='.2 * i'
-          :shift='100'
-          :duration='1.2'
-        )
-          div
-            img.thumb(
-              :src="require(`@/assets/portfolio/${project.name}/${image}`)"
-              @click='thumbClick($event, i)'
-              :class="{\
-                large: i == carouselIndex,\
-                'shadow-6': i == carouselIndex,\
-                'shadow-3': i != carouselIndex,\
-              }"
-            )
+      //- :class="{\
+      //-     large: i == carouselIndex,\
+      //-     'shadow-6': i == carouselIndex,\
+      //-     'shadow-3': i != carouselIndex,\
+      //-   }"
   
 
   //- Shared element transition: used for animating the image when opening it in the preview
@@ -126,8 +121,8 @@ export default {
   created() {
     window.addEventListener('keydown', this.keydown)
     window.addEventListener('resize', () => this.computePreviewOffset())
-    if (this.$refs.thumbs)
-      this.$refs.thumbs.addEventListener('wheel', e => console.log(e))
+    if (this.$refs.carousel)
+      this.$refs.carousel.addEventListener('wheel', e => console.log(e))
   },
   mounted() {
     this.mounted = true
@@ -242,7 +237,7 @@ export default {
       this.selectedImage = {
         src: this.project.images[this.carouselIndex],
       }
-      const thumb = this.$refs.thumbs.children[this.carouselIndex]
+      const thumb = this.$refs.carousel.children[this.carouselIndex]
       const preview = this.$refs.preview
       const set = this.$refs.set
 
@@ -262,7 +257,7 @@ export default {
       this.computePreviewOffset()
     },
     async closeImageViewer() {
-      const thumb = this.$refs.thumbs.children[this.carouselIndex]
+      const thumb = this.$refs.carousel.children[this.carouselIndex]
       const preview = this.$refs.preview
       const set = this.$refs.set
 
@@ -285,8 +280,8 @@ export default {
 <style lang="scss">
 @import '@/styles/variables.scss';
 
-$thumb-width: 42vw;
-$thumb-margin: 6vw;
+$thumb-height: 70vh;
+$thumb-margin: 4vw;
 $thumb-radius: 10px;
 $transition-duration: 300ms;
 $transition: all $smooth-ease $transition-duration, visibility 0ms;
@@ -308,20 +303,32 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
   }
 
   .carousel {
-    overflow-x: hidden;
-  }
-
-  .thumbs-container {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
+    overflow-x: scroll;
+    overflow-y: auto;
+    scroll-snap-type: x mandatory;
     transition: $transition;
+    gap: $thumb-margin;
+    padding-left: 100%;
+    // padding-right: $thumb-margin;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 
-    .thumb {
-      width: $thumb-width;
-      border-radius: 10px;
-      margin-right: $thumb-margin;
+    height: $thumb-height;
+
+    &::-webkit-scrollbar { /* WebKit */
+      width: 0;
+      height: 0;
+    }
+
+    img {
+      scroll-snap-align: center;
+      position: relative;
+      height: 100%;
+      max-width: 80vw;
+      object-fit: contain;
+      border-radius: $thumb-radius;
+      // margin-right: $thumb-margin;
       transition: $transition;
       opacity: 1;
       cursor: pointer;

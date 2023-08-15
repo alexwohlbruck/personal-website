@@ -1,5 +1,5 @@
 <template lang="pug">
-  section#home.justify-center(ref='home')
+  section#home.full-height.justify-center(ref='home')
     flourish
     jumbo
 </template>
@@ -16,3 +16,9 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+  #home {
+    overflow-y: hidden;
+  }
+</style>

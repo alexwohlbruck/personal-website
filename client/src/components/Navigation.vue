@@ -4,7 +4,7 @@
     hamburger-menu(:links='links')
 
   .center(v-else)
-    .navbar.row
+    .navbar.row.p-y-2
       router-link.nav-item(
         v-for='(link, i) in links'
         :key='i'
