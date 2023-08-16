@@ -319,7 +319,7 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
     transition: $transition;
     gap: $thumb-margin;
     padding-left: 50%;
-    padding-right: 3%;
+    padding-right: 50%;
     scrollbar-width: none;
     -ms-overflow-style: none;
 
