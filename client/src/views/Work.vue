@@ -9,7 +9,7 @@ section#work(ref='work')
       h3.m-b-50 My work
 
       h4.text-accent Things I've made
-    projects.m-y-50(:projects='projects')
+    projects.m-y-50(:projects='projects' centered)
 
     h4.text-accent Experience
     timeline

@@ -1,17 +1,17 @@
 <template lang='pug'>
-  .projects.row
+  .projects(:class='{centered}')
     
     router-link.project.m-b-15(
       v-for='(project, i) in projects'
       :key='i'
       :to="{ name: 'project', params: { name: project.name } }"
-      :class='{small}'
     )
       enter-transition(:delay='i * .04' direction='down' on-scroll :duration='.5')
-        project-tile.m-r-15.m-b-15(:project='project')
-        .m-r-10
-          p(v-if='small') {{ project.title }}
-          h6(v-else) {{ project.title }}
+        .flex.col.gap-10
+          project-tile(:project='project')
+          .m-r-10
+            p(v-if='small') {{ project.title }}
+            h6.m-b-0(v-else) {{ project.title }}
 </template>
 
 <script>
@@ -27,6 +27,7 @@ export default {
   props: {
     projects: Array,
     small: Boolean,
+    centered: Boolean,
   }
 }
 </script>
@@ -34,14 +35,16 @@ export default {
 <style lang='scss'>
 
 .projects {
-  flex-wrap: wrap;
-  
-  .project {
-    width: 120px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  grid-gap: 10px;
 
-    &.small {
-      width: 100px;
-    }
+  &.centered {
+    justify-items: center;
+  }
+
+  .project {
+    width: 110px;
   }
 }
 </style>
