@@ -157,7 +157,7 @@ $line-height: 125px;
   }
   .info {
     position: absolute;
-    width: calc(47vw - #{$spacing * 2});
+    width: calc(47dvw - #{$spacing * 2});
     max-width: 560px;
 
     @media (max-width: $mobile-breakpoint) {

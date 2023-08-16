@@ -285,13 +285,15 @@ export default {
 <style lang="scss">
 @import '@/styles/variables.scss';
 
-$thumb-height: 45vw;
-$thumb-margin: 4vw;
+$thumb-height: 45dvw;
+$thumb-margin: 4dvw;
 $thumb-radius: 10px;
 $transition-duration: 300ms;
 $transition: all $smooth-ease $transition-duration, visibility 0ms;
 
 .work {
+
+  min-height: 100%;
 
   .back {
     position: relative;
@@ -329,7 +331,7 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
     img {
       height: auto;
       scroll-snap-align: center;
-      max-width: 80vw;
+      max-width: 80dvw;
 
       border-radius: $thumb-radius;
       cursor: pointer;
