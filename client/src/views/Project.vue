@@ -65,37 +65,35 @@
       img(
         v-for='(image, i) in project.images'
         :key='i'
-        :src="require(`@/assets/portfolio/${project.name}/${image}`)"
         @click='thumbClick($event, i)'
+        :src="require(`@/assets/portfolio/${project.name}/${image}`)"
       )
-      //- :class="{\
-      //-     large: i == carouselIndex,\
-      //-     'shadow-6': i == carouselIndex,\
-      //-     'shadow-3': i != carouselIndex,\
-      //-   }"
-  
+        //- :class="{\
+        //-     large: i == viewerIndex,\
+        //-     'shadow-6': i == viewerIndex,\
+        //-     'shadow-3': i != viewerIndex,\
+        //-   }"
+    
 
   //- Shared element transition: used for animating the image when opening it in the preview
   img#set.shadow-6(
     v-if='project.images'
     style='visibility: hidden'
     ref='set'
-    :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
+    :src="require(`@/assets/portfolio/${project.name}/${project.images[viewerIndex]}`)"
   )
 
   transition(v-if='project.images' name='fade')
     .image-viewer(v-show='selectedImage' @click='closeImageViewer')
       button#close(@click='closeImageViewer') X
-      button#next(@click.stop='carouselNext' v-if='carouselCanNext' :class="{bottom: showButtonsAtBottom}") Next
-      button#prev(@click.stop='carouselPrev' v-if='carouselCanPrev' :class="{bottom: showButtonsAtBottom}") Prev
+      button#next(@click.stop='next' v-if='canNext' :class="{bottom: showButtonsAtBottom}") Next
+      button#prev(@click.stop='prev' v-if='canPrev' :class="{bottom: showButtonsAtBottom}") Prev
 
       img#preview.shadow-6(
         @click.stop='test'
         ref='preview'
-        :src="require(`@/assets/portfolio/${project.name}/${project.images[carouselIndex]}`)"
+        :src="require(`@/assets/portfolio/${project.name}/${project.images[viewerIndex]}`)"
       )
-
-    
 </template>
 
 <script>
@@ -113,17 +111,11 @@ export default {
     EnterTransition,
   },
   data: () => ({
-    carouselIndex: 0,
+    viewerIndex: 0,
     selectedImage: null,
     mounted: false,
     previewOffset: 0,
   }),
-  created() {
-    window.addEventListener('keydown', this.keydown)
-    window.addEventListener('resize', () => this.computePreviewOffset())
-    if (this.$refs.carousel)
-      this.$refs.carousel.addEventListener('wheel', e => console.log(e))
-  },
   mounted() {
     this.mounted = true
   },
@@ -131,18 +123,11 @@ export default {
     project() {
       return this.$store.getters.project(this.$route.params.name)
     },
-    carouselOffset() {
-      const thumbWidth = 40
-      const margin = 8 // X margin between thumbs
-      const defaultOffset = 50 - thumbWidth / 2 
-      const offset = defaultOffset - this.carouselIndex * (thumbWidth + margin)
-      return `${offset}vw`
+    canNext() {
+      return this.viewerIndex < this.project.images.length - 1
     },
-    carouselCanNext() {
-      return this.carouselIndex < this.project.images.length - 1
-    },
-    carouselCanPrev() {
-      return this.carouselIndex > 0
+    canPrev() {
+      return this.viewerIndex > 0
     },
     showButtonsAtBottom() {
       return this.previewOffset ? this.previewOffset < 80 : false
@@ -156,15 +141,25 @@ export default {
     goBack() {
       this.$router.go(-1)
     },
-    carouselNext() {
-      if (this.carouselCanNext) {
-        this.carouselIndex++
+    scrollToIndex(i) {
+      const img = this.$refs.carousel.children[i]
+      const imageCenter = img.offsetLeft + img.offsetWidth / 2
+      this.$refs.carousel.scrollTo({
+        left: imageCenter - window.innerWidth / 2,
+        behavior: 'smooth',
+      })
+    },
+    next() {
+      if (this.canNext) {
+        this.viewerIndex++
+        this.scrollToIndex(this.viewerIndex)
         this.computePreviewOffset()
       }
     },
-    carouselPrev() {
-      if (this.carouselCanPrev) {
-        this.carouselIndex--
+    prev() {
+      if (this.canPrev) {
+        this.viewerIndex--
+        this.scrollToIndex(this.viewerIndex)
         this.computePreviewOffset()
       }
     },
@@ -173,22 +168,15 @@ export default {
       this.previewOffset = this.$refs.preview.offsetLeft
     },
     thumbClick(e, clickedIndex) {
-      if (clickedIndex == this.carouselIndex) {
-        this.openImageViewer()
-      }
-      if (clickedIndex == this.carouselIndex + 1) {
-        this.carouselNext()
-      }
-      if (clickedIndex == this.carouselIndex - 1) {
-        this.carouselPrev()
-      }
+      this.openImageViewer(clickedIndex)
+      this.scrollToIndex(clickedIndex)
     },
     keydown(e) {
       if (e.keyCode == 37) {
-        this.carouselPrev()
+        this.prev()
       }
       if (e.keyCode == 39) {
-        this.carouselNext()
+        this.next()
       }
       if (e.keyCode == 27) {
         this.closeImageViewer()
@@ -233,11 +221,12 @@ export default {
     async delay(duration) {
       return new Promise(resolve => setTimeout(resolve, duration))
     },
-    async openImageViewer() {
+    async openImageViewer(index) {
+      this.viewerIndex = index;
       this.selectedImage = {
-        src: this.project.images[this.carouselIndex],
+        src: this.project.images[this.viewerIndex],
       }
-      const thumb = this.$refs.carousel.children[this.carouselIndex]
+      const thumb = this.$refs.carousel.children[this.viewerIndex]
       const preview = this.$refs.preview
       const set = this.$refs.set
 
@@ -257,7 +246,7 @@ export default {
       this.computePreviewOffset()
     },
     async closeImageViewer() {
-      const thumb = this.$refs.carousel.children[this.carouselIndex]
+      const thumb = this.$refs.carousel.children[this.viewerIndex]
       const preview = this.$refs.preview
       const set = this.$refs.set
 
@@ -280,7 +269,7 @@ export default {
 <style lang="scss">
 @import '@/styles/variables.scss';
 
-$thumb-height: 70vh;
+$thumb-height: 45vw;
 $thumb-margin: 4vw;
 $thumb-radius: 10px;
 $transition-duration: 300ms;
@@ -307,14 +296,14 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
     overflow-x: scroll;
     overflow-y: auto;
     scroll-snap-type: x mandatory;
-    transition: $transition;
-    gap: $thumb-margin;
-    padding-left: 100%;
-    // padding-right: $thumb-margin;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
 
     height: $thumb-height;
+    transition: $transition;
+    gap: $thumb-margin;
+    padding-left: 50%;
+    padding-right: 3%;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 
     &::-webkit-scrollbar { /* WebKit */
       width: 0;
@@ -322,16 +311,14 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
     }
 
     img {
+      height: auto;
       scroll-snap-align: center;
-      position: relative;
-      height: 100%;
       max-width: 80vw;
-      object-fit: contain;
+
       border-radius: $thumb-radius;
-      // margin-right: $thumb-margin;
-      transition: $transition;
-      opacity: 1;
       cursor: pointer;
+      opacity: 1;
+      transition: $transition;
 
       &.large {
         transform: scale(1.2);
