@@ -54,25 +54,20 @@
   
   .spacer
 
-  .project-images.p-y-50(:style='`background-color: ${project.color}`' v-if='project.images')
-    .carousel(ref='carousel')
+  .project-images(:style='`background-color: ${project.color}`' v-if='project.images')
+    .carousel.p-y-50(ref='carousel')
       //- enter-transition(
       //-   direction='right'
       //-   :delay='.2 * i'
       //-   :shift='100'
       //-   :duration='1.2'
       //- )
-      img(
+      img.shadow-3(
         v-for='(image, i) in project.images'
         :key='i'
         @click='thumbClick($event, i)'
         :src="require(`@/assets/portfolio/${project.name}/${image}`)"
       )
-        //- :class="{\
-        //-     large: i == viewerIndex,\
-        //-     'shadow-6': i == viewerIndex,\
-        //-     'shadow-3': i != viewerIndex,\
-        //-   }"
     
 
   //- Shared element transition: used for animating the image when opening it in the preview
@@ -111,13 +106,22 @@ export default {
     EnterTransition,
   },
   data: () => ({
+    carouselIndex: 0,
     viewerIndex: 0,
     selectedImage: null,
     mounted: false,
     previewOffset: 0,
   }),
-  mounted() {
+  async mounted() {
     this.mounted = true
+
+    this.$refs.carousel.addEventListener('scroll', this.carouselScroll);
+
+    setTimeout(() => {
+      this.$refs.carousel.scrollTo({
+      left: 0,
+      behavior: 'instant',
+    })}, 100)
   },
   computed: {
     project() {
@@ -140,6 +144,15 @@ export default {
   methods: {
     goBack() {
       this.$router.go(-1)
+    },
+    carouselScroll() {
+      const carousel = this.$refs.carousel
+      const carouselCenter = carousel.scrollLeft + carousel.offsetWidth / 2
+      const images = this.$refs.carousel.children
+      const closest = [...images].reduce((prev, curr) => {
+        return (Math.abs(curr.offsetLeft + curr.offsetWidth / 2 - carouselCenter) < Math.abs(prev.offsetLeft + prev.offsetWidth / 2 - carouselCenter) ? curr : prev)
+      })
+      this.carouselIndex = [...images].indexOf(closest)
     },
     scrollToIndex(i) {
       const img = this.$refs.carousel.children[i]
@@ -168,8 +181,11 @@ export default {
       this.previewOffset = this.$refs.preview.offsetLeft
     },
     thumbClick(e, clickedIndex) {
-      this.openImageViewer(clickedIndex)
-      this.scrollToIndex(clickedIndex)
+      if (clickedIndex == this.carouselIndex) {
+        this.openImageViewer(clickedIndex)
+      } else {
+        this.scrollToIndex(clickedIndex)
+      }
     },
     keydown(e) {
       if (e.keyCode == 37) {
@@ -294,7 +310,7 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
   .carousel {
     display: flex;
     overflow-x: scroll;
-    overflow-y: auto;
+    overflow-y: visible;
     scroll-snap-type: x mandatory;
 
     height: $thumb-height;
@@ -319,10 +335,6 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
       cursor: pointer;
       opacity: 1;
       transition: $transition;
-
-      &.large {
-        transform: scale(1.2);
-      }
     }
   }
 
