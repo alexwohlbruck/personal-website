@@ -250,7 +250,7 @@ const state = {
       url: 'https://rackfinder.netlify.app',
       github: 'https://github.com/alexwohlbruck/rack-finder',
       showPreview: true,
-      images: ['light.png', 'contribute.png', 'dark.png'],
+      images: ['light.png', 'contribute.png', 'dark.png', 'filter.png'],
       tags: [
         'html',
         'css',
