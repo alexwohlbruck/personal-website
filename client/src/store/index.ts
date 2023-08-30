@@ -250,7 +250,13 @@ const state = {
       url: 'https://rackfinder.app',
       github: 'https://github.com/alexwohlbruck/rack-finder',
       showPreview: true,
-      images: ['light.png', 'contribute.png', 'dark.png', 'filter.png'],
+      images: [
+        'light.png',
+        'poster.png',
+        'contribute.png',
+        'dark.png',
+        'filter.png',
+      ],
       tags: [
         'html',
         'css',
