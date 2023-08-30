@@ -251,8 +251,8 @@ const state = {
       github: 'https://github.com/alexwohlbruck/rack-finder',
       showPreview: true,
       images: [
-        'light.png',
         'poster.png',
+        'light.png',
         'contribute.png',
         'dark.png',
         'filter.png',
