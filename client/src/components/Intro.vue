@@ -23,18 +23,19 @@ const occupations = [
   'photographer',
   'software engineer',
   'pianist',
+  'environmentalist',
+  'cyclist',
+  'OpenStreetMap contributor',
   'cat owner',
   'cheese lover',
-  'musician',
-  'environmentalist',
+  'coffee shop frequenter',
   'problem solver',
+  'musician',
   'urbanist',
   'programmer',
   'designer',
   'traveler',
-  'coffee shop frequenter',
   'nerd',
-  'cyclist',
   'techie',
 ]
 // We don't include the shared letter 'a' since this part doesn't have to be retyped
@@ -77,7 +78,7 @@ export default {
     },
 
     article(word) {
-      const isVowelWord = ['a', 'e', 'i', 'o', 'u'].includes(word[0])
+      const isVowelWord = ['a', 'e', 'i', 'o', 'u'].includes(word[0]?.toLowerCase())
       return isVowelWord ? articles.an : articles.a
     },
 

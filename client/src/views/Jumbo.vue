@@ -1,8 +1,7 @@
 <template lang='pug'>
 .jumbo.full-height.row.align-center.container
-  intro
-  .spacer
-  socials
+  intro.left
+  socials.right
 </template>
 
 <script>
@@ -17,3 +16,14 @@ export default {
   },
 }
 </script>
+
+<style lang='scss'>
+.jumbo {
+  .left {
+    flex: 4;
+  }
+  .right {
+    flex: 1;
+  }
+}
+</style>
