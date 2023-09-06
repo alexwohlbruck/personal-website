@@ -254,6 +254,8 @@ const state = {
         'poster.png',
         'light.png',
         'contribute.png',
+        'detail.png',
+        'preferences.png',
         'dark.png',
         'filter.png',
       ],
