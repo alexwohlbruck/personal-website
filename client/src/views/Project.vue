@@ -143,7 +143,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.go(-1)
+      this.$router.push({ name: 'home' })
     },
     carouselScroll() {
       const carousel = this.$refs.carousel
