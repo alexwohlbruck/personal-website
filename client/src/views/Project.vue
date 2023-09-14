@@ -30,7 +30,10 @@
                 span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
 
       enter-transition(direction='up' :delay='.2')
-        p.m-y-15 {{ project.description }}
+        p.m-y-15
+          span(v-for='(paragraph, index) in description' :key='index')
+            | {{ paragraph }}
+            br
 
       enter-transition(direction='up' :delay='.3')
         .row.wrap.caption
@@ -127,6 +130,9 @@ export default {
     project() {
       return this.$store.getters.project(this.$route.params.name)
     },
+    description() {
+      return this.project?.description.split("\n") || [];
+    },
     canNext() {
       return this.viewerIndex < this.project.images.length - 1
     },
@@ -143,7 +149,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push({ name: 'home' })
+      this.$router.push({ name: 'work' })
     },
     carouselScroll() {
       const carousel = this.$refs.carousel
