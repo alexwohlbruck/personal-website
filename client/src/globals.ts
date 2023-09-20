@@ -13,4 +13,5 @@ export const contact = {
   musescore: 'https://musescore.com/user/29055565',
   twitter: 'https://twitter.com/alexwohlbruck',
   strava: 'https://www.strava.com/athletes/95789735',
+  osm: 'https://www.openstreetmap.org/user/alexwohlbruck',
 }

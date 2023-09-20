@@ -72,6 +72,11 @@ export default {
         icon: 'strava',
         href: contact.strava,
       },
+      {
+        text: 'OpenStreetMap',
+        icon: 'osm',
+        href: contact.osm,
+      }
     ],
   }),
   methods: {
