@@ -570,11 +570,18 @@ const state = {
   ],
   timeline: [
     {
+      start: new Date('October 23, 2023'),
+      title: 'Spectrum Reach',
+      description:
+        "Associate Full Stack Developer at Spectrum Reach, Spectrum's marketing and advertising branch.",
+      icon: 'svg/spectrum.svg',
+    },
+    {
       start: new Date('August 2, 2023'),
       end: new Date('July 16, 2022'),
       title: 'Xenial',
       description:
-        'Junior full stack engineer at Xenial, a Charlotte-based restaurant and payments services company.',
+        'Junior Full Stack Engineer at Xenial, a Charlotte-based restaurant and payments services company.',
       icon: 'svg/xenial.svg',
     },
     {
