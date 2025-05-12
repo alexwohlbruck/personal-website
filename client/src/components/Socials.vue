@@ -52,11 +52,11 @@ export default {
         icon: 'instagram',
         href: contact.instagram,
       },
-      {
-        text: 'Twitter',
-        icon: 'twitter',
-        href: contact.twitter,
-      },
+      // {
+      //   text: 'Twitter',
+      //   icon: 'twitter',
+      //   href: contact.twitter,
+      // },
       {
         text: 'Spotify',
         icon: 'spotify',
@@ -76,7 +76,7 @@ export default {
         text: 'OpenStreetMap',
         icon: 'osm',
         href: contact.osm,
-      }
+      },
     ],
   }),
   methods: {
@@ -92,7 +92,7 @@ export default {
 }
 </script>
 
-<style lang='scss'>
+<style lang="scss">
 @import '@/styles/variables.scss';
 
 .socials {
@@ -108,7 +108,7 @@ export default {
   .text {
     opacity: 0;
     transform: translateX(10px);
-    transition: all .2s ease-in-out;
+    transition: all 0.2s ease-in-out;
 
     &.absolute {
       position: absolute;
@@ -116,7 +116,7 @@ export default {
     }
 
     @media (max-width: $mobile-breakpoint) {
-      display: none;     
+      display: none;
     }
   }
 
