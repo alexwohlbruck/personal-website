@@ -6,7 +6,6 @@
 </template>
 
 <script>
-
 const DEBUG = false
 
 // Direction constants
@@ -27,19 +26,21 @@ const ANIMATION_START_DELAY = 1000
 const ANIMATION_RELOAD_DELAY = 500
 
 // Graphical constants
-const SEGMENT_WIDTH = 5         // Width of a segment in pixels
-const SEGMENT_SEPARATION = 10   // Number of cells between segments
+const SEGMENT_WIDTH = 5 // Width of a segment in pixels
+const SEGMENT_SEPARATION = 10 // Number of cells between segments
 const MIN_GROUP_SEPARATION = 10 // Minimum number of cells between groups
 const MAX_GROUP_COUNT = 20
-const MAX_GROUPS = Math.floor(window.innerWidth / (MIN_GROUP_SEPARATION * SEGMENT_SEPARATION)) + 1
+const MAX_GROUPS =
+  Math.floor(window.innerWidth / (MIN_GROUP_SEPARATION * SEGMENT_SEPARATION)) +
+  1
 
 // Probabilities
-const INITIAL_TERMINAL_PROBABILITY = .008
-const INITIAL_SPLIT_PROBABILITY = .2
-const INITIAL_CHANGE_DIRECTION_PROBABILITY = .04
-const INITIAL_REVERT_DIRECTION_PROBABILITY = .2
-const SPLIT_PROBABILITY_INCREMENT = -.02    // Decrease the probability of a split each time a split occurs
-const TERMINAL_PROBABILITY_INCREMENT = .0008 // Increase the probability of a terminal each time a terminal occurs
+const INITIAL_TERMINAL_PROBABILITY = 0.008
+const INITIAL_SPLIT_PROBABILITY = 0.2
+const INITIAL_CHANGE_DIRECTION_PROBABILITY = 0.04
+const INITIAL_REVERT_DIRECTION_PROBABILITY = 0.2
+const SPLIT_PROBABILITY_INCREMENT = -0.02 // Decrease the probability of a split each time a split occurs
+const TERMINAL_PROBABILITY_INCREMENT = 0.0008 // Increase the probability of a terminal each time a terminal occurs
 
 let lastWindowWidth = window.innerWidth
 
@@ -48,8 +49,8 @@ const initialParams = () => ({
   ctx: null,
   canvasWidth: 0,
   canvasHeight: 0,
-  startTime: (new Date).getTime(),
-  velocity: .1, // Velocity of movment
+  startTime: new Date().getTime(),
+  velocity: 0.1, // Velocity of movment
   /* 
     As the animation progresses,
     branches can either continue as normal, change direction, end, or split into two branches.
@@ -67,8 +68,8 @@ const initialParams = () => ({
   grid: null, // Will be populated with a 2D array of booleans
   gridWidth: 0,
   gridHeight: 0,
-  terminalProbability: INITIAL_TERMINAL_PROBABILITY,                // Probability of a branch ending
-  splitProbability: INITIAL_SPLIT_PROBABILITY,                      // Probability of a branch splitting
+  terminalProbability: INITIAL_TERMINAL_PROBABILITY, // Probability of a branch ending
+  splitProbability: INITIAL_SPLIT_PROBABILITY, // Probability of a branch splitting
   changeDirectionProbability: INITIAL_CHANGE_DIRECTION_PROBABILITY, // Probability of a branch changing direction
   revertDirectionProbability: INITIAL_REVERT_DIRECTION_PROBABILITY, // Probability of a branch reverting back to the bias direction (Effects the overall spread of the tree)
 })
@@ -84,7 +85,7 @@ const newBranch = (x, y, direction) => ({
 
 export default {
   name: 'Flourish',
-  
+
   mounted() {
     setTimeout(() => {
       this.init()
@@ -98,7 +99,7 @@ export default {
   props: {
     biasDirection: {
       type: Number,
-      default: UP // Overall direction of movement
+      default: UP, // Overall direction of movement
     },
     placement: {
       type: String,
@@ -116,6 +117,7 @@ export default {
   methods: {
     init() {
       const c = this.$refs.canvas
+      if (!c) return
       const ctx = c.getContext('2d')
       this.c = c
       this.ctx = ctx
@@ -125,13 +127,12 @@ export default {
 
       // Watchers
       window.addEventListener('resize', () => {
-
         if (window.innerWidth === lastWindowWidth) {
           return
         }
 
         lastWindowWidth = window.innerWidth
-        
+
         this.clear()
         clearTimeout(this.resizeTimeout)
         this.resizeTimeout = setTimeout(() => {
@@ -147,12 +148,17 @@ export default {
       for (let i = 0; i < numGroups; i++) {
         const numBranches = Math.floor(Math.random() * MAX_GROUP_COUNT) + 1
         let groupPosition = Math.floor(Math.random() * this.gridWidth)
-        
+
         // Prevent groups from being drawn on top of each other
         if (previousGroupPositions.length > 0) {
-          const minDistance = Math.min(...previousGroupPositions.map(p => Math.abs(p - groupPosition)))
+          const minDistance = Math.min(
+            ...previousGroupPositions.map((p) => Math.abs(p - groupPosition)),
+          )
           if (minDistance < MIN_GROUP_SEPARATION) {
-            groupPosition = previousGroupPositions[Math.floor(Math.random() * previousGroupPositions.length)]
+            groupPosition =
+              previousGroupPositions[
+                Math.floor(Math.random() * previousGroupPositions.length)
+              ]
           }
         }
 
@@ -168,12 +174,10 @@ export default {
 
     // Draw new frame
     draw() {
-
       for (const [id, branch] of Object.entries(this.branches)) {
-
         const isEqualToBias = branch.direction == this.biasDirection
-        const veerDirection = (Math.random() < .5 ? UP_RIGHT : UP_LEFT) // Randomly choose a potential veer direction
-        
+        const veerDirection = Math.random() < 0.5 ? UP_RIGHT : UP_LEFT // Randomly choose a potential veer direction
+
         // Determine if branch should end
         if (isEqualToBias && Math.random() < this.terminalProbability) {
           this.endBranch(id)
@@ -186,17 +190,21 @@ export default {
         }
 
         // Determine if branch should change direction
-        else if (isEqualToBias && Math.random() < this.changeDirectionProbability) {
+        else if (
+          isEqualToBias &&
+          Math.random() < this.changeDirectionProbability
+        ) {
           this.changeBranchDirection(id, veerDirection, false)
-        }
-
-        else if (branch.wasDeflected) {
+        } else if (branch.wasDeflected) {
           this.changeBranchDirection(id, this.biasDirection, false)
           branch.wasDeflected = false
         }
 
         // Determine if branch should revert to bias direction
-        else if (!isEqualToBias && Math.random() < this.revertDirectionProbability) {
+        else if (
+          !isEqualToBias &&
+          Math.random() < this.revertDirectionProbability
+        ) {
           this.changeBranchDirection(id, this.biasDirection)
         }
 
@@ -211,7 +219,7 @@ export default {
     },
 
     addBranch(x, y, direction) {
-      const id = (new Date()).getTime() + Math.floor(Math.random() * 100000)
+      const id = new Date().getTime() + Math.floor(Math.random() * 100000)
       this.branches[id] = newBranch(x, y, direction)
     },
 
@@ -241,14 +249,29 @@ export default {
 
     changeBranchDirection(id, direction, updateProbability = true) {
       // Check that the new direction will not intersect with another branch
-      if (direction === UP_RIGHT && this.offsetCellWasVisited(this.branches[id].position.x, this.branches[id].position.y, RIGHT2, UP_LEFT)) {
+      if (
+        direction === UP_RIGHT &&
+        this.offsetCellWasVisited(
+          this.branches[id].position.x,
+          this.branches[id].position.y,
+          RIGHT2,
+          UP_LEFT,
+        )
+      ) {
+        this.endBranch(id)
+        return
+      } else if (
+        direction === UP_LEFT &&
+        this.offsetCellWasVisited(
+          this.branches[id].position.x,
+          this.branches[id].position.y,
+          LEFT2,
+          UP_RIGHT,
+        )
+      ) {
         this.endBranch(id)
         return
       }
-      else if (direction === UP_LEFT && this.offsetCellWasVisited(this.branches[id].position.x, this.branches[id].position.y, LEFT2, UP_RIGHT)) {
-        this.endBranch(id)
-        return
-      } 
 
       this.branches[id].direction = direction
 
@@ -258,7 +281,6 @@ export default {
     },
 
     continueBranch(id) {
-
       if (!this.branches[id]) return
 
       let { direction } = this.branches[id]
@@ -286,14 +308,15 @@ export default {
           direction = UP_LEFT
         }
       }
-      
+
       // If the cell was already visited, try other directions.
       // If no directions work, end the branch
       if (this.offsetCellWasVisited(startX, startY, direction)) {
-        
         // Try the other two directions
         const isEqualToBias = direction == this.biasDirection
-        const otherDirections = isEqualToBias ? [UP_LEFT, UP_RIGHT] : [this.biasDirection]
+        const otherDirections = isEqualToBias
+          ? [UP_LEFT, UP_RIGHT]
+          : [this.biasDirection]
 
         if (isEqualToBias) {
           this.branches[id].wasDeflected = true
@@ -318,7 +341,12 @@ export default {
       const endY = startY + offset[1]
 
       // If out of bounds, don't continue
-      if (endX < 0 || endX >= this.gridWidth || endY < 0 || endY >= this.gridHeight) {
+      if (
+        endX < 0 ||
+        endX >= this.gridWidth ||
+        endY < 0 ||
+        endY >= this.gridHeight
+      ) {
         this.endBranch(id)
         return
       }
@@ -371,9 +399,14 @@ export default {
       for (let i = 0; i < gridWidth; i++) {
         for (let j = 0; j < gridHeight; j++) {
           this.ctx.beginPath()
-          this.ctx.rect(i * gridCellSize, j * gridCellSize, gridCellSize, gridCellSize)
+          this.ctx.rect(
+            i * gridCellSize,
+            j * gridCellSize,
+            gridCellSize,
+            gridCellSize,
+          )
           this.ctx.strokeStyle = '#fff'
-          this.ctx.lineWidth = .03
+          this.ctx.lineWidth = 0.03
           this.ctx.stroke()
         }
       }
@@ -382,11 +415,16 @@ export default {
     setCellVisited(x, y, direction) {
       if (this.cellDoesntExist(x, y)) return
       this.grid[x][y] = direction
-      
+
       // Color in cell if it was visited
       if (DEBUG) {
         this.ctx.beginPath()
-        this.ctx.rect(x * this.gridCellSize, y * this.gridCellSize, this.gridCellSize, this.gridCellSize)
+        this.ctx.rect(
+          x * this.gridCellSize,
+          y * this.gridCellSize,
+          this.gridCellSize,
+          this.gridCellSize,
+        )
         this.ctx.fillStyle = 'rgba(255, 0, 0, .3)'
         this.ctx.fill()
       }
@@ -407,7 +445,6 @@ export default {
       const newY = y + offset[1]
       return this.cellWasVisited(newX, newY, otherCellDirection)
     },
-
 
     cellDoesntExist(x, y) {
       return x < 0 || x >= this.gridWidth || y < 0 || y >= this.gridHeight
@@ -443,7 +480,7 @@ export default {
 
     // Clear canvas
     clear() {
-      this.ctx.clearRect(0,0, this.canvasWidth, this.canvasHeight)
+      this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
     },
 
     reset() {
@@ -454,20 +491,17 @@ export default {
 
     // Resolve relative percentage position to canvas coordinates
     relativeToAbsolutePosition(x, y) {
-      return [
-        x * this.canvasWidth,
-        y * this.canvasHeight,
-      ]
+      return [x * this.canvasWidth, y * this.canvasHeight]
     },
 
     // Calculate the speed of animation based on the time since reset
     calculateVelocity() {
-      const now = (new Date).getTime()
+      const now = new Date().getTime()
       const elapsed = now - this.startTime
       const velocity = (elapsed / 500) ** 2 // Slow down speed over time https://www.desmos.com/calculator/b3y2ex7hvv
       return velocity
     },
-    
+
     // Take a direction string and return a tuple of x and y offset values
     // Ex. UP => [0, -1]
     //     DOWN_RIGHT => [1, 1]
@@ -499,7 +533,6 @@ export default {
     },
   },
 }
-
 </script>
 
 <style lang="scss">
@@ -525,7 +558,7 @@ section {
   }
 
   canvas {
-    opacity: .1;
+    opacity: 0.1;
   }
 }
 </style>

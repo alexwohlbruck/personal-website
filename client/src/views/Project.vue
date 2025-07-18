@@ -26,8 +26,8 @@
             h6.text-primary
               | {{ startAndEndAreSameYear ? project.start.toLocaleString('default', { month: 'long' }) : project.start.getFullYear() }}
               span.text-primary(v-if='project.end')
-                | &nbsp;- {{ startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear() }}
-                span.text-primary(v-if='startAndEndAreSameYear') &nbsp;{{ project.end.getFullYear() }}
+                | &nbsp;- {{ endDateIsToday ? 'Now' : (startAndEndAreSameYear ? project.end.toLocaleString('default', { month: 'long' }) : project.end.getFullYear()) }}
+                span.text-primary(v-if='startAndEndAreSameYear && !endDateIsToday') &nbsp;{{ project.end.getFullYear() }}
 
       enter-transition(direction='up' :delay='.2')
         p.m-y-15
@@ -118,20 +118,21 @@ export default {
   async mounted() {
     this.mounted = true
 
-    this.$refs.carousel.addEventListener('scroll', this.carouselScroll);
+    this.$refs.carousel.addEventListener('scroll', this.carouselScroll)
 
     setTimeout(() => {
       this.$refs.carousel.scrollTo({
-      left: 0,
-      behavior: 'instant',
-    })}, 100)
+        left: 0,
+        behavior: 'instant',
+      })
+    }, 100)
   },
   computed: {
     project() {
       return this.$store.getters.project(this.$route.params.name)
     },
     description() {
-      return this.project?.description.split("\n") || [];
+      return this.project?.description.split('\n') || []
     },
     canNext() {
       return this.viewerIndex < this.project.images.length - 1
@@ -145,7 +146,17 @@ export default {
     startAndEndAreSameYear() {
       if (!this.project.end) return false
       return this.project.start.getFullYear() === this.project.end.getFullYear()
-    }
+    },
+    endDateIsToday() {
+      if (!this.project.end) return false
+      const today = new Date()
+      const endDate = new Date(this.project.end)
+      return (
+        endDate.getDate() === today.getDate() &&
+        endDate.getMonth() === today.getMonth() &&
+        endDate.getFullYear() === today.getFullYear()
+      )
+    },
   },
   methods: {
     goBack() {
@@ -156,7 +167,11 @@ export default {
       const carouselCenter = carousel.scrollLeft + carousel.offsetWidth / 2
       const images = this.$refs.carousel.children
       const closest = [...images].reduce((prev, curr) => {
-        return (Math.abs(curr.offsetLeft + curr.offsetWidth / 2 - carouselCenter) < Math.abs(prev.offsetLeft + prev.offsetWidth / 2 - carouselCenter) ? curr : prev)
+        return Math.abs(
+          curr.offsetLeft + curr.offsetWidth / 2 - carouselCenter,
+        ) < Math.abs(prev.offsetLeft + prev.offsetWidth / 2 - carouselCenter)
+          ? curr
+          : prev
       })
       this.carouselIndex = [...images].indexOf(closest)
     },
@@ -213,7 +228,6 @@ export default {
       el.style.left = `${x}px`
     },
     async animateToBoundingRect(el, from, to) {
-
       // Hide the element and reset the transform values
       // Hiding prevents animation from activating
       const prevDisplayValue = el.style.display
@@ -224,7 +238,12 @@ export default {
       el.style.display = prevDisplayValue
 
       const { width, height, x, y } = to.getBoundingClientRect()
-      const { width: oldWidth, height: oldHeight, x: oldX, y: oldY } = from.getBoundingClientRect()
+      const {
+        width: oldWidth,
+        height: oldHeight,
+        x: oldX,
+        y: oldY,
+      } = from.getBoundingClientRect()
 
       // Calculate relative values
       const translateX = x - oldX
@@ -241,10 +260,10 @@ export default {
       el.style.visibility = 'hidden'
     },
     async delay(duration) {
-      return new Promise(resolve => setTimeout(resolve, duration))
+      return new Promise((resolve) => setTimeout(resolve, duration))
     },
     async openImageViewer(index) {
-      this.viewerIndex = index;
+      this.viewerIndex = index
       this.selectedImage = {
         src: this.project.images[this.viewerIndex],
       }
@@ -298,7 +317,6 @@ $transition-duration: 300ms;
 $transition: all $smooth-ease $transition-duration, visibility 0ms;
 
 .work {
-
   min-height: 100%;
 
   .back {
@@ -329,7 +347,8 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
     scrollbar-width: none;
     -ms-overflow-style: none;
 
-    &::-webkit-scrollbar { /* WebKit */
+    &::-webkit-scrollbar {
+      /* WebKit */
       width: 0;
       height: 0;
     }
@@ -350,7 +369,7 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
     position: fixed;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,.4);
+    background-color: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -382,14 +401,17 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
       left: 0;
     }
 
-    #prev, #next {
+    #prev,
+    #next {
       &.bottom {
         bottom: 0;
         top: auto;
       }
     }
 
-    #close, #next, #prev {
+    #close,
+    #next,
+    #prev {
       z-index: 10;
     }
 
@@ -402,7 +424,8 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
   }
 }
 
-#set, #preview {
+#set,
+#preview {
   z-index: 9;
   cursor: default;
 }
@@ -414,5 +437,4 @@ $transition: all $smooth-ease $transition-duration, visibility 0ms;
   transform-origin: top left;
   transform: translate(0, 0) scale(1);
 }
-
 </style>
