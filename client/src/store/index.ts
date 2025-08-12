@@ -251,7 +251,13 @@ const state = {
       url: 'https://parchment.app',
       github: 'https://github.com/alexwohlbruck/parchment',
       showPreview: true,
-      images: ['main.png', 'place.png', 'streetview.png', 'settings.png'],
+      images: [
+        'landing.png',
+        'main.png',
+        'place.png',
+        'streetview.png',
+        'settings.png',
+      ],
       tags: [
         'html',
         'css',
