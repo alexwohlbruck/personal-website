@@ -496,7 +496,7 @@ const state = {
         'What started out as a fun prank texting friends random cat facts every day, turned into a wide-scale API that people around the world use in their "pet" projects (ha). Here I host a database of facts about cats, dogs, and other animals. Facts are crowdsourced from users and voted on to elect the best facts.',
       start: new Date('2016-12-09'),
       end: new Date('2020-04-01'),
-      url: 'https://cat-fact.herokuapp.com',
+      url: 'https://catfacts.wohlbruck.dev',
       github: 'https://github.com/alexwohlbruck/cat-facts',
       showPreview: true,
       images: [
