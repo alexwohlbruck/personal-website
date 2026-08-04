@@ -264,7 +264,6 @@ const state = {
         'integrations.png',
         'library-mobile.png',
         'collections-mobile.png',
-        'search-results-mobile.png',
         'bike-parking-mobile.png',
         'transit-station-mobile.png',
         'weather-mobile.png',
