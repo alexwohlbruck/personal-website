@@ -36,9 +36,9 @@ export interface Skill {
 }
 
 export interface SkillGroups {
-  languages: Skill[]
-  tools: Skill[]
-  specializations: Skill[]
+  engineering: Skill[]
+  craft: Skill[]
+  practice: Skill[]
 }
 
 export interface TimelineEvent {

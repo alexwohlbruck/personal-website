@@ -9,16 +9,19 @@ import { duration, ease, step } from '@/lib/motion'
 
 const active = ref<string | null>(null)
 
-/** Only tags that actually narrow things down earn a filter chip. */
+/**
+ * Every tag that actually narrows the list. A tag on all ten projects filters
+ * nothing, and one on a single project is a link to that project by another
+ * name. Nothing is capped, so the chips always add up to the whole set.
+ */
 const filters = computed(() => {
   const counts = new Map<string, number>()
   for (const project of projects) {
     for (const tag of project.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1)
   }
   return [...counts.entries()]
-    .filter(([, count]) => count >= 3 && count < projects.length)
+    .filter(([, count]) => count >= 2 && count < projects.length)
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, 8)
     .map(([tag, count]) => ({ tag, count, label: tagLabel(tag) }))
 })
 

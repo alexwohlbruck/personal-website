@@ -15,14 +15,18 @@ const groups = (Object.keys(skills) as (keyof typeof skills)[]).map((key) => ({
   items: skills[key],
 }))
 
-const selected = ref<Skill>(skills.languages[0]!)
+const selected = ref<Skill>(skills.engineering[0]!)
+
+const RELATED_LIMIT = 6
 
 const related = computed(() => projects.filter((p) => p.tags.includes(selected.value.tag)))
+const relatedShown = computed(() => related.value.slice(0, RELATED_LIMIT))
+const relatedHidden = computed(() => Math.max(0, related.value.length - RELATED_LIMIT))
 </script>
 
 <template>
   <div class="grid gap-10 lg:grid-cols-[1fr_20rem] lg:gap-14">
-    <div class="grid gap-8 sm:grid-cols-3">
+    <div class="sm:columns-2 sm:gap-10 [&>*]:mb-8 [&>*]:break-inside-avoid">
       <div v-for="group in groups" :key="group.key">
         <h3 class="mb-4 border-b border-rule pb-3 text-sm font-medium text-ink-2">{{ group.label }}</h3>
         <ul class="space-y-0.5">
@@ -72,7 +76,7 @@ const related = computed(() => projects.filter((p) => p.tags.includes(selected.v
         <div v-if="related.length" class="mt-5 border-t border-rule pt-4">
           <p class="mb-3 text-sm text-ink-3">Used in {{ related.length }} projects</p>
           <ul class="space-y-1">
-            <li v-for="project in related" :key="project.name">
+            <li v-for="project in relatedShown" :key="project.name">
               <RouterLink
                 :to="{ name: 'project', params: { name: project.name } }"
                 class="group flex items-center gap-3 rounded-md p-1.5 transition-colors hover:bg-paper-sunk"
@@ -85,6 +89,13 @@ const related = computed(() => projects.filter((p) => p.tags.includes(selected.v
               </RouterLink>
             </li>
           </ul>
+          <RouterLink
+            v-if="relatedHidden"
+            :to="{ name: 'projects' }"
+            class="mt-2 block px-1.5 text-sm text-ink-3 transition-colors hover:text-accent"
+          >
+            and {{ relatedHidden }} more
+          </RouterLink>
         </div>
       </Motion>
     </div>
