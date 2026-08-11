@@ -1,4 +1,5 @@
 import { config } from '../config.js'
+import { cached } from '../lib/cache.js'
 import { getToken, getTokenRecord, setToken } from '../tokens.js'
 import { ApiError, fetchJson, log } from '../util.js'
 
@@ -31,9 +32,6 @@ const CHECK_EVERY = 12 * 60 * 60_000
 /** Meta refuses to refresh a token less than 24 hours old, so an hour of slack. */
 const CALIBRATE_AFTER = 25 * 60 * 60_000
 
-let cache
-let cachedAt = 0
-
 const token = () => getToken('instagram_access_token', config.instagram.accessToken)
 
 /** Who the current token belongs to. Only used by the setup script, to prove a
@@ -54,32 +52,45 @@ export async function getProfile() {
   }
 }
 
-export async function getMedia(limit = 12) {
-  if (cache && Date.now() - cachedAt < CACHE_TTL) return cache
-
+/**
+ * One page of the grid, newest first.
+ *
+ * `after` is an opaque cursor from the previous page's `next`. Instagram pages
+ * by cursor rather than by offset, which is the right model for a feed that
+ * grows from the top: an offset would shift under you the moment a new post
+ * arrives, and page two would repeat a photo from page one.
+ */
+export async function getMedia({ limit = 12, after } = {}) {
   const accessToken = token()
   if (!accessToken) throw new ApiError('Instagram is not configured', 503)
 
-  const params = new URLSearchParams({
-    fields: FIELDS,
-    limit: String(limit),
-    access_token: accessToken,
+  return cached(`instagram:${limit}:${after ?? 'first'}`, CACHE_TTL, async () => {
+    const params = new URLSearchParams({
+      fields: FIELDS,
+      limit: String(limit),
+      access_token: accessToken,
+    })
+    if (after) params.set('after', after)
+
+    const body = await fetchJson(`${GRAPH}/me/media?${params}`)
+
+    const posts = (body?.data ?? [])
+      .map((post) => ({
+        id: post.id,
+        permalink: post.permalink,
+        // Videos and reels have no still of their own in media_url, so the
+        // thumbnail is the only thing that renders in an <img>.
+        media_url: post.media_type === 'VIDEO' ? post.thumbnail_url : post.media_url,
+        caption: post.caption,
+      }))
+      .filter((post) => Boolean(post.media_url))
+
+    // A cursor comes back even on the last page. `paging.next` is the only
+    // thing that actually means there is more, so it gates the cursor.
+    const next = body?.paging?.next ? (body.paging.cursors?.after ?? null) : null
+
+    return { posts, next }
   })
-  const body = await fetchJson(`${GRAPH}/me/media?${params}`)
-
-  cache = (body?.data ?? [])
-    .map((post) => ({
-      id: post.id,
-      permalink: post.permalink,
-      // Videos and reels have no still of their own in media_url, so the
-      // thumbnail is the only thing that renders in an <img>.
-      media_url: post.media_type === 'VIDEO' ? post.thumbnail_url : post.media_url,
-      caption: post.caption,
-    }))
-    .filter((post) => Boolean(post.media_url))
-
-  cachedAt = Date.now()
-  return cache
 }
 
 /**

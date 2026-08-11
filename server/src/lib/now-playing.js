@@ -36,17 +36,43 @@ let state = null
 let status = 'idle'
 let timer
 let running
+let polledAt = 0
 let lastWanted = 0
 let errorDelay = ERROR_MIN
 
+/**
+ * The cached track, with its position moved forward to now.
+ *
+ * A playing track is the one thing here that is wrong the moment it is stored:
+ * the poll captured a position, and the song has been going ever since. Serving
+ * that verbatim means anyone arriving between polls gets a progress bar up to
+ * half a minute behind, and a listened-time that disagrees with their own ears.
+ *
+ * Caching is still the right call, since it is what lets one Spotify call serve
+ * everybody. It just has to account for its own age. A paused or finished track
+ * is left alone: its position is not moving.
+ */
+function project(current) {
+  if (!current?.is_playing || !current.item) return current
+
+  const elapsed = Date.now() - polledAt
+  if (elapsed < 1000) return current
+
+  return {
+    ...current,
+    progress_ms: Math.min(current.item.duration_ms, current.progress_ms + elapsed),
+  }
+}
+
 export function snapshot() {
-  return { state, status }
+  return { state: project(state), status }
 }
 
 function broadcast() {
+  const payload = project(state)
   for (const send of subscribers) {
     try {
-      send(state)
+      send(payload)
     } catch {
       // A dead socket is the stream route's problem, not ours.
     }
@@ -88,9 +114,12 @@ async function run() {
 
   try {
     const next = await getPlaybackState()
+    // Compared raw. Projecting first would make every poll look like a change,
+    // since the position moves on its own between them.
     const changed = JSON.stringify(next) !== JSON.stringify(state)
 
     state = next
+    polledAt = Date.now()
     status = 'ready'
     errorDelay = ERROR_MIN
 

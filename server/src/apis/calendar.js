@@ -1,5 +1,6 @@
 import { JWT } from 'google-auth-library'
 import { config } from '../config.js'
+import { cached } from '../lib/cache.js'
 import { ApiError, fetchJson } from '../util.js'
 
 /**
@@ -30,32 +31,46 @@ function auth() {
   return client
 }
 
+/**
+ * How long a week's free/busy is worth reusing. Long enough that a burst of
+ * visitors costs one round trip, short enough that an hour of the day being
+ * booked shows up while it still matters.
+ */
+const TTL = 5 * 60_000
+
 /** Busy intervals between two dates, as ISO strings. */
 export async function getBusy(from, to, timeZone = 'America/New_York') {
-  const { token } = await auth().getAccessToken()
+  // The window is the same for everyone until the day rolls over, so the key is
+  // the window itself. The timezone only shifts how Google resolves all-day
+  // events, but it changes the answer, so it belongs in the key too.
+  const key = `calendar:${timeZone}:${from.toISOString()}:${to.toISOString()}`
 
-  const body = await fetchJson(FREEBUSY, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      timeMin: from.toISOString(),
-      timeMax: to.toISOString(),
-      timeZone,
-      items: [{ id: config.calendar.calendarId }],
-    }),
+  return cached(key, TTL, async () => {
+    const { token } = await auth().getAccessToken()
+
+    const body = await fetchJson(FREEBUSY, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        timeMin: from.toISOString(),
+        timeMax: to.toISOString(),
+        timeZone,
+        items: [{ id: config.calendar.calendarId }],
+      }),
+    })
+
+    const calendar = body?.calendars?.[config.calendar.calendarId]
+
+    // A calendar that has not been shared with the service account comes back
+    // as a per-calendar error rather than a failed request, which would
+    // otherwise read as a genuinely empty week.
+    if (calendar?.errors?.length) {
+      throw new ApiError(`Calendar ${calendar.errors[0].reason}`, 502)
+    }
+
+    return (calendar?.busy ?? []).map(({ start, end }) => ({ start, end }))
   })
-
-  const calendar = body?.calendars?.[config.calendar.calendarId]
-
-  // A calendar that has not been shared with the service account comes back as
-  // a per-calendar error rather than a failed request, which would otherwise
-  // read as a genuinely empty week.
-  if (calendar?.errors?.length) {
-    throw new ApiError(`Calendar ${calendar.errors[0].reason}`, 502)
-  }
-
-  return (calendar?.busy ?? []).map(({ start, end }) => ({ start, end }))
 }

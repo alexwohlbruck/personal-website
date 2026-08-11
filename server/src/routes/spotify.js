@@ -38,6 +38,9 @@ router.get('/playback-state', async (req, res) => {
   // report a failure when there is no cached answer to fall back on.
   if (status === 'error' && !state) throw new ApiError('Spotify is unavailable.', 502)
 
+  // Deliberately uncached. A progress bar built from a cached position is worse
+  // than no progress bar, and the server already answers this from memory.
+  res.set('Cache-Control', 'no-store')
   res.json(state)
 })
 

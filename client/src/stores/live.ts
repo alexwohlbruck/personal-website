@@ -33,6 +33,9 @@ export const useLiveStore = defineStore('live', () => {
 
   const instagram = ref<InstagramPost[]>([])
   const instagramStatus = ref<Status>('idle')
+  /** Cursor for the page after the ones already loaded. Null once at the end. */
+  const instagramCursor = ref<string | null>(null)
+  const instagramDone = ref(false)
 
   const calendar = ref<CalendarEvent[]>([])
   const calendarStatus = ref<Status>('idle')
@@ -114,15 +117,48 @@ export const useLiveStore = defineStore('live', () => {
     polling = false
   }
 
+  const INSTAGRAM_PAGE = 12
+
+  /**
+   * Pulls the next page and appends it. Photos already loaded stay loaded, so
+   * paging back through the slideshow costs nothing and the browser keeps the
+   * images it has already decoded.
+   */
   async function fetchInstagram() {
-    if (instagram.value.length) return
+    if (instagramDone.value || instagramStatus.value === 'loading') return
+    if (instagram.value.length) return loadMoreInstagram()
+
     instagramStatus.value = 'loading'
     try {
-      instagram.value = await api<InstagramPost[]>('instagram/grid')
+      const page = await api<{ posts: InstagramPost[]; next: string | null }>(
+        `instagram/grid?limit=${INSTAGRAM_PAGE}`,
+      )
+      instagram.value = page.posts
+      instagramCursor.value = page.next
+      instagramDone.value = !page.next
       instagramStatus.value = 'ready'
     } catch {
       instagramStatus.value = 'error'
     }
+  }
+
+  async function loadMoreInstagram() {
+    if (instagramDone.value || !instagramCursor.value) return
+    if (instagramStatus.value === 'loading') return
+
+    instagramStatus.value = 'loading'
+    try {
+      const page = await api<{ posts: InstagramPost[]; next: string | null }>(
+        `instagram/grid?limit=${INSTAGRAM_PAGE}&after=${encodeURIComponent(instagramCursor.value)}`,
+      )
+      instagram.value = [...instagram.value, ...page.posts]
+      instagramCursor.value = page.next
+      instagramDone.value = !page.next
+    } catch {
+      // Keep what we have. A failed page turn should not empty the slideshow.
+      instagramDone.value = true
+    }
+    instagramStatus.value = 'ready'
   }
 
   async function fetchCalendar() {
@@ -154,7 +190,9 @@ export const useLiveStore = defineStore('live', () => {
     stopSpotifyPolling,
     instagram,
     instagramStatus,
+    instagramDone,
     fetchInstagram,
+    loadMoreInstagram,
     calendar,
     calendarStatus,
     fetchCalendar,

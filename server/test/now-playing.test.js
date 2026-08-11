@@ -138,6 +138,24 @@ describe('now playing', () => {
     assert.equal(playbackCalls, before, 'five requests should cost zero extra Spotify calls')
   })
 
+  it('moves a playing track forward by however long the cache is old', async () => {
+    // The cache is what lets one Spotify call serve everyone, but a playing
+    // track keeps playing after it is stored. Someone arriving between polls
+    // should get the position now, not the position when it was measured.
+    const first = await (await fetch(`${base}/spotify/playback-state`)).json()
+    await new Promise((resolve) => setTimeout(resolve, 2_000))
+    const later = await (await fetch(`${base}/spotify/playback-state`)).json()
+
+    const advanced = later.progress_ms - first.progress_ms
+    assert.ok(advanced >= 1_500, `expected the position to advance, moved ${advanced}ms`)
+    assert.ok(later.progress_ms <= later.item.duration_ms, 'never past the end of the track')
+  })
+
+  it('does not report a cache header on a live position', async () => {
+    const response = await fetch(`${base}/spotify/playback-state`)
+    assert.equal(response.headers.get('cache-control'), 'no-store')
+  })
+
   it('opens a stream with the current track', async () => {
     const controller = new AbortController()
     const response = await fetch(`${base}/spotify/stream`, { signal: controller.signal })
