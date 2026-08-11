@@ -1,5 +1,5 @@
 import { config } from '../config.js'
-import { getToken, getTokenExpiry, setToken } from '../tokens.js'
+import { getToken, getTokenRecord, setToken } from '../tokens.js'
 import { ApiError, fetchJson, log } from '../util.js'
 
 /**
@@ -28,6 +28,8 @@ const CACHE_TTL = 15 * 60_000
  *  downtime is a recoverable inconvenience rather than a re-authorization. */
 const RENEW_WITHIN = 14 * 24 * 60 * 60_000
 const CHECK_EVERY = 12 * 60 * 60_000
+/** Meta refuses to refresh a token less than 24 hours old, so an hour of slack. */
+const CALIBRATE_AFTER = 25 * 60 * 60_000
 
 let cache
 let cachedAt = 0
@@ -112,10 +114,7 @@ export function startTokenRenewal() {
 
   const check = async () => {
     try {
-      const expires = getTokenExpiry('instagram_access_token')
-      // No recorded expiry means the token came from .env by hand and we have
-      // no idea how much of its 60 days is left. Renew once to find out.
-      if (expires && expires - Date.now() > RENEW_WITHIN) return
+      if (!due()) return
       await refreshAccessToken()
     } catch (err) {
       log(`Instagram token renewal failed: ${err.message}`, 'FgRed')
@@ -125,6 +124,31 @@ export function startTokenRenewal() {
   void check()
   const timer = setInterval(check, CHECK_EVERY)
   timer.unref?.()
+}
+
+function due() {
+  const record = getTokenRecord('instagram_access_token')
+
+  // Nothing recorded at all: the token was pasted into .env and never checked,
+  // so we have no idea how much of its life is left. Find out now.
+  if (!record?.expires) return true
+
+  const remaining = Date.parse(record.expires) - Date.now()
+  if (remaining < RENEW_WITHIN) return true
+
+  /*
+   * An estimated expiry is a number we made up. Meta does not say how long a
+   * token minted in its dashboard lasts, so 60 days is inference from the
+   * documented maximum rather than a fact about this token.
+   *
+   * Refreshing once, as soon as the token is old enough to allow it, replaces
+   * the guess with the expiry Meta actually reports. It also means the renewal
+   * path runs within a day of setup: if something about it is broken, that
+   * surfaces tomorrow rather than in six weeks when the token dies and there is
+   * nothing left to renew from.
+   */
+  const age = record.updated ? Date.now() - Date.parse(record.updated) : Infinity
+  return Boolean(record.estimated) && age > CALIBRATE_AFTER
 }
 
 /** Where to send a browser to grant the scope above. */

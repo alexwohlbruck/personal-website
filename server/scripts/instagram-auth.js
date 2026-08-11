@@ -80,11 +80,14 @@ try {
     process.exit(1)
   }
 
-  // An estimate: a dashboard token is 60 days old at most and we cannot ask how
-  // much is left. The server renews inside a two-week margin, so being wrong by
-  // a few days costs nothing.
-  setToken('instagram_access_token', config.instagram.accessToken, SIXTY_DAYS)
-  log('\nRecorded a 60 day expiry. The server renews it with two weeks to spare.', 'FgGray')
+  // A guess, and flagged as one. Meta does not report how long a token minted
+  // in its dashboard lasts, so the server confirms this against the real expiry
+  // once the token is old enough for Meta to allow a refresh.
+  setToken('instagram_access_token', config.instagram.accessToken, SIXTY_DAYS, {
+    estimated: true,
+  })
+  log('\nAssuming 60 days for now. Meta does not say, so that is inference.', 'FgGray')
+  log('The server confirms it against the real expiry after 24 hours.', 'FgGray')
 } catch (err) {
   log(`\nThat token did not work: ${err.message}`, 'FgRed')
   process.exit(1)

@@ -99,9 +99,21 @@ personal account can't be read by any Instagram API any more.
    long-lived access token. Paste it into `.env` as `INSTAGRAM_ACCESS_TOKEN`.
 4. `npm run auth:instagram` to check it works and record its expiry.
 
-Tokens last 60 days. The server renews with two weeks to spare and writes the
-new one to `.tokens.json`, so `.env` stays the file you paste into rather than
-one the process edits underneath you.
+**There is no refresh token here.** Unlike Spotify, this API has no permanent
+credential you mint short-lived tokens from. The long-lived token is its own
+renewal credential: you hand the current one to `refresh_access_token` and get
+a new 60-day token back. So it's a chain, and it must not break — if the server
+is off for 60 days there is nothing left to renew from and you regenerate by
+hand. The server renews with two weeks to spare and writes the new token to
+`.tokens.json`, so `.env` stays the file you paste into rather than one the
+process edits underneath you.
+
+Meta doesn't say how long a token minted in its dashboard lasts, so the 60 days
+recorded at setup is an inference. Once the token is over 24 hours old, which is
+the earliest Meta permits a refresh, the server does one renewal to replace that
+guess with the expiry Meta actually reports. That also means the renewal path
+runs within a day of setup rather than six weeks later, when a broken one would
+be both silent and unrecoverable.
 
 If you'd rather do the full OAuth round trip, `npm run auth:instagram --
 --authorize` prints the URL, and `-- --code=…` exchanges what comes back. Meta
