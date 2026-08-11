@@ -8,11 +8,23 @@ import { log } from './util.js'
 const app = express()
 
 app.disable('x-powered-by')
-app.use(
-  cors({
-    origin: config.origins.length ? config.origins : true,
-  }),
-)
+app.use(cors({ origin: allowOrigin }))
+
+/**
+ * Whether a browser origin may read from here.
+ *
+ * ALLOWED_ORIGINS names the deployed site. Outside production the dev server is
+ * allowed too, on whatever port Vite picked: the alternative is that copying
+ * .env.example locks you out of your own machine, and the usual fix for that is
+ * someone widening the list to `*` and leaving it that way.
+ */
+function allowOrigin(origin, callback) {
+  if (!origin || !config.origins.length) return callback(null, true)
+  if (config.origins.includes(origin)) return callback(null, true)
+
+  const local = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin)
+  callback(null, local && process.env.NODE_ENV !== 'production')
+}
 app.use(express.json({ limit: '32kb' }))
 app.use(express.urlencoded({ extended: true, limit: '32kb' }))
 app.use('/', routes)
