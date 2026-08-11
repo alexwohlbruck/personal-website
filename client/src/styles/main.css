@@ -40,6 +40,7 @@
 
   --rule: oklch(26% 0.036 38 / 0.16);
   --rule-strong: oklch(26% 0.036 38 / 0.3);
+  --topo-ink: oklch(26% 0.036 38 / 0.2);
 
   --accent: oklch(47% 0.135 32);
   --accent-hover: oklch(41% 0.14 30);
@@ -84,6 +85,7 @@
 
   --rule: oklch(92% 0.021 82 / 0.16);
   --rule-strong: oklch(92% 0.021 82 / 0.3);
+  --topo-ink: oklch(92% 0.021 82 / 0.17);
 
   /* Light enough to read as text on the dark sheet. */
   --accent: oklch(70% 0.13 40);
@@ -276,20 +278,9 @@
 /* ---------------------------------------------------------------------------
    Paper and map motifs
 
-   A ruled sheet, a dot grid, a surveyor's graticule and a set of elevation
-   contours. All of them sit at very low contrast. You feel them, you do not
-   read them.
+   A dot grid, a surveyor's graticule and two sheets of elevation contours.
+   All of them sit at very low contrast. You feel them, you do not read them.
 --------------------------------------------------------------------------- */
-
-@utility ruled {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent calc(var(--rule-gap, 2rem) - 1px),
-    var(--rule) calc(var(--rule-gap, 2rem) - 1px),
-    var(--rule) var(--rule-gap, 2rem)
-  );
-}
 
 @utility dotted-grid {
   background-image: radial-gradient(var(--rule) 1px, transparent 1px);
@@ -314,11 +305,26 @@
  * second gradient mask fades them out before they reach the content below.
  */
 @utility topo {
-  background-color: var(--rule-strong);
+  background-color: var(--topo-ink);
   mask-image: url('@/assets/topo.svg'),
     linear-gradient(to bottom, transparent 0, #000 18%, #000 55%, transparent 96%);
   mask-size: cover, 100% 100%;
   mask-position: center top, center;
+  mask-repeat: no-repeat, no-repeat;
+  mask-composite: intersect;
+}
+
+/**
+ * The close-up sheet, for panels. Its gradient mask opens a clearing in the
+ * centre instead of fading top to bottom, so the contours frame the copy
+ * rather than run underneath it.
+ */
+@utility topo-close {
+  background-color: var(--topo-ink);
+  mask-image: url('@/assets/topo-close.svg'),
+    radial-gradient(115% 95% at 50% 50%, transparent 0, transparent 30%, #000 82%);
+  mask-size: cover, 100% 100%;
+  mask-position: center, center;
   mask-repeat: no-repeat, no-repeat;
   mask-composite: intersect;
 }

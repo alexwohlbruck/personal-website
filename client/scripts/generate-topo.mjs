@@ -16,14 +16,15 @@ import { writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const WIDTH = 1600
-const HEIGHT = 900
-/** Field resolution. Higher is smoother terrain and a bigger file. */
-const COLS = 100
-const ROWS = 58
-/** Number of contour lines between the lowest and highest ground. */
-const LEVELS = 20
-const SEED = 20260811
+/**
+ * Two sheets of terrain. The wide one runs behind the hero; the close one is
+ * zoomed in with fewer lines, for panels where it sits behind centred text.
+ * Different seeds so they read as two places, not one image used twice.
+ */
+const VARIANTS = [
+  { file: 'topo.svg', width: 1600, height: 900, cols: 100, rows: 58, levels: 20, seed: 20260811, octaves: [3, 6, 12, 24] },
+  { file: 'topo-close.svg', width: 1400, height: 600, cols: 76, rows: 34, levels: 13, seed: 88231, octaves: [2, 4, 8] },
+]
 
 function mulberry32(seed) {
   let a = seed >>> 0
@@ -62,12 +63,12 @@ function octave(cols, rows, cells, rand) {
 }
 
 /** Stacked octaves, each finer and quieter than the last. */
-function heightField(cols, rows, rand) {
+function heightField(cols, rows, rand, octaves) {
   const field = new Float64Array(cols * rows)
   let amplitude = 1
   let total = 0
 
-  for (const cells of [3, 6, 12, 24]) {
+  for (const cells of octaves) {
     const layer = octave(cols, rows, cells, rand)
     for (let i = 0; i < field.length; i++) field[i] += layer[i] * amplitude
     total += amplitude
@@ -254,51 +255,54 @@ function smoothPath(points, closed, scaleX, scaleY) {
   return `${d}L${r(last[0])} ${r(last[1])}`
 }
 
-const rand = mulberry32(SEED)
-const field = heightField(COLS, ROWS, rand)
-const scaleX = WIDTH / (COLS - 1)
-const scaleY = HEIGHT / (ROWS - 1)
+for (const variant of VARIANTS) {
+  const { file, width, height, cols, rows, levels, seed, octaves } = variant
+  const rand = mulberry32(seed)
+  const field = heightField(cols, rows, rand, octaves)
+  const scaleX = width / (cols - 1)
+  const scaleY = height / (rows - 1)
 
-const paths = []
-let ringCount = 0
-let openCount = 0
+  const paths = []
+  let ringCount = 0
+  let openCount = 0
 
-for (let i = 1; i < LEVELS; i++) {
-  // Nudge off exact sample values, where a cell is ambiguous and the trace can
-  // split a ring in two.
-  const level = i / LEVELS + 1e-6
+  for (let i = 1; i < levels; i++) {
+    // Nudge off exact sample values, where a cell is ambiguous and the trace
+    // can split a ring in two.
+    const level = i / levels + 1e-6
 
-  const d = chain(trace(field, COLS, ROWS, level))
-    .filter(({ points, closed }) => {
-      // A ring a fraction of a cell across is a numerical speck, not a summit.
-      if (!closed) return true
-      const xs = points.map((pt) => pt[0])
-      const ys = points.map((pt) => pt[1])
-      return Math.max(...xs) - Math.min(...xs) > 0.5 || Math.max(...ys) - Math.min(...ys) > 0.5
-    })
-    .map(({ points, closed }) => {
-      const thinned = simplify(points, 0.06)
-      const path = smoothPath(thinned, closed, scaleX, scaleY)
-      if (path) closed ? ringCount++ : openCount++
-      return path
-    })
-    .filter(Boolean)
-    .join('')
+    const d = chain(trace(field, cols, rows, level))
+      .filter(({ points, closed }) => {
+        // A ring a fraction of a cell across is a numerical speck, not a summit.
+        if (!closed) return true
+        const xs = points.map((pt) => pt[0])
+        const ys = points.map((pt) => pt[1])
+        return Math.max(...xs) - Math.min(...xs) > 0.5 || Math.max(...ys) - Math.min(...ys) > 0.5
+      })
+      .map(({ points, closed }) => {
+        const thinned = simplify(points, 0.06)
+        const path = smoothPath(thinned, closed, scaleX, scaleY)
+        if (path) closed ? ringCount++ : openCount++
+        return path
+      })
+      .filter(Boolean)
+      .join('')
 
-  if (!d) continue
+    if (!d) continue
 
-  // Every fifth line is an index contour, drawn heavier, as on a real map.
-  const index = i % 5 === 0
-  paths.push(`<path d="${d}" stroke-width="${index ? 2.2 : 1.1}" opacity="${index ? 1 : 0.62}"/>`)
-}
+    // Every fifth line is an index contour, drawn heavier, as on a real map.
+    const index = i % 5 === 0
+    paths.push(`<path d="${d}" stroke-width="${index ? 2.2 : 1.1}" opacity="${index ? 1 : 0.62}"/>`)
+  }
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${HEIGHT}" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
 ${paths.join('\n')}
 </svg>
 `
 
-const out = join(dirname(fileURLToPath(import.meta.url)), '../src/assets/topo.svg')
-writeFileSync(out, svg)
-console.log(
-  `Wrote ${paths.length} levels, ${ringCount} closed rings, ${openCount} running off the edge, ${(svg.length / 1024).toFixed(1)} kB`,
-)
+  const out = join(dirname(fileURLToPath(import.meta.url)), '../src/assets/', file)
+  writeFileSync(out, svg)
+  console.log(
+    `${file}: ${paths.length} levels, ${ringCount} rings, ${openCount} open, ${(svg.length / 1024).toFixed(1)} kB`,
+  )
+}
