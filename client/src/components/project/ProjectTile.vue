@@ -5,7 +5,21 @@ import type { Project } from '@/data/types'
 
 const props = withDefaults(defineProps<{ project: Project; size?: number }>(), { size: 56 })
 
-const icon = computed(() => assetUrl(props.project.icon))
+const icon = computed(() => (props.project.icon ? assetUrl(props.project.icon) : ''))
+const monogram = computed(() => props.project.title.charAt(0))
+
+/**
+ * Projects without a logo get their initial instead, which needs to sit on
+ * whatever brand colour the tile carries. Relative luminance off the hex,
+ * using the sRGB coefficients, so a pale tile gets dark type and vice versa.
+ */
+const monogramColor = computed(() => {
+  const hex = props.project.color.replace('#', '')
+  const full = hex.length === 3 ? [...hex].map((c) => c + c).join('') : hex
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255)
+  const luminance = 0.2126 * (r ?? 0) + 0.7152 * (g ?? 0) + 0.0722 * (b ?? 0)
+  return luminance > 0.55 ? 'oklch(26% 0.036 38)' : 'oklch(97% 0.01 85)'
+})
 </script>
 
 <template>
@@ -23,7 +37,16 @@ const icon = computed(() => assetUrl(props.project.icon))
       boxShadow: 'inset 0 1px 0 oklch(100% 0 0 / 0.16), var(--tile-ring), var(--shadow-1)',
     }"
   >
-    <img :src="icon" :alt="`${project.title} logo`" class="w-1/2" loading="lazy" />
+    <img v-if="icon" :src="icon" :alt="`${project.title} logo`" class="w-1/2" loading="lazy" />
+    <span
+      v-else
+      class="font-serif leading-none"
+      :style="{ color: monogramColor, fontSize: `${size * 0.44}px` }"
+      aria-hidden="true"
+    >
+      {{ monogram }}
+    </span>
+
     <span
       class="pointer-events-none absolute inset-0 rounded-tile"
       style="

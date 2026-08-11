@@ -4,8 +4,8 @@ export interface Project {
   title: string
   /** Brand colour, used for the tile fill and the page's ambient wash. */
   color: string
-  /** Path under `assets/`, e.g. `svg/parchment.svg`. */
-  icon: string
+  /** Path under `assets/`, e.g. `svg/parchment.svg`. Falls back to a monogram. */
+  icon?: string
   /** Blank line separated; rendered as paragraphs. */
   description: string
   start: Date
@@ -13,7 +13,7 @@ export interface Project {
   end?: Date
   url?: string
   github?: string
-  /** Filenames under `assets/portfolio/<name>/`. */
+  /** Filenames under `assets/portfolio/<name>/`. May be empty. */
   images: string[]
   /** Which image fronts the project. Defaults to the first in `images`. */
   cover?: string

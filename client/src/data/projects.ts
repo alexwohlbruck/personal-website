@@ -3,6 +3,46 @@ import type { Project } from './types'
 /** Newest first. This is the order they appear in the index. */
 export const projects: Project[] = [
   {
+    name: 'portolan',
+    title: 'Portolan',
+    color: '#101820',
+    description:
+      "Give Portolan a city's published schedule data and it draws the transit map. Every agency publishes a GTFS feed, but a feed is built for trip planners rather than for looking at: draw one straight onto a map and fifteen lines pile up along the same corridor, with only the last one drawn visible.\n\nPortolan does what a mapmaker would do by hand. It works out which routes share a trunk, runs them alongside each other at an even spacing, splits them apart at junctions, and labels every station with the routes that call there. The pipeline is Go and the workbench is Vue. No mapmaker is involved at any step.",
+    start: new Date('2026-08-04'),
+    end: new Date(),
+    github: 'https://github.com/alexwohlbruck/portolan',
+    images: ['workbench-nyc.png', 'loop-chicago.png'],
+    tags: ['client-side', 'server-side', 'cartography'],
+  },
+  {
+    name: 'barrelman',
+    title: 'Barrelman',
+    color: '#fff9f3',
+    icon: 'svg/barrelman.svg',
+    description:
+      "The search and routing engine behind Parchment. Barrelman takes an OpenStreetMap extract and turns it into a set of services: place search, spatial queries, vector tiles and routing, all from the same data and with no dependency on commercial map APIs. It is named after the sailor in the crow's nest who watches the horizon.\n\nPostGIS does the heavy lifting, Martin serves the tiles and GraphHopper handles routes. Transit feeds, bike share systems and address data import alongside the OSM extract.",
+    start: new Date('2026-03-30'),
+    end: new Date(),
+    url: 'https://barrelman.dev',
+    github: 'https://github.com/alexwohlbruck/barrelman',
+    images: [],
+    tags: ['client-side', 'server-side', 'apis', 'databases', 'cartography'],
+  },
+  {
+    name: 'coopoly-deal',
+    title: 'Co-Opoly Deal',
+    color: '#c41e1e',
+    icon: 'svg/coopoly-deal.svg',
+    description:
+      'A multiplayer card game in the spirit of Monopoly Deal. One player opens a room, up to six join with a six digit code, and the first to collect three complete property sets wins. The theme is a joke that got further out of hand than planned.\n\nBun and Hono on the back end with WebSockets keeping every hand in sync, React on the front. The whole thing ships as one Docker container.',
+    start: new Date('2026-02-26'),
+    end: new Date(),
+    url: 'https://coopoly.deal',
+    github: 'https://github.com/alexwohlbruck/coopoly-deal',
+    images: [],
+    tags: ['client-side', 'server-side', 'realtime', 'graphic-design', 'ux'],
+  },
+  {
     name: 'parchment',
     title: 'Parchment Maps',
     color: '#0F141F',

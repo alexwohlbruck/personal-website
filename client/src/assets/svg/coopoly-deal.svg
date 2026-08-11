@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c41e1e"/>
+      <stop offset="100%" stop-color="#8a1010"/>
+    </linearGradient>
+    <linearGradient id="star-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe566"/>
+      <stop offset="45%" stop-color="#f0c14a"/>
+      <stop offset="100%" stop-color="#c8920a"/>
+    </linearGradient>
+    <linearGradient id="star-sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.5)"/>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.06)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+    <filter id="star-shadow" x="-15%" y="-15%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#2a0000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Full-bleed red background (iOS squircle-safe) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Standard {5/2} pentagram star, R=170, r≈65.
+       Center shifted to (256,272) so bounding box is visually centered. -->
+  <g filter="url(#star-shadow)">
+    <polygon
+      points="256,102 294.2,219.4 417.7,219.5 317.8,292.1 355.9,409.5 256,337 156.1,409.5 194.2,292.1 94.3,219.5 217.8,219.4"
+      fill="url(#star-face)"
+      stroke="#9a6e00"
+      stroke-width="2.5"
+      stroke-linejoin="round"
+    />
+    <polygon
+      points="256,136 286.6,229.9 385.4,230 305.5,288.1 335.9,382 256,324 176.1,382 206.5,288.1 126.6,230 225.4,229.9"
+      fill="url(#star-sheen)"
+    />
+    <polygon
+      points="256,102 294.2,219.4 417.7,219.5 317.8,292.1 355.9,409.5 256,337 156.1,409.5 194.2,292.1 94.3,219.5 217.8,219.4"
+      fill="none"
+      stroke="rgba(80,50,0,0.3)"
+      stroke-width="1.5"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>
