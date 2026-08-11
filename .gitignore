@@ -7,6 +7,9 @@ dist
 .env.local
 .env.*.local
 
+# Tokens the server rotates on its own
+.tokens.json
+
 # Log files
 npm-debug.log*
 yarn-debug.log*

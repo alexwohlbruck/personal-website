@@ -1,0 +1,162 @@
+import { config } from '../config.js'
+import { getToken, getTokenExpiry, setToken } from '../tokens.js'
+import { ApiError, fetchJson, log } from '../util.js'
+
+/**
+ * Instagram API with Instagram Login.
+ *
+ * The Basic Display API this used to run on was shut down on 4 December 2024
+ * and its endpoints now only return errors, which is why the grid went blank.
+ * The replacement lives on the same host but wants a different scope, and only
+ * talks to Professional accounts: a personal account cannot be read by any
+ * Instagram API any more.
+ *
+ * Left unversioned on purpose. Meta's own Instagram Login examples call it this
+ * way, and pinning a version number here only buys a hard failure on the day
+ * that version is retired.
+ */
+const GRAPH = 'https://graph.instagram.com'
+const OAUTH = 'https://api.instagram.com/oauth/access_token'
+
+export const SCOPES = ['instagram_business_basic']
+
+const FIELDS = ['id', 'caption', 'media_type', 'media_url', 'permalink', 'thumbnail_url'].join(',')
+
+/** The grid changes a few times a month at most. */
+const CACHE_TTL = 15 * 60_000
+/** Long-lived tokens last 60 days. Renew well before that, so a few days of
+ *  downtime is a recoverable inconvenience rather than a re-authorization. */
+const RENEW_WITHIN = 14 * 24 * 60 * 60_000
+const CHECK_EVERY = 12 * 60 * 60_000
+
+let cache
+let cachedAt = 0
+
+const token = () => getToken('instagram_access_token', config.instagram.accessToken)
+
+/** Who the current token belongs to. Only used by the setup script, to prove a
+ *  pasted token works before anything depends on it. */
+export async function getProfile() {
+  const accessToken = token()
+  if (!accessToken) throw new ApiError('Instagram is not configured', 503)
+
+  const ask = (fields) =>
+    fetchJson(`${GRAPH}/me?${new URLSearchParams({ fields, access_token: accessToken })}`)
+
+  try {
+    return await ask('username,account_type,media_count')
+  } catch {
+    // Field availability varies by account and app review state; a username is
+    // enough to confirm the token is live.
+    return ask('username')
+  }
+}
+
+export async function getMedia(limit = 12) {
+  if (cache && Date.now() - cachedAt < CACHE_TTL) return cache
+
+  const accessToken = token()
+  if (!accessToken) throw new ApiError('Instagram is not configured', 503)
+
+  const params = new URLSearchParams({
+    fields: FIELDS,
+    limit: String(limit),
+    access_token: accessToken,
+  })
+  const body = await fetchJson(`${GRAPH}/me/media?${params}`)
+
+  cache = (body?.data ?? [])
+    .map((post) => ({
+      id: post.id,
+      permalink: post.permalink,
+      // Videos and reels have no still of their own in media_url, so the
+      // thumbnail is the only thing that renders in an <img>.
+      media_url: post.media_type === 'VIDEO' ? post.thumbnail_url : post.media_url,
+      caption: post.caption,
+    }))
+    .filter((post) => Boolean(post.media_url))
+
+  cachedAt = Date.now()
+  return cache
+}
+
+/**
+ * Trade the current long-lived token for a fresh 60 days. Valid once the token
+ * is 24 hours old, so this is a no-op on a token minted minutes ago.
+ */
+export async function refreshAccessToken() {
+  const accessToken = token()
+  if (!accessToken) return
+
+  const params = new URLSearchParams({
+    grant_type: 'ig_refresh_token',
+    access_token: accessToken,
+  })
+  const body = await fetchJson(`${GRAPH}/refresh_access_token?${params}`)
+
+  // Meta always sends expires_in, but without it we would store no expiry at
+  // all and re-check every twelve hours forever. 60 days is what it grants.
+  const expiresIn = Number(body.expires_in) || 60 * 24 * 60 * 60
+
+  setToken('instagram_access_token', body.access_token, expiresIn)
+  log(`Instagram token refreshed, good for another ${Math.round(expiresIn / 86_400)} days`, 'FgGreen')
+}
+
+/**
+ * Renewal runs on a plain timer rather than a cron expression, because the only
+ * thing that matters is that it happens twice a day, not that it happens at
+ * midnight. A missed window is not a problem; a missed fortnight is.
+ */
+export function startTokenRenewal() {
+  if (!config.instagram.configured) return
+
+  const check = async () => {
+    try {
+      const expires = getTokenExpiry('instagram_access_token')
+      // No recorded expiry means the token came from .env by hand and we have
+      // no idea how much of its 60 days is left. Renew once to find out.
+      if (expires && expires - Date.now() > RENEW_WITHIN) return
+      await refreshAccessToken()
+    } catch (err) {
+      log(`Instagram token renewal failed: ${err.message}`, 'FgRed')
+    }
+  }
+
+  void check()
+  const timer = setInterval(check, CHECK_EVERY)
+  timer.unref?.()
+}
+
+/** Where to send a browser to grant the scope above. */
+export function authorizeUrl(state) {
+  const params = new URLSearchParams({
+    client_id: config.instagram.appId ?? '',
+    redirect_uri: config.instagram.redirectUri,
+    response_type: 'code',
+    scope: SCOPES.join(','),
+    ...(state ? { state } : {}),
+  })
+  return `https://www.instagram.com/oauth/authorize?${params}`
+}
+
+/** Authorization code to a short-lived token, then straight to a long-lived one. */
+export async function exchangeCode(code) {
+  const short = await fetchJson(OAUTH, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: config.instagram.appId ?? '',
+      client_secret: config.instagram.appSecret ?? '',
+      grant_type: 'authorization_code',
+      redirect_uri: config.instagram.redirectUri,
+      code,
+    }),
+  })
+
+  const params = new URLSearchParams({
+    grant_type: 'ig_exchange_token',
+    client_secret: config.instagram.appSecret ?? '',
+    access_token: short.access_token,
+  })
+  return fetchJson(`${GRAPH}/access_token?${params}`)
+}

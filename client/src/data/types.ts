@@ -81,8 +81,11 @@ export interface InstagramPost {
   caption?: string
 }
 
+/**
+ * A busy interval and nothing else. The server asks Google for free/busy rather
+ * than for events, so titles never reach it in the first place.
+ */
 export interface CalendarEvent {
   start: string
   end: string
-  summary?: string
 }

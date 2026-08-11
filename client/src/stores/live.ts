@@ -27,7 +27,9 @@ type Status = 'idle' | 'loading' | 'ready' | 'error'
 export const useLiveStore = defineStore('live', () => {
   const spotify = ref<SpotifyPlaybackState | null>(null)
   const spotifyStatus = ref<Status>('idle')
+  let stream: EventSource | undefined
   let spotifyTimer: ReturnType<typeof setTimeout> | undefined
+  let polling = false
 
   const instagram = ref<InstagramPost[]>([])
   const instagramStatus = ref<Status>('idle')
@@ -36,17 +38,51 @@ export const useLiveStore = defineStore('live', () => {
   const calendarStatus = ref<Status>('idle')
 
   /**
-   * Re-checks when the current track is due to end (the server refreshes its own
-   * state on the same cadence), and otherwise every couple of minutes. Sleeps
-   * while the tab is hidden.
+   * The server holds one connection open and writes the track when it changes,
+   * so this waits to be told instead of asking. Spotify itself has no push API,
+   * but the server polls once for everybody, which is the part that used to
+   * scale with the number of people reading the page.
    */
-  async function fetchSpotify() {
+  function fetchSpotify() {
+    if (!BACKEND_URL) return
+    if (typeof EventSource === 'undefined') return void pollSpotify()
+
+    openStream()
+    document.addEventListener('visibilitychange', onVisibility)
+  }
+
+  function openStream() {
+    stream?.close()
     if (spotifyStatus.value === 'idle') spotifyStatus.value = 'loading'
+
+    stream = new EventSource(`${BACKEND_URL}/spotify/stream`)
+
+    stream.addEventListener('playback', (event) => {
+      spotify.value = JSON.parse((event as MessageEvent<string>).data)
+      spotifyStatus.value = 'ready'
+    })
+
+    stream.onerror = () => {
+      // A dropped connection puts EventSource back into CONNECTING and it
+      // retries on its own. CLOSED means the server answered with something
+      // that is not a stream, and no amount of retrying will change that, so
+      // fall back to asking rather than leaving the section empty.
+      if (stream?.readyState !== EventSource.CLOSED) return
+      stream = undefined
+      void pollSpotify()
+    }
+  }
+
+  /** The old behaviour, kept for a browser or proxy that will not hold a
+   *  stream open. Re-checks when the track is due to end. */
+  async function pollSpotify() {
+    polling = true
     try {
       spotify.value = await api<SpotifyPlaybackState | null>('spotify/playback-state')
       spotifyStatus.value = 'ready'
     } catch {
       spotifyStatus.value = 'error'
+      return
     }
 
     clearTimeout(spotifyTimer)
@@ -56,21 +92,33 @@ export const useLiveStore = defineStore('live', () => {
         ? Math.max(15_000, state.item.duration_ms - state.progress_ms + 2_000)
         : 120_000
     spotifyTimer = setTimeout(() => {
-      if (document.visibilityState === 'visible') void fetchSpotify()
-      else document.addEventListener('visibilitychange', () => void fetchSpotify(), { once: true })
+      if (document.visibilityState === 'visible') void pollSpotify()
+      else document.addEventListener('visibilitychange', () => void pollSpotify(), { once: true })
     }, remaining)
   }
 
+  /** A backgrounded tab has nobody looking at it, and an open stream keeps the
+   *  server polling Spotify on its behalf. */
+  function onVisibility() {
+    if (polling) return
+    if (document.visibilityState === 'visible') openStream()
+    else stream?.close()
+  }
+
   function stopSpotifyPolling() {
+    document.removeEventListener('visibilitychange', onVisibility)
+    stream?.close()
+    stream = undefined
     clearTimeout(spotifyTimer)
     spotifyTimer = undefined
+    polling = false
   }
 
   async function fetchInstagram() {
     if (instagram.value.length) return
     instagramStatus.value = 'loading'
     try {
-      instagram.value = await api<InstagramPost[]>('ig/grid')
+      instagram.value = await api<InstagramPost[]>('instagram/grid')
       instagramStatus.value = 'ready'
     } catch {
       instagramStatus.value = 'error'

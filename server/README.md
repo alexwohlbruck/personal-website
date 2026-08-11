@@ -1,0 +1,143 @@
+# Server
+
+The small Express app behind the live bits of the site: what I'm listening to,
+my Instagram grid, a free/busy week, and the contact form.
+
+```bash
+npm install
+cp .env.example .env   # fill in whichever integrations you want
+npm run dev
+```
+
+`GET /health` reports which integrations found credentials. Everything is
+optional and independent, so a blank `.env` still boots and every endpoint
+answers `503` instead of taking the process down.
+
+## Endpoints
+
+| Route                      | What it does                                   |
+| -------------------------- | ---------------------------------------------- |
+| `GET /spotify/stream`      | SSE. Pushes the current track when it changes.  |
+| `GET /spotify/playback-state` | The same answer as one request.             |
+| `GET /instagram/grid`      | Recent posts.                                   |
+| `GET /calendar`            | Busy intervals for the next seven days.         |
+| `POST /mailer/contact`     | Contact form. Rate limited to 5 per 10 minutes. |
+| `GET /health`              | Which integrations are configured.              |
+
+## How now playing works
+
+Spotify has no webhook, push or streaming API. Nothing to subscribe to, so
+somebody has to poll. The question is who.
+
+This server polls once and pushes the result to every open browser over
+[Server-Sent Events](https://developer.mozilla.org/docs/Web/API/Server-sent_events).
+Spotify call volume is a function of how often the music changes, not how many
+people are on the site. Nobody looking means nobody to tell, so the loop stops
+and restarts on the next visitor.
+
+Cadence is adaptive: while a track is playing it re-checks when the track is due
+to end, capped at 30 seconds so a skip shows up reasonably soon; when nothing is
+playing, once a minute; on failure, backing off from one minute to fifteen.
+
+## Credentials
+
+### Spotify
+
+1. Create an app at [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard).
+2. Add `http://127.0.0.1:8888/callback` as a redirect URI. It has to be that
+   exactly. Spotify requires https everywhere else, and `localhost` does not
+   count as a loopback address.
+3. Put the client ID and secret in `.env`.
+4. `npm run auth:spotify`, click the link, approve. It prints the
+   `SPOTIFY_REFRESH_TOKEN` line to paste in. Refresh tokens don't expire, so
+   this is a one-time thing.
+
+Scopes requested: `user-read-playback-state`, `user-read-recently-played`.
+Neither can change what's playing.
+
+Two things worth knowing about Development Mode, which is where an app of this
+size lives:
+
+- **The app owner needs an active Spotify Premium subscription.** If Premium
+  lapses, the app stops working. This changed on 11 February 2026 for new apps
+  and 9 March 2026 for existing ones, which is late enough to be a plausible
+  cause of an integration that used to work.
+- Five users per app, which is four more than this needs.
+
+The February 2026 API change removed a pile of catalogue and library endpoints.
+Neither of the two used here was affected.
+
+### Instagram
+
+The Basic Display API this used to run on was **shut down on 4 December 2024**
+and its endpoints only return errors now. The replacement is the Instagram API
+with Instagram Login, and it only talks to **Professional accounts** — a
+personal account can't be read by any Instagram API any more.
+
+1. Switch the Instagram account to Creator or Business. It's free, reversible,
+   and in the Instagram app under Settings > Account type and tools.
+2. Create an app at [developers.facebook.com](https://developers.facebook.com)
+   and add the Instagram product.
+3. Under **Instagram > API setup with Instagram business login**, generate a
+   long-lived access token. Paste it into `.env` as `INSTAGRAM_ACCESS_TOKEN`.
+4. `npm run auth:instagram` to check it works and record its expiry.
+
+Tokens last 60 days. The server renews with two weeks to spare and writes the
+new one to `.tokens.json`, so `.env` stays the file you paste into rather than
+one the process edits underneath you.
+
+If you'd rather do the full OAuth round trip, `npm run auth:instagram --
+--authorize` prints the URL, and `-- --code=…` exchanges what comes back. Meta
+requires an https redirect URI, so there's no loopback server to catch it the
+way the Spotify script does.
+
+### Google Calendar
+
+This used to authenticate with a bare API key, and an API key can only read a
+calendar that has been made **fully public** — every event title, guest list and
+location, to anyone who knew the calendar ID, so the page could render the word
+"Busy". Now it's a service account asking for free/busy, which returns intervals
+and nothing else.
+
+1. In [console.cloud.google.com](https://console.cloud.google.com), create a
+   project and enable the Google Calendar API.
+2. Create a service account. No roles needed. Add a key, type JSON, and download
+   it.
+3. In Google Calendar, open the calendar's settings, and under **Share with
+   specific people** add the service account's `client_email` with permission
+   **See only free/busy (hide details)**.
+4. From the JSON key file, copy `client_email` and `private_key` into `.env`.
+   Keep the `\n` escapes in the private key exactly as they appear in the JSON;
+   `config.js` turns them back into newlines.
+5. `GOOGLE_CALENDAR_ID` is under Settings > Integrate calendar. For a primary
+   calendar it's your email address.
+
+The calendar stays private throughout. The service account can see that you're
+busy and nothing more.
+
+### Contact form
+
+Any SMTP host. `MAIL_PORT=465` implies TLS; anything else is treated as
+STARTTLS. Mail is sent from `MAIL_USER` with the visitor's address as `Reply-To`
+rather than as `From`, which is what keeps the domain out of SPF and DMARC
+trouble.
+
+## Tokens on disk
+
+`.tokens.json` holds the credentials that rotate on their own. It's gitignored
+and written `0600`. Delete it and the server falls back to whatever is in
+`.env`.
+
+The previous version kept these in sync by rewriting `.env` and patching the
+Heroku config, which restarted the dyno every time a token rolled over.
+
+## Tests
+
+```bash
+npm test
+```
+
+Covers the poller and the SSE stream against a stubbed Spotify: payload shape,
+that repeat callers are served from cache, that a stream opens with the current
+track and gets pushed a new one when it changes, and that a finished track falls
+back to history.

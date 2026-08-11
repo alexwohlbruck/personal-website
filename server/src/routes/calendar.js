@@ -1,41 +1,20 @@
-const router = require('express').Router()
-const calendar = require('../apis/calendar')
-const { log } = require('../util')
+import { Router } from 'express'
+import { getBusy } from '../apis/calendar.js'
+
+const router = Router()
+
+const WEEK = 7 * 24 * 60 * 60_000
 
 router.get('/', async (req, res) => {
-  try {
-  const timezone = req.query.timezone || 'America/New_York'
+  const timezone = String(req.query.timezone || 'America/New_York')
 
-  // Get beginning and end of the current week (today plus 7 days)
-  const today = (new Date()).setHours(0, 0, 0, 0)
-  const oneDay = 1000 * 60 * 60 * 24
-  const oneWeek = oneDay * 7
+  const start = new Date()
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start.getTime() + WEEK)
 
-  const weekStart = new Date(today)
-  const weekEnd = new Date(weekStart.getTime() + oneWeek)
-
-  const { data } = await calendar.events.list({
-    calendarId: process.env.GOOGLE_CALENDAR_ID,
-    timeMin: weekStart,
-    timeMax: weekEnd,
-    timeZone: timezone,
-  })
-
-  const events = []
-  for (const event of data.items) {
-    events.push({
-      start: event.start.dateTime,
-      end: event.end.dateTime,
-      summary: event.summary,
-    })
-  }
-
-  res.json({ events })
-  }
-  catch (err) {
-    log(`Calendar fetch failed: ${err.message}`, 'FgRed')
-    res.status(502).json({ message: 'Calendar is unavailable.' })
-  }
+  // Still called "events" on the wire so the client keeps working, but there is
+  // nothing in them now beyond a start and an end.
+  res.json({ events: await getBusy(start, end, timezone) })
 })
 
-module.exports = router
+export default router
