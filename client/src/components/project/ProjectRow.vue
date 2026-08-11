@@ -5,7 +5,7 @@ import ProjectTile from './ProjectTile.vue'
 import { projectImage } from '@/lib/assets'
 import { dateRange, ordinal } from '@/lib/format'
 import { distinctiveTags, tagFrequency } from '@/data/skills'
-import { projectCover, projects } from '@/data/projects'
+import { projectCover, projects, projectSummary } from '@/data/projects'
 import type { Project } from '@/data/types'
 
 const props = defineProps<{ project: Project; index: number }>()
@@ -16,6 +16,7 @@ const coverImage = computed(() => projectCover(props.project))
 const cover = computed(() => projectImage(props.project.name, coverImage.value.file))
 const topTags = computed(() => distinctiveTags(props.project.tags, frequency))
 const period = computed(() => dateRange(props.project.start, props.project.end))
+const summary = computed(() => projectSummary(props.project))
 </script>
 
 <template>
@@ -44,7 +45,7 @@ const period = computed(() => dateRange(props.project.start, props.project.end))
         <time class="label whitespace-nowrap text-ink-3 md:hidden">{{ period }}</time>
       </div>
       <h3 class="title mt-1 text-2xl md:mt-0 md:text-[1.75rem]">{{ project.title }}</h3>
-      <p class="mt-2 line-clamp-2 text-sm text-ink-3 md:line-clamp-1">{{ project.description }}</p>
+      <p class="mt-2 line-clamp-2 text-sm text-ink-3 md:line-clamp-1">{{ summary }}</p>
       <ul class="mt-3 flex flex-wrap gap-1.5 md:hidden">
         <li v-for="tag in topTags" :key="tag" class="chip">{{ tag }}</li>
       </ul>

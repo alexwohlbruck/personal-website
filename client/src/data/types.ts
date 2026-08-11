@@ -6,7 +6,9 @@ export interface Project {
   color: string
   /** Path under `assets/`, e.g. `svg/parchment.svg`. Falls back to a monogram. */
   icon?: string
-  /** Blank line separated; rendered as paragraphs. */
+  /** One line for the index and cards. Falls back to the description. */
+  summary?: string
+  /** Blank line separated; rendered as paragraphs on the project page. */
   description: string
   start: Date
   /** Omitted for projects that never formally ended. */
