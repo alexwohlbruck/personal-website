@@ -43,8 +43,8 @@ const period = computed(() => dateRange(props.project.start, props.project.end))
         <time class="label whitespace-nowrap text-ink-3 md:hidden">{{ period }}</time>
       </div>
       <h3 class="title mt-1 text-2xl md:mt-0 md:text-[1.75rem]">{{ project.title }}</h3>
-      <p class="mt-1 line-clamp-2 text-sm text-ink-3 md:line-clamp-1">{{ project.description }}</p>
-      <ul class="mt-2.5 flex flex-wrap gap-1.5 md:hidden">
+      <p class="mt-2 line-clamp-2 text-sm text-ink-3 md:line-clamp-1">{{ project.description }}</p>
+      <ul class="mt-3 flex flex-wrap gap-1.5 md:hidden">
         <li v-for="tag in topTags" :key="tag" class="chip">{{ tag }}</li>
       </ul>
     </div>

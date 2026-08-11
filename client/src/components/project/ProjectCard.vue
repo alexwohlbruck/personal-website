@@ -50,7 +50,7 @@ const size = computed(() => projectImageSize(props.project.name, coverFile.value
               dateRange(project.start, project.end)
             }}</time>
           </div>
-          <p class="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-3">
+          <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-3">
             {{ project.description }}
           </p>
         </div>

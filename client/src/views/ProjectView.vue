@@ -24,7 +24,9 @@ const spec = computed(() => {
   if (!current) return []
   return [
     { term: 'Timeline', value: dateRange(current.start, current.end) },
-    { term: 'Duration', value: humanDuration(current.start, current.end) },
+    // Projects with no recorded end date have no knowable duration. Counting
+    // from the start to today would claim they ran for years.
+    ...(current.end ? [{ term: 'Duration', value: humanDuration(current.start, current.end) }] : []),
     { term: 'Screens', value: `${current.images.length}` },
   ]
 })
@@ -63,10 +65,12 @@ const enter = (delay: number) => ({
 
     <!-- Masthead ------------------------------------------------------------>
     <header class="border-b border-rule pb-10 pt-8 md:pb-14">
-      <Motion v-bind="enter(0)" class="flex items-start gap-5 md:gap-7">
-        <ProjectTile :project="project" :size="72" class="md:!size-[88px]" />
+      <!-- Centred, so the tile reads as set against the title rather than hung
+           off its first line when a long name wraps. -->
+      <Motion v-bind="enter(0)" class="flex items-center gap-5 md:gap-6">
+        <ProjectTile :project="project" :size="64" class="md:!size-[76px]" />
         <div class="min-w-0 flex-1">
-          <h1 class="title text-5xl md:text-7xl">{{ project.title }}</h1>
+          <h1 class="title text-4xl md:text-6xl">{{ project.title }}</h1>
         </div>
       </Motion>
 
@@ -94,7 +98,8 @@ const enter = (delay: number) => ({
     <Motion
       as="dl"
       v-bind="enter(0.18)"
-      class="grid grid-cols-3 divide-rule border-b border-rule md:divide-x"
+      class="grid divide-rule border-b border-rule md:divide-x"
+      :style="{ gridTemplateColumns: `repeat(${spec.length}, minmax(0, 1fr))` }"
     >
       <div v-for="item in spec" :key="item.term" class="px-1 py-5 md:px-5 md:first:pl-0">
         <dt class="text-sm text-ink-3">{{ item.term }}</dt>

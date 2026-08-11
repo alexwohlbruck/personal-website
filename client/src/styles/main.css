@@ -109,9 +109,8 @@
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* Leading and tracking live on the `display` utility, not here. */
   --text-display: clamp(2.75rem, 1.2rem + 7vw, 6.5rem);
-  --text-display--line-height: 0.94;
-  --text-display--letter-spacing: -0.02em;
 }
 
 /* ---------------------------------------------------------------------------
@@ -197,8 +196,8 @@
 @utility title {
   font-family: var(--font-serif);
   font-weight: 400;
-  letter-spacing: -0.01em;
-  line-height: 1.12;
+  letter-spacing: -0.005em;
+  line-height: 1.16;
   font-variation-settings: 'EXPO' -20;
   font-feature-settings: 'liga' 0, 'ss01' 0, 'ss02' 0, 'ss03' 0, 'ss04' 0, 'ss05' 0, 'ss06' 0;
 }

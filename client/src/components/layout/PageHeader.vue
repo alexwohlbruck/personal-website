@@ -19,7 +19,7 @@ const enter = (delay: number) => ({
     <Motion as="h1" v-bind="enter(0)" class="title text-5xl md:text-7xl">
       {{ title }}
     </Motion>
-    <Motion v-if="lede" as="p" v-bind="enter(0.06)" class="prose-body mt-5 max-w-2xl text-balance">
+    <Motion v-if="lede" as="p" v-bind="enter(0.06)" class="prose-body mt-6 max-w-2xl text-balance">
       {{ lede }}
     </Motion>
     <slot />
