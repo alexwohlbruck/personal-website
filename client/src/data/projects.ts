@@ -13,6 +13,7 @@ export const projects: Project[] = [
     end: new Date(),
     url: 'https://parchment.app',
     github: 'https://github.com/alexwohlbruck/parchment',
+    cover: 'day-night.png',
     images: [
       'landing.png',
       'main.png',
@@ -358,6 +359,7 @@ export const projects: Project[] = [
     start: new Date('2015-05-26'),
     url: 'https://rockpaperscissors-demo.netlify.app',
     github: 'https://github.com/alexwohlbruck/rock-paper-scissors',
+    coverPosition: 'center',
     images: ['title.png', 'instructions.png', 'color.png', 'play.png', 'finish.png'],
     tags: ['html', 'css', 'js', 'photoshop', 'client-side'],
   },
@@ -365,6 +367,24 @@ export const projects: Project[] = [
 
 export function findProject(name: string): Project | undefined {
   return projects.find((project) => project.name === name)
+}
+
+/**
+ * Written out in full rather than built from the key: Tailwind scans source
+ * files as plain text, so an interpolated class name never reaches the CSS.
+ */
+const coverCrop = {
+  top: 'object-top',
+  center: 'object-center',
+  bottom: 'object-bottom',
+} as const
+
+/** The cover image and its crop, filled in with the defaults. */
+export function projectCover(project: Project) {
+  return {
+    file: project.cover ?? project.images[0] ?? '',
+    position: coverCrop[project.coverPosition ?? 'top'],
+  }
 }
 
 /** Wraps around, so the detail page's prev/next never dead-ends. */

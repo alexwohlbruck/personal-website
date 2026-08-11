@@ -5,14 +5,15 @@ import ProjectTile from './ProjectTile.vue'
 import { projectImage } from '@/lib/assets'
 import { dateRange, ordinal } from '@/lib/format'
 import { distinctiveTags, tagFrequency } from '@/data/skills'
-import { projects } from '@/data/projects'
+import { projectCover, projects } from '@/data/projects'
 import type { Project } from '@/data/types'
 
 const props = defineProps<{ project: Project; index: number }>()
 
 const frequency = tagFrequency(projects.map((p) => p.tags))
 
-const cover = computed(() => projectImage(props.project.name, props.project.images[0] ?? ''))
+const coverImage = computed(() => projectCover(props.project))
+const cover = computed(() => projectImage(props.project.name, coverImage.value.file))
 const topTags = computed(() => distinctiveTags(props.project.tags, frequency))
 const period = computed(() => dateRange(props.project.start, props.project.end))
 </script>
@@ -59,7 +60,8 @@ const period = computed(() => dateRange(props.project.start, props.project.end))
         alt=""
         loading="lazy"
         decoding="async"
-        class="h-full w-full object-cover object-top opacity-70 saturate-[0.6] transition-all duration-300 ease-out-quint group-hover:scale-[1.04] group-hover:opacity-100 group-hover:saturate-100"
+        class="h-full w-full object-cover opacity-70 saturate-[0.6] transition-all duration-300 ease-out-quint group-hover:scale-[1.04] group-hover:opacity-100 group-hover:saturate-100"
+        :class="coverImage.position"
       />
     </span>
 

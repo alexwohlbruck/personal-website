@@ -13,8 +13,16 @@ export interface Project {
   end?: Date
   url?: string
   github?: string
-  /** Filenames under `assets/portfolio/<name>/`. First one is the cover. */
+  /** Filenames under `assets/portfolio/<name>/`. */
   images: string[]
+  /** Which image fronts the project. Defaults to the first in `images`. */
+  cover?: string
+  /**
+   * How the cover is cropped in its frame. Screenshots are usually best from
+   * the top, so that is the default; use `center` for art and `bottom` when
+   * the interesting part is below the fold.
+   */
+  coverPosition?: 'top' | 'center' | 'bottom'
   /** Skill tags. The About page cross-references these. */
   tags: string[]
 }

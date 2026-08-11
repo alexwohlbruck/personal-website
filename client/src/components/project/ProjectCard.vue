@@ -4,14 +4,15 @@ import { ArrowUpRight } from '@lucide/vue'
 import TiltCard from '@/components/ui/TiltCard.vue'
 import ProjectTile from './ProjectTile.vue'
 import { projectImage, projectImageSize } from '@/lib/assets'
+import { projectCover } from '@/data/projects'
 import { dateRange } from '@/lib/format'
 import type { Project } from '@/data/types'
 
 const props = defineProps<{ project: Project }>()
 
-const coverFile = computed(() => props.project.images[0] ?? '')
-const cover = computed(() => projectImage(props.project.name, coverFile.value))
-const size = computed(() => projectImageSize(props.project.name, coverFile.value))
+const coverImage = computed(() => projectCover(props.project))
+const cover = computed(() => projectImage(props.project.name, coverImage.value.file))
+const size = computed(() => projectImageSize(props.project.name, coverImage.value.file))
 </script>
 
 <template>
@@ -33,7 +34,8 @@ const size = computed(() => projectImageSize(props.project.name, coverFile.value
           :alt="`${project.title} preview`"
           loading="lazy"
           decoding="async"
-          class="h-full w-full object-cover object-top transition-transform duration-500 ease-out-quint group-hover:scale-[1.03]"
+          class="h-full w-full object-cover transition-transform duration-500 ease-out-quint group-hover:scale-[1.03]"
+          :class="coverImage.position"
         />
         <span
           class="pointer-events-none absolute inset-0"
