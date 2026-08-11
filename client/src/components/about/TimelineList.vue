@@ -82,11 +82,26 @@ const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
 
 <template>
   <ol
-    class="grid gap-y-9 [--dot:0.62rem] [--lane:0.75rem]"
+    class="grid gap-y-9 [--dot:0.62rem] [--lane:0.875rem]"
     :style="{
       gridTemplateColumns: `var(--date-col) repeat(${laneCount}, var(--lane)) minmax(0, 1fr)`,
     }"
   >
+    <!--
+      The trunk. One unbroken line from the first dot to the last, so the eye
+      has something to follow, and everything else hangs off it.
+    -->
+    <span
+      aria-hidden="true"
+      class="w-px justify-self-center bg-rule-strong"
+      :style="{
+        gridRow: `1 / ${rows.length}`,
+        gridColumn: 2,
+        marginTop: 'var(--dot)',
+        height: '100%',
+      }"
+    />
+
     <li v-for="entry in rows" :key="`${entry.event.title}-${entry.row}`" class="contents">
       <time
         class="label tabular pr-5 pt-[0.15rem] text-right text-ink-3"
@@ -96,21 +111,25 @@ const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
       </time>
 
       <!--
-        The thread. It runs from this entry's dot up to the dot of the highest
-        entry it overlaps, so concurrent runs sit side by side in their lanes.
-        Entries that overlapped nothing have no thread, only their dot.
+        A fork, drawn the way a branch graph draws one: it leaves the trunk at
+        the dot of the entry it overlaps, curves into its own lane and runs
+        down to its own dot. Two borders and a corner radius on one box, so it
+        needs no measuring. Entries sitting on the trunk have no fork.
       -->
       <span
-        v-if="entry.reach < entry.row"
+        v-if="entry.lane > 0"
         aria-hidden="true"
-        class="w-[3px] justify-self-center rounded-full"
         :style="{
           gridRow: `${entry.reach + 1} / ${entry.row + 1}`,
-          gridColumn: entry.lane + 2,
+          gridColumn: `2 / ${entry.lane + 3}`,
           marginTop: 'var(--dot)',
+          marginLeft: 'calc(var(--lane) / 2)',
+          marginRight: 'calc(var(--lane) / 2)',
           height: '100%',
-          background: entry.color,
-          opacity: entry.event.ongoing ? 0.9 : 0.6,
+          borderTop: `1.5px solid ${entry.color}`,
+          borderRight: `1.5px solid ${entry.color}`,
+          borderTopRightRadius: 'var(--lane)',
+          opacity: entry.event.ongoing ? 0.75 : 0.5,
         }"
       />
 
