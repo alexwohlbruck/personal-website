@@ -51,6 +51,8 @@ export interface TimelineEvent {
   title: string
   description: string
   icon?: string
+  /** The company or school's own site. */
+  url?: string
   /** Slug of a related project, linked from the entry. */
   project?: string
 }

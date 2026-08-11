@@ -6,6 +6,7 @@ export const timeline: TimelineEvent[] = [
     from: new Date('October 1, 2025'),
     ongoing: true,
     title: 'Subway Builder',
+    url: 'https://www.subwaybuilder.com/',
     description:
       'Software Engineer at Subway Builder, full-time and hybrid out of Manhattan.',
     icon: 'svg/subway-builder.svg',
@@ -14,6 +15,7 @@ export const timeline: TimelineEvent[] = [
     from: new Date('November 19, 2023'),
     ongoing: true,
     title: 'Parchment Maps',
+    url: 'https://parchment.app',
     description:
       'Self-employed, designing and building Parchment, a mapping and navigation app made from open data and open source software.',
     icon: 'svg/parchment.svg',
@@ -23,6 +25,7 @@ export const timeline: TimelineEvent[] = [
     from: new Date('October 23, 2023'),
     to: new Date('October 1, 2025'),
     title: 'Spectrum Reach',
+    url: 'https://www.spectrumreach.com/',
     description:
       "Associate Full Stack Developer at Spectrum Reach, Spectrum's marketing and advertising branch.",
     icon: 'svg/spectrum.svg',
@@ -31,6 +34,7 @@ export const timeline: TimelineEvent[] = [
     from: new Date('July 16, 2022'),
     to: new Date('August 2, 2023'),
     title: 'Xenial',
+    url: 'https://www.xenial.com/',
     description:
       'Junior Full Stack Engineer at Xenial, a Charlotte-based restaurant and payments services company.',
     icon: 'svg/xenial.svg',
@@ -38,6 +42,7 @@ export const timeline: TimelineEvent[] = [
   {
     from: new Date('May 7, 2022'),
     title: 'Appalachian State',
+    url: 'https://www.appstate.edu/',
     description: 'Graduated Appalachian State University, with a B.S. in computer science.',
     icon: 'svg/appstate.svg',
   },
@@ -45,6 +50,7 @@ export const timeline: TimelineEvent[] = [
     from: new Date('December 16, 2020'),
     to: new Date('May 6, 2022'),
     title: 'Worxstr',
+    url: 'https://worxstr.netlify.app',
     description:
       'Designed and developed the web frontend and mobile app for Worxstr, a digital labor management platform.',
     icon: 'svg/worxstr.svg',
@@ -54,6 +60,7 @@ export const timeline: TimelineEvent[] = [
     from: new Date('May 1, 2019'),
     to: new Date('August 1, 2019'),
     title: 'PunchAlert',
+    url: 'https://web.archive.org/web/20240415184240/https://www.punchalert.com/',
     description:
       'Worked on custom software suite integrations for the PunchAlert app using Python.',
     icon: 'svg/punch.svg',
@@ -61,6 +68,7 @@ export const timeline: TimelineEvent[] = [
   {
     from: new Date('August 16, 2018'),
     title: 'Appalachian State',
+    url: 'https://www.appstate.edu/',
     description:
       'Became an undergrad student at Appalachian State University, studying for a B.S. in computer science.',
     icon: 'svg/appstate.svg',
@@ -69,6 +77,7 @@ export const timeline: TimelineEvent[] = [
     from: new Date('May 1, 2018'),
     to: new Date('June 1, 2018'),
     title: 'PunchAlert',
+    url: 'https://web.archive.org/web/20240415184240/https://www.punchalert.com/',
     description:
       'Interned writing a new front-end web console for internal use at the company using Vue.js.',
     icon: 'svg/punch.svg',

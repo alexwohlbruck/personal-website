@@ -56,7 +56,22 @@ function period(event: TimelineEvent): string {
             class="size-5 shrink-0 rounded-sm"
             loading="lazy"
           />
-          <h3 class="title text-xl">{{ event.title }}</h3>
+          <h3 class="title text-xl">
+            <!-- The title carries the outbound link when there is one. -->
+            <a
+              v-if="event.url"
+              :href="event.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group/link inline-flex items-baseline gap-1.5 transition-colors hover:text-accent"
+            >
+              {{ event.title }}
+              <ArrowUpRight
+                class="size-3.5 shrink-0 self-center text-ink-3 opacity-0 transition-all duration-300 ease-out-quint group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 group-hover/link:text-accent group-hover/link:opacity-100"
+              />
+            </a>
+            <template v-else>{{ event.title }}</template>
+          </h3>
         </div>
 
         <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-3">{{ event.description }}</p>
