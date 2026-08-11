@@ -13,7 +13,7 @@ import { duration, ease, inView } from '@/lib/motion'
   <div class="pb-8">
     <PageHeader
       title="A bit about me"
-      :lede="`${site.role} in ${site.location}. I care about interfaces where the motion, the spacing, and the words all agree with each other.`"
+      :lede="`${site.role} in ${site.location}. I build front-ends, and lately almost all of them have been maps.`"
     />
 
     <!-- Bio ----------------------------------------------------------------->

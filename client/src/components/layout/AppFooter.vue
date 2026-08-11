@@ -37,9 +37,8 @@ function toTop() {
           </RouterLink>
 
           <p class="mt-4 text-sm leading-relaxed text-ink-3">
-            {{ site.role }} in {{ site.location }}. I work at
-            {{ site.currently.company }} by day and build maps and small tools the rest of the
-            time.
+            {{ site.role }} in {{ site.location }}. Currently at
+            {{ site.currently.company }}. Most of my own time goes to maps.
           </p>
 
           <RouterLink
