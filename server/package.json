@@ -12,7 +12,8 @@
     "dev": "nodemon .",
     "test": "node --test \"test/*.test.js\"",
     "auth:spotify": "node scripts/spotify-auth.js",
-    "auth:instagram": "node scripts/instagram-auth.js"
+    "auth:instagram": "node scripts/instagram-auth.js",
+    "auth:google": "node scripts/google-auth.js"
   },
   "author": "Alex Wohlbruck",
   "license": "ISC",

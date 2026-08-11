@@ -129,17 +129,39 @@ location, to anyone who knew the calendar ID, so the page could render the word
 and nothing else.
 
 1. In [console.cloud.google.com](https://console.cloud.google.com), create a
-   project and enable the Google Calendar API.
-2. Create a service account. No roles needed. Add a key, type JSON, and download
-   it.
-3. In Google Calendar, open the calendar's settings, and under **Share with
-   specific people** add the service account's `client_email` with permission
-   **See only free/busy (hide details)**.
-4. From the JSON key file, copy `client_email` and `private_key` into `.env`.
-   Keep the `\n` escapes in the private key exactly as they appear in the JSON;
-   `config.js` turns them back into newlines.
-5. `GOOGLE_CALENDAR_ID` is under Settings > Integrate calendar. For a primary
-   calendar it's your email address.
+   project, then **APIs & Services > Library** and enable the **Google Calendar
+   API**. Nothing works until this is on.
+2. **APIs & Services > Credentials > Create credentials > Service account.**
+   Any name. **Skip the optional roles** — roles grant access to cloud
+   resources, which is not how calendar access is granted.
+3. Open the new service account, **Keys > Add key > Create new key > JSON**. It
+   downloads once.
+4. Turn that file into `.env` lines:
+
+   ```bash
+   npm run auth:google -- ~/Downloads/your-project-abc123.json
+   ```
+
+   It prints `GOOGLE_CLIENT_EMAIL` and a correctly escaped `GOOGLE_PRIVATE_KEY`,
+   which saves getting the newlines wrong by hand.
+5. `GOOGLE_CALENDAR_ID` is in the calendar's **Settings > Integrate calendar**.
+   For your primary calendar it's your email address.
+6. **Share the calendar with the service account.** In Google Calendar, the
+   calendar's **Settings > Share with specific people > Add people**, paste the
+   `client_email` address, and pick **See only free/busy (hide details)**.
+7. Check it:
+
+   ```bash
+   npm run auth:google
+   ```
+
+   With no arguments it verifies what's in `.env` and reports how many busy
+   blocks it can see.
+
+Step 6 is the one that gets missed. A service account is a separate identity, so
+creating it grants nothing by itself, and an unshared calendar answers
+`notFound` rather than a permission error — which reads like a wrong calendar
+ID and sends you back to step 5. If you see `notFound`, check the sharing first.
 
 The calendar stays private throughout. The service account can see that you're
 busy and nothing more.
