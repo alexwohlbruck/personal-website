@@ -151,38 +151,107 @@ function trace(field, cols, rows, level) {
   return segments
 }
 
-/** Chain segments end to end so the output is a few polylines, not thousands. */
+/**
+ * Chain segments into whole contours.
+ *
+ * Marching squares emits each crossing independently and in no useful order,
+ * and a segment's two endpoints carry no inherent direction, so matching only
+ * heads to tails leaves a ring split wherever a segment happens to be stored
+ * backwards. This walks outward from both ends of a chain and will join to
+ * either endpoint of a candidate, which is what closes the loops.
+ */
 function chain(segments) {
-  const key = (p) => `${p[0].toFixed(4)},${p[1].toFixed(4)}`
-  const starts = new Map()
+  const key = (p) => `${Math.round(p[0] * 1e4)},${Math.round(p[1] * 1e4)}`
+  const ends = new Map()
 
-  for (const seg of segments) {
-    const k = key(seg[0])
-    if (!starts.has(k)) starts.set(k, [])
-    starts.get(k).push(seg)
-  }
+  segments.forEach((seg, i) => {
+    for (const end of [0, 1]) {
+      const k = key(seg[end])
+      if (!ends.has(k)) ends.set(k, [])
+      ends.get(k).push({ i, end })
+    }
+  })
 
-  const used = new Set()
+  const used = new Array(segments.length).fill(false)
   const lines = []
 
-  for (const seg of segments) {
-    if (used.has(seg)) continue
-    used.add(seg)
-
-    const line = [seg[0], seg[1]]
-    let tail = seg[1]
-
+  const grow = (line, atTail) => {
     while (true) {
-      const next = (starts.get(key(tail)) ?? []).find((candidate) => !used.has(candidate))
+      const tip = atTail ? line[line.length - 1] : line[0]
+      const next = (ends.get(key(tip)) ?? []).find((c) => !used[c.i])
       if (!next) break
-      used.add(next)
-      line.push(next[1])
-      tail = next[1]
-      if (line.length > 4000) break
+      used[next.i] = true
+      // Join to whichever end of the candidate is not the one we matched.
+      const far = segments[next.i][1 - next.end]
+      if (atTail) line.push(far)
+      else line.unshift(far)
+      if (line.length > 20000) break
     }
-    lines.push(line)
+  }
+
+  for (let i = 0; i < segments.length; i++) {
+    if (used[i]) continue
+    used[i] = true
+    const line = [segments[i][0], segments[i][1]]
+    grow(line, true)
+    grow(line, false)
+    lines.push({ points: line, closed: key(line[0]) === key(line[line.length - 1]) })
   }
   return lines
+}
+
+/** Drop points that sit on the line between their neighbours. */
+function simplify(points, epsilon) {
+  if (points.length < 3) return points
+  const out = [points[0]]
+
+  for (let i = 1; i < points.length - 1; i++) {
+    const [ax, ay] = out[out.length - 1]
+    const [bx, by] = points[i]
+    const [cx, cy] = points[i + 1]
+    const dx = cx - ax
+    const dy = cy - ay
+    const len = Math.hypot(dx, dy)
+    const deviation = len === 0 ? 0 : Math.abs((bx - ax) * dy - (by - ay) * dx) / len
+    if (deviation > epsilon) out.push(points[i])
+  }
+
+  out.push(points[points.length - 1])
+  return out
+}
+
+/**
+ * A polyline through midpoints, with the original vertices as quadratic control
+ * points. Every joint is tangent-continuous, so the lattice corners that made
+ * the contours look polygonal round away, at two coordinates per point.
+ */
+function smoothPath(points, closed, scaleX, scaleY) {
+  const r = (v) => Math.round(v)
+  const px = (p) => [p[0] * scaleX, p[1] * scaleY]
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+
+  if (closed) {
+    const ring = points.slice(0, -1).map(px)
+    if (ring.length < 3) return null
+    const start = mid(ring[ring.length - 1], ring[0])
+    let d = `M${r(start[0])} ${r(start[1])}`
+    for (let i = 0; i < ring.length; i++) {
+      const cur = ring[i]
+      const m = mid(cur, ring[(i + 1) % ring.length])
+      d += `Q${r(cur[0])} ${r(cur[1])} ${r(m[0])} ${r(m[1])}`
+    }
+    return `${d}Z`
+  }
+
+  const line = points.map(px)
+  if (line.length < 3) return null
+  let d = `M${r(line[0][0])} ${r(line[0][1])}`
+  for (let i = 1; i < line.length - 1; i++) {
+    const m = mid(line[i], line[i + 1])
+    d += `Q${r(line[i][0])} ${r(line[i][1])} ${r(m[0])} ${r(m[1])}`
+  }
+  const last = line[line.length - 1]
+  return `${d}L${r(last[0])} ${r(last[1])}`
 }
 
 const rand = mulberry32(SEED)
@@ -191,29 +260,36 @@ const scaleX = WIDTH / (COLS - 1)
 const scaleY = HEIGHT / (ROWS - 1)
 
 const paths = []
-let pointCount = 0
+let ringCount = 0
+let openCount = 0
 
 for (let i = 1; i < LEVELS; i++) {
-  const level = i / LEVELS
-  const lines = chain(trace(field, COLS, ROWS, level))
-    // Two-point stubs are marching-squares noise, not landform.
-    .filter((line) => line.length > 3)
+  // Nudge off exact sample values, where a cell is ambiguous and the trace can
+  // split a ring in two.
+  const level = i / LEVELS + 1e-6
 
-  if (!lines.length) continue
-
-  const d = lines
-    .map((line) => {
-      pointCount += line.length
-      const points = line.map(([x, y]) => `${Math.round(x * scaleX)} ${Math.round(y * scaleY)}`)
-      return `M${points.join('L')}`
+  const d = chain(trace(field, COLS, ROWS, level))
+    .filter(({ points, closed }) => {
+      // A ring a fraction of a cell across is a numerical speck, not a summit.
+      if (!closed) return true
+      const xs = points.map((pt) => pt[0])
+      const ys = points.map((pt) => pt[1])
+      return Math.max(...xs) - Math.min(...xs) > 0.5 || Math.max(...ys) - Math.min(...ys) > 0.5
     })
+    .map(({ points, closed }) => {
+      const thinned = simplify(points, 0.06)
+      const path = smoothPath(thinned, closed, scaleX, scaleY)
+      if (path) closed ? ringCount++ : openCount++
+      return path
+    })
+    .filter(Boolean)
     .join('')
+
+  if (!d) continue
 
   // Every fifth line is an index contour, drawn heavier, as on a real map.
   const index = i % 5 === 0
-  paths.push(
-    `<path d="${d}" stroke-width="${index ? 2.2 : 1.1}" opacity="${index ? 1 : 0.62}"/>`,
-  )
+  paths.push(`<path d="${d}" stroke-width="${index ? 2.2 : 1.1}" opacity="${index ? 1 : 0.62}"/>`)
 }
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${HEIGHT}" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
@@ -224,5 +300,5 @@ ${paths.join('\n')}
 const out = join(dirname(fileURLToPath(import.meta.url)), '../src/assets/topo.svg')
 writeFileSync(out, svg)
 console.log(
-  `Wrote ${paths.length} contour levels, ${pointCount} points, ${(svg.length / 1024).toFixed(1)} kB`,
+  `Wrote ${paths.length} levels, ${ringCount} closed rings, ${openCount} running off the edge, ${(svg.length / 1024).toFixed(1)} kB`,
 )

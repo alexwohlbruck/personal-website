@@ -16,7 +16,7 @@ export const skills: SkillGroups = {
         'This is what I do best. Front-end web development has always been what I have considered my best skill. Vue is my home ground, though I have shipped production work in Svelte and contributed to React codebases, and the fundamentals underneath them all matter more to me than the framework on top.',
     },
     {
-      name: 'Server-side development',
+      name: 'Server architecture',
       tag: 'server-side',
       proficiency: 9,
       description:
@@ -44,7 +44,7 @@ export const skills: SkillGroups = {
         'I have always thought realtime data was one of the coolest features of modern applications, and over the years I have learned how to integrate realtime data updates in my apps in a robust and reactive manner using Socket.io and Flux state management patterns.',
     },
     {
-      name: 'Cross-platform apps',
+      name: 'Cross-platform',
       tag: 'cross-platform',
       proficiency: 9,
       description:
@@ -52,13 +52,6 @@ export const skills: SkillGroups = {
     },
   ],
   craft: [
-    {
-      name: 'Graphic design',
-      tag: 'graphic-design',
-      proficiency: 9,
-      description:
-        'When I first learned Photoshop in middle school, it started my lifelong passion for graphic design. Before I learned to code, I wanted to major in it in college. I have designed countless logos, graphic art, and UI mockups over the years, mostly in Photoshop and Illustrator.',
-    },
     {
       name: 'UX design',
       tag: 'ux',
@@ -75,13 +68,6 @@ export const skills: SkillGroups = {
     },
   ],
   practice: [
-    {
-      name: 'Testing',
-      tag: 'testing',
-      proficiency: 7,
-      description:
-        'I have integrated both unit tests and E2E tests in hobby and professional projects. Cypress is my favorite testing framework for writing automated tests for web and mobile apps.',
-    },
     {
       name: 'CI/CD',
       tag: 'ci-cd',
@@ -108,7 +94,11 @@ export const skillGroupLabels = {
 export const allSkills = [...skills.engineering, ...skills.craft, ...skills.practice]
 
 export function tagLabel(tag: string): string {
-  return allSkills.find((skill) => skill.tag === tag)?.name ?? tag
+  const skill = allSkills.find((entry) => entry.tag === tag)
+  if (skill) return skill.name
+  // A tag whose skill is no longer on the list above. Humanise the slug so a
+  // stale tag still reads as a label instead of leaking its raw form.
+  return tag.charAt(0).toUpperCase() + tag.slice(1).replace(/-/g, ' ')
 }
 
 /**

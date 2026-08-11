@@ -53,7 +53,7 @@ export const projects: Project[] = [
     github: 'https://github.com/alexwohlbruck/coopoly-deal',
     cover: 'game.jpg',
     images: ['main.jpg', 'lobby.jpg', 'game.jpg', 'settings.jpg', 'endgame.jpg'],
-    tags: ['client-side', 'server-side', 'realtime', 'graphic-design', 'ux'],
+    tags: ['client-side', 'server-side', 'realtime', 'ux'],
   },
   {
     name: 'parchment',
@@ -119,9 +119,7 @@ export const projects: Project[] = [
     ],
     tags: [
       'client-side',
-      'apis',
       'cross-platform',
-      'graphic-design',
       'cartography',
     ],
   },
@@ -162,9 +160,7 @@ export const projects: Project[] = [
       'databases',
       'realtime',
       'cross-platform',
-      'graphic-design',
       'ux',
-      'testing',
       'ci-cd',
     ],
   },
@@ -212,7 +208,6 @@ export const projects: Project[] = [
       'server-side',
       'apis',
       'realtime',
-      'graphic-design',
       'ci-cd',
       'iot',
     ],
@@ -231,9 +226,7 @@ export const projects: Project[] = [
     tags: [
       'client-side',
       'server-side',
-      'apis',
       'realtime',
-      'graphic-design',
       'ux',
       'ci-cd',
     ],
@@ -250,10 +243,8 @@ export const projects: Project[] = [
     images: ['main.png'],
     tags: [
       'client-side',
-      'server-side',
       'cross-platform',
       'ux',
-      'testing',
     ],
   },
   {
@@ -282,7 +273,6 @@ export const projects: Project[] = [
       'apis',
       'databases',
       'realtime',
-      'graphic-design',
     ],
   },
   {
@@ -301,7 +291,6 @@ export const projects: Project[] = [
       'client-side',
       'server-side',
       'realtime',
-      'graphic-design',
       'ux',
     ],
   },
@@ -332,7 +321,6 @@ export const projects: Project[] = [
       'server-side',
       'apis',
       'databases',
-      'graphic-design',
       'ux',
     ],
   },
@@ -350,7 +338,6 @@ export const projects: Project[] = [
     images: ['title.png', 'instructions.png', 'color.png', 'play.png', 'finish.png'],
     tags: [
       'client-side',
-      'graphic-design',
     ],
   },
 ]

@@ -34,9 +34,7 @@ const enter = (delay: number) => ({
       <div>
         <Motion as="h1" v-bind="enter(0)" class="display">Alex<br />Wohlbruck</Motion>
 
-        <Motion as="div" v-bind="enter(0.08)" class="mt-8 h-px w-full bg-rule" />
-
-        <Motion as="p" v-bind="enter(0.12)" class="prose-body mt-8 max-w-xl text-lg md:text-xl">
+        <Motion as="p" v-bind="enter(0.1)" class="prose-body mt-7 max-w-xl text-lg md:text-xl">
           {{ site.statement }}
         </Motion>
 
@@ -115,7 +113,7 @@ const enter = (delay: number) => ({
     >
       <span
         class="ruled pointer-events-none absolute inset-0 opacity-70"
-        style="--rule-gap: 2rem"
+        style="--rule-gap: 1.15rem"
         aria-hidden="true"
       />
       <div class="relative">
