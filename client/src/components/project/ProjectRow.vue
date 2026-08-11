@@ -2,18 +2,19 @@
 import { computed } from 'vue'
 import { ArrowUpRight } from '@lucide/vue'
 import ProjectTile from './ProjectTile.vue'
-import { projectImage } from '@/lib/assets'
-import { dateRange, ordinal } from '@/lib/format'
+import ProgressiveImage from '@/components/ui/ProgressiveImage.vue'
+import { projectImageSet } from '@/lib/assets'
+import { dateRange } from '@/lib/format'
 import { distinctiveTags, tagFrequency } from '@/data/skills'
 import { projectCover, projects, projectSummary } from '@/data/projects'
 import type { Project } from '@/data/types'
 
-const props = defineProps<{ project: Project; index: number }>()
+const props = defineProps<{ project: Project }>()
 
 const frequency = tagFrequency(projects.map((p) => p.tags))
 
 const coverImage = computed(() => projectCover(props.project))
-const cover = computed(() => projectImage(props.project.name, coverImage.value.file))
+const cover = computed(() => projectImageSet(props.project.name, coverImage.value.file))
 const topTags = computed(() => distinctiveTags(props.project.tags, frequency))
 const period = computed(() => dateRange(props.project.start, props.project.end))
 const summary = computed(() => projectSummary(props.project))
@@ -22,16 +23,12 @@ const summary = computed(() => projectSummary(props.project))
 <template>
   <RouterLink
     :to="{ name: 'project', params: { name: project.name } }"
-    class="group relative flex items-start gap-4 border-b border-rule py-5 md:grid md:grid-cols-[2.5rem_auto_1fr_auto_10.5rem] md:items-center md:gap-6 md:py-6"
+    class="group relative flex items-start gap-4 border-b border-rule py-5 md:grid md:grid-cols-[auto_1fr_auto_10.5rem] md:items-center md:gap-6 md:py-6"
   >
     <!-- Hover wash bleeds past the text column so the row reads as one target. -->
     <span
       class="pointer-events-none absolute -inset-x-4 inset-y-0 -z-10 rounded-lg bg-accent-wash opacity-0 transition-opacity duration-200 group-hover:opacity-100"
     />
-
-    <span class="label hidden text-ink-3 transition-colors group-hover:text-accent md:block">
-      {{ ordinal(index) }}
-    </span>
 
     <span
       class="shrink-0 transition-transform duration-300 ease-out-quint group-hover:-translate-y-0.5"
@@ -40,8 +37,7 @@ const summary = computed(() => projectSummary(props.project))
     </span>
 
     <div class="min-w-0 flex-1">
-      <div class="flex items-baseline justify-between gap-3 md:block">
-        <span class="label text-ink-3 md:hidden">{{ ordinal(index) }}</span>
+      <div class="md:hidden">
         <time class="label whitespace-nowrap text-ink-3 md:hidden">{{ period }}</time>
       </div>
       <h3 class="title mt-1 text-2xl md:mt-0 md:text-[1.75rem]">{{ project.title }}</h3>
@@ -53,16 +49,15 @@ const summary = computed(() => projectSummary(props.project))
 
     <!-- Cover peek: quiet at rest, wakes up under the cursor. -->
     <span
-      v-if="cover"
+      v-if="cover.src"
       class="relative hidden h-[3.25rem] w-[5.5rem] overflow-hidden rounded-md ring-1 ring-rule transition-all duration-300 ease-out-quint group-hover:-translate-y-0.5 group-hover:shadow-e2 lg:block"
     >
-      <img
-        :src="cover"
+      <ProgressiveImage
+        :image="cover"
         alt=""
-        loading="lazy"
-        decoding="async"
-        class="h-full w-full object-cover opacity-70 saturate-[0.6] transition-all duration-300 ease-out-quint group-hover:scale-[1.04] group-hover:opacity-100 group-hover:saturate-100"
-        :class="coverImage.position"
+        sizes="88px"
+        class="h-full w-full opacity-70 saturate-[0.6] transition-all duration-300 ease-out-quint group-hover:scale-[1.04] group-hover:opacity-100 group-hover:saturate-100"
+        :img-class="`h-full w-full object-cover ${coverImage.position}`"
       />
     </span>
 

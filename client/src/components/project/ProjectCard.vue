@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import { ArrowUpRight } from '@lucide/vue'
 import TiltCard from '@/components/ui/TiltCard.vue'
 import ProjectTile from './ProjectTile.vue'
-import { projectImage, projectImageSize } from '@/lib/assets'
+import ProgressiveImage from '@/components/ui/ProgressiveImage.vue'
+import { projectImageSet } from '@/lib/assets'
 import { projectCover, projectSummary } from '@/data/projects'
 import { dateRange } from '@/lib/format'
 import type { Project } from '@/data/types'
@@ -12,8 +13,7 @@ const props = defineProps<{ project: Project }>()
 
 const coverImage = computed(() => projectCover(props.project))
 const summary = computed(() => projectSummary(props.project))
-const cover = computed(() => projectImage(props.project.name, coverImage.value.file))
-const size = computed(() => projectImageSize(props.project.name, coverImage.value.file))
+const cover = computed(() => projectImageSet(props.project.name, coverImage.value.file))
 </script>
 
 <template>
@@ -27,16 +27,13 @@ const size = computed(() => projectImageSize(props.project.name, coverImage.valu
         class="relative aspect-[16/10] overflow-hidden border-b border-rule"
         :style="{ backgroundColor: project.color }"
       >
-        <img
-          v-if="cover"
-          :src="cover"
-          :width="size.width"
-          :height="size.height"
+        <ProgressiveImage
+          v-if="cover.src"
+          :image="cover"
           :alt="`${project.title} preview`"
-          loading="lazy"
-          decoding="async"
-          class="h-full w-full object-cover transition-transform duration-500 ease-out-quint group-hover:scale-[1.03]"
-          :class="coverImage.position"
+          sizes="(min-width: 1024px) 22rem, (min-width: 768px) 45vw, 92vw"
+          class="h-full w-full transition-transform duration-500 ease-out-quint group-hover:scale-[1.03]"
+          :img-class="`h-full w-full object-cover ${coverImage.position}`"
         />
         <span
           class="pointer-events-none absolute inset-0"

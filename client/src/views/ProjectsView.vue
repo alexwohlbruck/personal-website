@@ -74,7 +74,7 @@ function toggle(tag: string) {
           :exit="{ opacity: 0, filter: 'blur(4px)' }"
           :transition="{ duration: duration.base, ease, delay: step(Math.min(index, 8)) }"
         >
-          <ProjectRow :project="project" :index="index" />
+          <ProjectRow :project="project" />
         </Motion>
       </AnimatePresence>
     </ol>

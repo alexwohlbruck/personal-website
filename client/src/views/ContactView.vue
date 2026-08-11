@@ -4,13 +4,10 @@ import SectionHeading from '@/components/ui/SectionHeading.vue'
 import ContactForm from '@/components/contact/ContactForm.vue'
 import AvailabilityCalendar from '@/components/contact/AvailabilityCalendar.vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
-import { links } from '@/data/site'
+import { socials } from '@/data/site'
 
-const elsewhere = [
-  { label: 'GitHub', icon: 'github', href: links.github },
-  { label: 'LinkedIn', icon: 'linkedin', href: links.linkedin },
-  { label: 'Instagram', icon: 'instagram', href: links.instagram },
-]
+/** Everywhere but here: the email entry points back at this page. */
+const elsewhere = socials.filter((social) => social.href)
 </script>
 
 <template>

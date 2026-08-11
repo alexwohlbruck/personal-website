@@ -3,8 +3,9 @@ import { computed, ref } from 'vue'
 import { Motion } from 'motion-v'
 import { useMediaQuery } from '@vueuse/core'
 import { Expand } from '@lucide/vue'
+import ProgressiveImage from '@/components/ui/ProgressiveImage.vue'
 import { useLightbox, type LightboxItem } from '@/composables/useLightbox'
-import { projectImage, projectImageSize } from '@/lib/assets'
+import { projectImage, projectImageSet, projectImageSize } from '@/lib/assets'
 import { duration, ease, inView, step } from '@/lib/motion'
 import type { Project } from '@/data/types'
 
@@ -22,6 +23,7 @@ const items = computed<LightboxItem[]>(() =>
   props.project.images.map((file) => {
     const { width, height } = projectImageSize(props.project.name, file)
     return {
+      // Full resolution here on purpose: this is the one place it is warranted.
       src: projectImage(props.project.name, file),
       width,
       height,
@@ -29,6 +31,8 @@ const items = computed<LightboxItem[]>(() =>
     }
   }),
 )
+
+const thumbs = computed(() => props.project.images.map((file) => projectImageSet(props.project.name, file)))
 
 const wide = useMediaQuery('(min-width: 1024px)')
 const medium = useMediaQuery('(min-width: 640px)')
@@ -85,14 +89,13 @@ const { open } = useLightbox(gallery, items)
         :style="{ backgroundColor: project.color }"
         @click="open(index)"
       >
-        <img
-          :src="item.src"
-          :width="item.width"
-          :height="item.height"
+        <ProgressiveImage
+          :image="thumbs[index]!"
           :alt="item.alt"
-          loading="lazy"
-          decoding="async"
+          ratio
+          sizes="(min-width: 1024px) 22rem, (min-width: 640px) 45vw, 92vw"
           class="w-full transition-transform duration-500 ease-out-quint group-hover:scale-[1.015]"
+          img-class="w-full"
         />
 
         <span

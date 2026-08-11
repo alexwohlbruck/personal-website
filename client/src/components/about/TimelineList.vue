@@ -9,8 +9,9 @@ import { duration, ease, inView, step } from '@/lib/motion'
 import type { TimelineEvent } from '@/data/types'
 
 /**
- * A single moment shows one year. A span inside one year falls back to months,
- * so nothing reads "2019–2019".
+ * The span an entry covers, shown on the entry itself. A single moment shows
+ * one year. A span inside one year falls back to months, so nothing reads
+ * "2019–2019".
  */
 function period(event: TimelineEvent): string {
   if (event.ongoing) return `${event.from.getFullYear()}–Now`
@@ -62,19 +63,34 @@ const rows = computed(() => {
     lanes[i] = lane
   })
 
-  return events.map((event, i) => ({
-    event,
-    row: i,
-    reach: reach[i]!,
-    lane: lanes[i]!,
-    label: period(event),
-    color:
-      event.ongoing
-        ? 'var(--accent)'
-        : event.kind === 'education'
-          ? 'var(--marine)'
-          : 'var(--ink-3)',
-  }))
+  // The gutter is a scale, not a caption: one descending run of years, each
+  // printed once. Entries that start in a year already marked sit under it
+  // silently and carry their own span instead.
+  let marked: number | null = null
+
+  return events.map((event, i) => {
+    const start = event.from.getFullYear()
+    const year = start === marked ? null : start
+    if (year !== null) marked = year
+
+    // A single moment is already fully described by the year in the gutter.
+    const span = period(event)
+
+    return {
+      event,
+      row: i,
+      reach: reach[i]!,
+      lane: lanes[i]!,
+      year,
+      period: span === String(start) ? null : span,
+      color:
+        event.ongoing
+          ? 'var(--accent)'
+          : event.kind === 'education'
+            ? 'var(--marine)'
+            : 'var(--ink-3)',
+    }
+  })
 })
 
 const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
@@ -129,10 +145,12 @@ function connector(lane: number) {
 
     <li v-for="entry in rows" :key="`${entry.event.title}-${entry.row}`" class="contents">
       <time
-        class="label tabular pr-5 pt-[0.15rem] text-right text-ink-3"
+        v-if="entry.year !== null"
+        :datetime="String(entry.year)"
+        class="label pr-5 pt-[0.15rem] text-right text-ink-3"
         :style="{ gridRow: entry.row + 1, gridColumn: 1 }"
       >
-        {{ entry.label }}
+        {{ entry.year }}
       </time>
 
       <!--
@@ -235,7 +253,9 @@ function connector(lane: number) {
           </h3>
         </div>
 
-        <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-3">
+        <p v-if="entry.period" class="label mt-2 text-ink-3">{{ entry.period }}</p>
+
+        <p class="mt-2 max-w-xl text-sm leading-relaxed text-ink-3">
           {{ entry.event.description }}
         </p>
 
@@ -254,7 +274,8 @@ function connector(lane: number) {
 
 <style scoped>
 ol {
-  --date-col: 4.75rem;
+  /* Four digits and the gap to the trunk. Nothing wider ever lands here. */
+  --date-col: 4rem;
   /* Declared together: every connector length is measured against this gap,
      and a Tailwind class setting one of them silently dropped the other. */
   --row-gap: 2.25rem;
@@ -263,7 +284,7 @@ ol {
 
 @media (width >= 40rem) {
   ol {
-    --date-col: 7.5rem;
+    --date-col: 5rem;
   }
 }
 </style>

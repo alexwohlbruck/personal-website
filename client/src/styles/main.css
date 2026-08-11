@@ -63,6 +63,9 @@
   --shadow-2: 0 1px 2px oklch(26% 0.036 38 / 0.07), 0 6px 16px -8px oklch(26% 0.036 38 / 0.18);
   --shadow-3: 0 2px 4px oklch(26% 0.036 38 / 0.07), 0 18px 40px -20px oklch(26% 0.036 38 / 0.3);
   --shadow-press: inset 0 2px 4px oklch(26% 0.036 38 / 0.15);
+  /* A press that is a resting state, not a response to a click. Form fields sit
+     in it for as long as the page is open, so it stays shallow. */
+  --shadow-press-soft: inset 0 1px 3px oklch(26% 0.036 38 / 0.09);
 
   --tile-ring: 0 0 0 1px oklch(26% 0.036 38 / 0.12);
 
@@ -109,6 +112,7 @@
   --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.35), 0 6px 16px -8px oklch(0% 0 0 / 0.55);
   --shadow-3: 0 2px 4px oklch(0% 0 0 / 0.4), 0 18px 40px -20px oklch(0% 0 0 / 0.75);
   --shadow-press: inset 0 2px 4px oklch(0% 0 0 / 0.45);
+  --shadow-press-soft: inset 0 1px 3px oklch(0% 0 0 / 0.28);
 
   --tile-ring: 0 0 0 1px oklch(92% 0.021 82 / 0.12);
 
@@ -483,7 +487,7 @@
     border-radius: 0.625rem;
     padding: 0.75rem 0.875rem;
     font-size: 0.9375rem;
-    box-shadow: var(--shadow-press), var(--tile-ring);
+    box-shadow: var(--shadow-press-soft), var(--tile-ring);
     transition:
       box-shadow 0.2s var(--ease-out-quint),
       background-color 0.2s var(--ease-out-quint);
@@ -497,7 +501,7 @@
     outline: none;
     background-color: var(--surface);
     box-shadow:
-      var(--shadow-press),
+      var(--shadow-press-soft),
       0 0 0 1px var(--accent),
       0 0 0 4px var(--accent-wash);
   }
