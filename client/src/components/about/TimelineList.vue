@@ -36,17 +36,22 @@ function closesAt(event: TimelineEvent) {
  * climbs past that entry rather than stopping.
  *
  * `reach` is the highest row an entry's thread climbs to: the first row above
- * it whose entry had already begun before this one ended. Two entries are
- * concurrent when their reaches overlap, which happens exactly when one
- * entry's reach extends up to or past the other's row. That makes lane
- * assignment a plain greedy sweep, and rows map to CSS grid rows, so the
- * threads need no measurement to draw.
+ * it whose entry had already begun before this one ended. Something still
+ * running has not ended at all, so it climbs past every row to the head — the
+ * `HEAD_ROW` sentinel — rather than closing into the trunk at whatever started
+ * most recently. Two entries are concurrent when their reaches overlap, which
+ * happens exactly when one entry's reach extends up to or past the other's
+ * row. That makes lane assignment a plain greedy sweep, and rows map to CSS
+ * grid rows, so the threads need no measurement to draw.
  */
+const HEAD_ROW = -1
+
 const rows = computed(() => {
   const events = timeline
   const ends = events.map(closesAt)
 
-  const reach = events.map((_, i) => {
+  const reach = events.map((event, i) => {
+    if (event.ongoing) return HEAD_ROW
     for (let j = 0; j < i; j++) {
       if (events[j]!.from.getTime() <= ends[i]!) return j
     }
@@ -57,21 +62,21 @@ const rows = computed(() => {
   events.forEach((_, i) => {
     // Conflicts are precisely the entries this thread climbs past.
     const taken = new Set<number>()
-    for (let j = reach[i]!; j < i; j++) taken.add(lanes[j]!)
+    for (let j = Math.max(reach[i]!, 0); j < i; j++) taken.add(lanes[j]!)
     let lane = 0
     while (taken.has(lane)) lane++
     lanes[i] = lane
   })
 
   // The gutter is a scale, not a caption: one descending run of years, each
-  // printed once. Entries that start in a year already marked sit under it
-  // silently and carry their own span instead.
-  let marked: number | null = null
-
+  // printed once. Time runs backwards down the page, so a year's tick belongs
+  // to the *oldest* entry starting in it — the point where that year begins.
+  // Entries are newest first, so same-year rows are contiguous and the tick is
+  // the last of the run; the rows above it carry their own span instead.
   return events.map((event, i) => {
     const start = event.from.getFullYear()
-    const year = start === marked ? null : start
-    if (year !== null) marked = year
+    const below = events[i + 1]
+    const year = below && below.from.getFullYear() === start ? null : start
 
     // A single moment is already fully described by the year in the gutter.
     const span = period(event)
@@ -81,6 +86,7 @@ const rows = computed(() => {
       row: i,
       reach: reach[i]!,
       lane: lanes[i]!,
+      live: Boolean(event.ongoing),
       year,
       period: span === String(start) ? null : span,
       color:
@@ -94,6 +100,12 @@ const rows = computed(() => {
 })
 
 const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
+
+/**
+ * Grid rows are 1-based, and row 1 is the "Now" cap that heads the trunk, so
+ * the first entry sits on row 2.
+ */
+const HEAD = 2
 
 /** Pixels, so the connector SVG can be drawn at exactly its rendered size. */
 const LANE = 14
@@ -125,8 +137,27 @@ function connector(lane: number) {
     }"
   >
     <!--
-      The trunk. One unbroken line from the first dot to the last, so the eye
-      has something to follow and everything else hangs off it.
+      The head of the line: where the trunk starts is today, not the most recent
+      job. Everything below it has already happened.
+    -->
+    <span class="label pr-5 pt-[0.15rem] text-right text-accent" style="grid-row: 1; grid-column: 1">
+      Now
+    </span>
+
+    <span
+      aria-hidden="true"
+      class="z-10 size-[9px] justify-self-center self-start rounded-full bg-accent ring-2 ring-paper"
+      style="
+        grid-row: 1;
+        grid-column: 2;
+        margin-top: calc(var(--dot) - 4.5px);
+        box-shadow: 0 0 0 5px var(--accent-wash);
+      "
+    />
+
+    <!--
+      The trunk. One unbroken line from the head down to the last dot, so the
+      eye has something to follow and everything else hangs off it.
 
       A grid item spanning rows a..b covers the gaps between those rows but not
       the one after the last, so every run here adds a row gap back to reach
@@ -136,7 +167,7 @@ function connector(lane: number) {
       aria-hidden="true"
       class="w-px justify-self-center bg-rule-strong"
       :style="{
-        gridRow: `1 / ${rows.length}`,
+        gridRow: `1 / ${rows.length + 1}`,
         gridColumn: 2,
         marginTop: 'var(--dot)',
         height: 'calc(100% + var(--row-gap))',
@@ -148,7 +179,7 @@ function connector(lane: number) {
         v-if="entry.year !== null"
         :datetime="String(entry.year)"
         class="label pr-5 pt-[0.15rem] text-right text-ink-3"
-        :style="{ gridRow: entry.row + 1, gridColumn: 1 }"
+        :style="{ gridRow: entry.row + HEAD, gridColumn: 1 }"
       >
         {{ entry.year }}
       </time>
@@ -157,19 +188,29 @@ function connector(lane: number) {
         A fork, drawn the way a branch graph draws one. It leaves the trunk at
         the dot of the entry it overlaps, runs down its own lane, and curves
         back into the trunk below its dot, so the branch closes instead of
-        trailing off. Every stroke matches the trunk exactly: same hairline,
-        same colour, no transparency of its own. Only the dots carry colour.
+        trailing off. Every stroke is the same hairline as the trunk.
+
+        Colour marks one thing: a thread that has not ended. A live run from the
+        head down to its dot is drawn in accent, so "still going" is legible
+        whether the entry forked into its own lane or sits on the trunk — the
+        trunk carries on past its dot into history either way, and a bare grey
+        spine cannot say which part of it is still being written.
+
+        The topmost entry is the only one that can hold lane 0, so when it is
+        live its run is a straight riser down the trunk with no curves to draw.
       -->
-      <template v-if="entry.lane > 0">
+      <template v-if="entry.lane > 0 || entry.live">
         <svg
+          v-if="entry.lane > 0"
           aria-hidden="true"
-          class="overflow-visible text-rule-strong"
+          class="overflow-visible"
+          :class="entry.live ? 'z-[5] text-accent' : 'text-rule-strong'"
           :viewBox="`0 0 ${connector(entry.lane).width} ${CURVE}`"
           :width="connector(entry.lane).width"
           :height="CURVE"
           fill="none"
           :style="{
-            gridRow: entry.reach + 1,
+            gridRow: entry.reach + HEAD,
             gridColumn: `2 / ${entry.lane + 3}`,
             marginTop: 'var(--dot)',
             marginLeft: 'calc(var(--lane) / 2)',
@@ -180,24 +221,30 @@ function connector(lane: number) {
 
         <span
           aria-hidden="true"
-          class="w-px justify-self-center bg-rule-strong"
+          class="w-px justify-self-center"
+          :class="entry.live ? 'z-[5] bg-accent' : 'bg-rule-strong'"
           :style="{
-            gridRow: `${entry.reach + 1} / ${entry.row + 1}`,
+            gridRow: `${entry.reach + HEAD} / ${entry.row + HEAD}`,
             gridColumn: entry.lane + 2,
-            marginTop: `calc(var(--dot) + ${CURVE}px)`,
-            height: `calc(100% + var(--row-gap) - ${CURVE}px)`,
+            marginTop: entry.lane > 0 ? `calc(var(--dot) + ${CURVE}px)` : 'var(--dot)',
+            height:
+              entry.lane > 0
+                ? `calc(100% + var(--row-gap) - ${CURVE}px)`
+                : 'calc(100% + var(--row-gap))',
           }"
         />
 
         <svg
+          v-if="entry.lane > 0"
           aria-hidden="true"
-          class="overflow-visible text-rule-strong"
+          class="overflow-visible"
+          :class="entry.live ? 'z-[5] text-accent' : 'text-rule-strong'"
           :viewBox="`0 0 ${connector(entry.lane).width} ${CURVE}`"
           :width="connector(entry.lane).width"
           :height="CURVE"
           fill="none"
           :style="{
-            gridRow: entry.row + 1,
+            gridRow: entry.row + HEAD,
             gridColumn: `2 / ${entry.lane + 3}`,
             marginTop: 'var(--dot)',
             marginLeft: 'calc(var(--lane) / 2)',
@@ -212,7 +259,7 @@ function connector(lane: number) {
         aria-hidden="true"
         class="z-10 size-[9px] justify-self-center self-start rounded-full ring-2 ring-paper"
         :style="{
-          gridRow: entry.row + 1,
+          gridRow: entry.row + HEAD,
           gridColumn: entry.lane + 2,
           marginTop: 'calc(var(--dot) - 4.5px)',
           background: entry.color,
@@ -226,7 +273,7 @@ function connector(lane: number) {
         :in-view-options="inView"
         :transition="{ duration: duration.base, ease, delay: step(entry.row % 4) }"
         class="group min-w-0 pl-5"
-        :style="{ gridRow: entry.row + 1, gridColumn: laneCount + 2 }"
+        :style="{ gridRow: entry.row + HEAD, gridColumn: laneCount + 2 }"
       >
         <div class="flex items-center gap-2.5">
           <img
