@@ -32,15 +32,4 @@ router.post('/contact', async(req, res) => {
 })
 
 
-router.get('/grid', async (req, res) => {
-  try {
-    const { data } = await ig.retrieveUserMedia(process.env.IG_ACCESS_TOKEN)
-    res.status(200).json(data)
-  }
-  catch (err) {
-    console.log(err)
-    res.status(err.status || 500).json(err)
-  } 
-})
-
 module.exports = router

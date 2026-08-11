@@ -4,14 +4,31 @@ const { setTimeout_, log } = require('../util')
 
 /* Spotify helper functions */
 
-// Use refresh token to get a new access token
-async function refreshSpotifyAccessToken() {
-  const data = await spotify.refreshAccessToken()
-  spotify.setAccessToken(data.body['access_token'])
+// Use refresh token to get a new access token.
+// Failures are logged and retried rather than thrown: this runs at boot and on
+// a timer, so an unhandled rejection here takes down the whole server, and
+// with it the Instagram, calendar and contact endpoints that have nothing to
+// do with Spotify.
+const RETRY_DELAY = 5 * 60 * 1000
 
-  // Refresh again one minute before expiration
-  const expiresIn = parseInt(data.body['expires_in'])
-  setTimeout_(refreshSpotifyAccessToken, (expiresIn - 60) * 1000)
+async function refreshSpotifyAccessToken() {
+  if (!process.env.SPOTIFY_REFRESH_TOKEN) {
+    log('Spotify is not configured, skipping token refresh', 'FgYellow')
+    return
+  }
+
+  try {
+    const data = await spotify.refreshAccessToken()
+    spotify.setAccessToken(data.body['access_token'])
+
+    // Refresh again one minute before expiration
+    const expiresIn = parseInt(data.body['expires_in'])
+    setTimeout_(refreshSpotifyAccessToken, (expiresIn - 60) * 1000)
+  }
+  catch (err) {
+    log(`Spotify token refresh failed: ${err.message}`, 'FgRed')
+    setTimeout_(refreshSpotifyAccessToken, RETRY_DELAY)
+  }
 }
 
 // Retrieve Spotify player state
@@ -68,9 +85,15 @@ async function getSpotifyPlaybackState(io) {
 /* Spotify routes */
 
 router.get('/playback-state', async (req, res) => {
-  const io = req.app.get('socketio')
-  const playbackState = await getSpotifyPlaybackState(io)
-  res.status(200).json(playbackState)
+  try {
+    const io = req.app.get('socketio')
+    const playbackState = await getSpotifyPlaybackState(io)
+    res.status(200).json(playbackState)
+  }
+  catch (err) {
+    log(`Spotify playback state failed: ${err.message}`, 'FgRed')
+    res.status(502).json({ message: 'Spotify is unavailable.' })
+  }
 })
 
 router.get('/authorize', async (req, res) => {
@@ -78,20 +101,20 @@ router.get('/authorize', async (req, res) => {
     'user-read-playback-state',
     'user-read-recently-played',
   ])
-  console.log(url)
   res.status(200).json({url})
 })
 
 router.get('/token', async (req, res) => {
-  const { code } = req.query
-  const data = await spotify.getRefreshToken(code)
-  res.status(200).json(data) 
+  try {
+    const { code } = req.query
+    const data = await spotify.getRefreshToken(code)
+    res.status(200).json(data)
+  }
+  catch (err) {
+    res.status(502).json({ message: err.message })
+  }
 })
 
-async function init() {
-  await refreshSpotifyAccessToken()
-}
-
-init()
+refreshSpotifyAccessToken()
 
 module.exports = router

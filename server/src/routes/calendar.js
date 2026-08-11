@@ -1,8 +1,9 @@
 const router = require('express').Router()
 const calendar = require('../apis/calendar')
+const { log } = require('../util')
 
 router.get('/', async (req, res) => {
-
+  try {
   const timezone = req.query.timezone || 'America/New_York'
 
   // Get beginning and end of the current week (today plus 7 days)
@@ -30,6 +31,11 @@ router.get('/', async (req, res) => {
   }
 
   res.json({ events })
+  }
+  catch (err) {
+    log(`Calendar fetch failed: ${err.message}`, 'FgRed')
+    res.status(502).json({ message: 'Calendar is unavailable.' })
+  }
 })
 
 module.exports = router
