@@ -315,6 +315,32 @@
 }
 
 /**
+ * A pool of paper floating over the terrain, to sit the hero copy on. Soft
+ * radial stops rather than a blur filter: the shape is already all gradient,
+ * and blurring a layer this size costs a compositing pass for nothing. The
+ * warm and cool tints at the edges keep it from reading as a grey smudge.
+ */
+@utility hero-wash {
+  background:
+    radial-gradient(
+      58% 64% at 36% 50%,
+      color-mix(in oklab, var(--paper) 82%, transparent) 0,
+      color-mix(in oklab, var(--paper) 52%, transparent) 48%,
+      transparent 78%
+    ),
+    radial-gradient(
+      36% 42% at 74% 24%,
+      color-mix(in oklab, var(--accent-wash) 65%, transparent) 0,
+      transparent 72%
+    ),
+    radial-gradient(
+      40% 46% at 14% 84%,
+      color-mix(in oklab, var(--marine-wash) 65%, transparent) 0,
+      transparent 74%
+    );
+}
+
+/**
  * The close-up sheet, for panels. Its gradient mask opens a clearing in the
  * centre instead of fading top to bottom, so the contours frame the copy
  * rather than run underneath it.

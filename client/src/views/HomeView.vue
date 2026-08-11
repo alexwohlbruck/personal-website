@@ -28,7 +28,11 @@ const enter = (delay: number) => ({
       class="relative grid items-end gap-12 pb-16 pt-32 md:pt-40 lg:grid-cols-[1.6fr_1fr] lg:gap-16"
     >
       <span
-        class="topo pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2"
+        class="topo pointer-events-none absolute inset-y-0 left-1/2 -z-20 w-screen -translate-x-1/2"
+        aria-hidden="true"
+      />
+      <span
+        class="hero-wash pointer-events-none absolute -inset-x-8 -inset-y-10 -z-10"
         aria-hidden="true"
       />
       <div>
