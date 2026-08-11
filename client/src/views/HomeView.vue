@@ -32,7 +32,7 @@ const enter = (delay: number) => ({
         aria-hidden="true"
       />
       <span
-        class="hero-wash pointer-events-none absolute -inset-x-8 -inset-y-10 -z-10"
+        class="hero-wash pointer-events-none absolute -inset-x-40 -inset-y-32 -z-10"
         aria-hidden="true"
       />
       <div>
@@ -64,7 +64,7 @@ const enter = (delay: number) => ({
     <section class="py-16">
       <SectionHeading
         title="Things I've made"
-        note="Ten years of side projects, client work, and one cat facts API that refuses to die."
+        note="Ten years of side projects, experimentation, and one cat facts API that refuses to die."
       />
 
       <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">

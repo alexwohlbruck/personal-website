@@ -321,22 +321,29 @@
  * warm and cool tints at the edges keep it from reading as a grey smudge.
  */
 @utility hero-wash {
+  /*
+   * Each gradient has to finish fading before it reaches the edge of the box,
+   * or the box clips a half-opaque wash and you see the rectangle. For a stop
+   * at S of radius R centred at C, that means C - S*R >= 0 and C + S*R <= 100,
+   * on both axes. The element carries a wide bleed so these can stay small in
+   * percent and still be large in pixels.
+   */
   background:
     radial-gradient(
-      58% 64% at 36% 50%,
-      color-mix(in oklab, var(--paper) 82%, transparent) 0,
-      color-mix(in oklab, var(--paper) 52%, transparent) 48%,
+      38% 40% at 44% 50%,
+      color-mix(in oklab, var(--paper) 80%, transparent) 0,
+      color-mix(in oklab, var(--paper) 46%, transparent) 46%,
       transparent 78%
     ),
     radial-gradient(
-      36% 42% at 74% 24%,
-      color-mix(in oklab, var(--accent-wash) 65%, transparent) 0,
+      28% 30% at 66% 30%,
+      color-mix(in oklab, var(--accent-wash) 60%, transparent) 0,
       transparent 72%
     ),
     radial-gradient(
-      40% 46% at 14% 84%,
-      color-mix(in oklab, var(--marine-wash) 65%, transparent) 0,
-      transparent 74%
+      28% 30% at 26% 76%,
+      color-mix(in oklab, var(--marine-wash) 60%, transparent) 0,
+      transparent 72%
     );
 }
 

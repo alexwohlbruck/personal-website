@@ -78,18 +78,38 @@ const rows = computed(() => {
 })
 
 const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
+
+/** Pixels, so the connector SVG can be drawn at exactly its rendered size. */
+const LANE = 14
+const CURVE = 26
+
+/**
+ * The S a fork makes leaving the trunk. Both control points sit directly below
+ * the start and above the end, which lands the curve tangent to vertical at
+ * both ends: it eases out of the trunk and eases into the branch instead of
+ * turning a corner. A quarter-circle radius cannot do that, it meets the
+ * straight runs at a fixed rate.
+ */
+function connector(lane: number) {
+  const w = lane * LANE
+  return { width: w, height: CURVE, d: `M0 0C0 ${CURVE / 2} ${w} ${CURVE / 2} ${w} ${CURVE}` }
+}
 </script>
 
 <template>
   <ol
-    class="grid gap-y-9 [--dot:0.62rem] [--lane:0.875rem]"
+    class="grid [--dot:0.62rem] [--lane:14px]"
     :style="{
       gridTemplateColumns: `var(--date-col) repeat(${laneCount}, var(--lane)) minmax(0, 1fr)`,
     }"
   >
     <!--
       The trunk. One unbroken line from the first dot to the last, so the eye
-      has something to follow, and everything else hangs off it.
+      has something to follow and everything else hangs off it.
+
+      A grid item spanning rows a..b covers the gaps between those rows but not
+      the one after the last, so every run here adds a row gap back to reach
+      the dot it is aiming at.
     -->
     <span
       aria-hidden="true"
@@ -98,7 +118,7 @@ const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
         gridRow: `1 / ${rows.length}`,
         gridColumn: 2,
         marginTop: 'var(--dot)',
-        height: '100%',
+        height: 'calc(100% + var(--row-gap))',
       }"
     />
 
@@ -110,28 +130,45 @@ const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
         {{ entry.label }}
       </time>
 
-      <!--
-        A fork, drawn the way a branch graph draws one: it leaves the trunk at
-        the dot of the entry it overlaps, curves into its own lane and runs
-        down to its own dot. Two borders and a corner radius on one box, so it
-        needs no measuring. Entries sitting on the trunk have no fork.
-      -->
-      <span
-        v-if="entry.lane > 0"
-        aria-hidden="true"
-        :style="{
-          gridRow: `${entry.reach + 1} / ${entry.row + 1}`,
-          gridColumn: `2 / ${entry.lane + 3}`,
-          marginTop: 'var(--dot)',
-          marginLeft: 'calc(var(--lane) / 2)',
-          marginRight: 'calc(var(--lane) / 2)',
-          height: '100%',
-          borderTop: `1.5px solid ${entry.color}`,
-          borderRight: `1.5px solid ${entry.color}`,
-          borderTopRightRadius: 'var(--lane)',
-          opacity: entry.event.ongoing ? 0.75 : 0.5,
-        }"
-      />
+      <template v-if="entry.lane > 0">
+        <!-- The fork leaves the trunk at the dot of the entry it overlaps. -->
+        <svg
+          aria-hidden="true"
+          :viewBox="`0 0 ${connector(entry.lane).width} ${connector(entry.lane).height}`"
+          :width="connector(entry.lane).width"
+          :height="connector(entry.lane).height"
+          fill="none"
+          :style="{
+            gridRow: entry.reach + 1,
+            gridColumn: `2 / ${entry.lane + 3}`,
+            marginTop: 'var(--dot)',
+            marginLeft: 'calc(var(--lane) / 2)',
+            color: entry.color,
+            opacity: entry.event.ongoing ? 0.75 : 0.5,
+          }"
+        >
+          <path
+            :d="connector(entry.lane).d"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+
+        <!-- Then straight down its own lane to its own dot. -->
+        <span
+          aria-hidden="true"
+          class="w-[1.5px] justify-self-center rounded-full"
+          :style="{
+            gridRow: `${entry.reach + 1} / ${entry.row + 1}`,
+            gridColumn: entry.lane + 2,
+            marginTop: `calc(var(--dot) + ${CURVE}px)`,
+            height: `calc(100% + var(--row-gap) - ${CURVE}px)`,
+            background: entry.color,
+            opacity: entry.event.ongoing ? 0.75 : 0.5,
+          }"
+        />
+      </template>
 
       <span
         aria-hidden="true"
@@ -198,6 +235,10 @@ const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
 <style scoped>
 ol {
   --date-col: 4.75rem;
+  /* Declared together: every connector length is measured against this gap,
+     and a Tailwind class setting one of them silently dropped the other. */
+  --row-gap: 2.25rem;
+  row-gap: var(--row-gap);
 }
 
 @media (width >= 40rem) {
