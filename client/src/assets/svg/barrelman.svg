@@ -1,6 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#fff9f3"/>
-  <rect x="1.5" y="1.5" width="29" height="29" rx="4.5" fill="none" stroke="#3f2f1e" stroke-opacity="0.25"/>
   <g fill="#3f2f1e" transform="translate(16 16) scale(0.86) translate(-16 -16)">
     <path d="M16 16 L16 13 L22.72 9.28 Z" opacity="0.75"/>
     <path d="M16 16 L22.72 9.28 L19 16 Z" opacity="0.35"/>
