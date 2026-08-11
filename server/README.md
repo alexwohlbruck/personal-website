@@ -55,6 +55,23 @@ playing, once a minute; on failure, backing off from one minute to fifteen.
 Scopes requested: `user-read-playback-state`, `user-read-recently-played`.
 Neither can change what's playing.
 
+**If the dashboard won't save your redirect URIs**, it's usually not the row
+you're adding. The form validates the whole set, and Spotify now only accepts
+https or http on the literal loopback address — so one leftover
+`http://example.com/callback` or `http://localhost:…` from an older app blocks
+the save. Delete those rows first, then add the new one.
+
+**If you're stuck with a URI this script can't listen on**, authorize by hand.
+The code lands in the address bar of wherever you get redirected:
+
+```bash
+npm run auth:spotify -- --print-url
+npm run auth:spotify -- --code=AQD9x...
+```
+
+`SPOTIFY_REDIRECT_URI` has to hold the same URI for both steps — Spotify checks
+it again at the exchange.
+
 Two things worth knowing about Development Mode, which is where an app of this
 size lives:
 
