@@ -45,6 +45,13 @@
   --accent-hover: oklch(41% 0.14 30);
   --accent-wash: oklch(47% 0.135 32 / 0.1);
 
+  /* A filled button is its own thing. `--accent` has to stay legible as text
+     on paper, which is a different job from carrying white text as a fill. */
+  --accent-solid: oklch(47% 0.135 32);
+  --accent-solid-hover: oklch(41% 0.14 30);
+  --accent-ring: oklch(34% 0.11 32 / 0.55);
+  --on-accent: oklch(97% 0.012 80);
+
   --marine: oklch(50% 0.062 218);
   --marine-wash: oklch(50% 0.062 218 / 0.12);
 
@@ -78,9 +85,18 @@
   --rule: oklch(92% 0.021 82 / 0.16);
   --rule-strong: oklch(92% 0.021 82 / 0.3);
 
+  /* Light enough to read as text on the dark sheet. */
   --accent: oklch(70% 0.13 40);
   --accent-hover: oklch(77% 0.12 44);
   --accent-wash: oklch(70% 0.13 40 / 0.16);
+
+  /* The fill stays a deep rust in both themes, lifted just enough to sit off
+     the dark page. Filling with the text-weight accent and flipping the label
+     dark is what made the buttons read as an inverted screenshot. */
+  --accent-solid: oklch(52% 0.15 34);
+  --accent-solid-hover: oklch(57% 0.15 36);
+  --accent-ring: oklch(72% 0.13 40 / 0.35);
+  --on-accent: oklch(97% 0.012 80);
 
   --marine: oklch(68% 0.072 210);
   --marine-wash: oklch(68% 0.072 210 / 0.16);
@@ -292,21 +308,18 @@
 }
 
 /**
- * Elevation contours. Two off-centre ring systems read as terrain rather than
- * as a target, and the ellipses keep them from looking machine-made.
+ * Topographic contours, traced from a noise field by scripts/generate-topo.mjs.
+ * The file is a mask of opaque strokes on transparency, so the page paints the
+ * lines in the theme's own ink rather than shipping two coloured copies. A
+ * second gradient mask fades them out before they reach the content below.
  */
-@utility contours {
-  background-image:
-    repeating-radial-gradient(
-      ellipse 62% 44% at 18% 28%,
-      transparent 0 25px,
-      var(--rule) 25px 26px
-    ),
-    repeating-radial-gradient(
-      ellipse 52% 68% at 86% 74%,
-      transparent 0 31px,
-      var(--rule) 31px 32px
-    );
+@utility topo {
+  background-color: var(--rule-strong);
+  mask-image: url('@/assets/topo.svg'), linear-gradient(to bottom, #000 35%, transparent 95%);
+  mask-size: cover, 100% 100%;
+  mask-position: center top, center;
+  mask-repeat: no-repeat, no-repeat;
+  mask-composite: intersect;
 }
 
 /* ---------------------------------------------------------------------------
@@ -365,28 +378,28 @@
   }
 
   .btn:disabled {
-    opacity: 0.55;
     pointer-events: none;
+    --btn-bg: none;
+    --btn-fg: var(--ink-3);
+    background-color: var(--paper-sunk);
+    box-shadow: var(--tile-ring);
   }
 
   .btn-accent {
-    --btn-bg: linear-gradient(to bottom, var(--accent), var(--accent-hover));
-    --btn-fg: oklch(99% 0.005 85);
+    --btn-bg: linear-gradient(to bottom, var(--accent-solid), var(--accent-solid-hover));
+    --btn-fg: var(--on-accent);
     box-shadow:
-      inset 0 1px 0 oklch(100% 0 0 / 0.25),
-      0 0 0 1px oklch(30% 0.1 42 / 0.5),
+      inset 0 1px 0 oklch(100% 0 0 / 0.22),
+      0 0 0 1px var(--accent-ring),
       var(--shadow-2);
   }
 
   .btn-accent:hover {
+    --btn-bg: linear-gradient(to bottom, var(--accent-solid-hover), var(--accent-solid));
     box-shadow:
-      inset 0 1px 0 oklch(100% 0 0 / 0.25),
-      0 0 0 1px oklch(30% 0.1 42 / 0.5),
+      inset 0 1px 0 oklch(100% 0 0 / 0.22),
+      0 0 0 1px var(--accent-ring),
       var(--shadow-3);
-  }
-
-  [data-theme='dark'] .btn-accent {
-    --btn-fg: oklch(18% 0.02 60);
   }
 
   .btn-ghost {
