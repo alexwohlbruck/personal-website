@@ -29,7 +29,15 @@ router.get('/stream', async (req, res) => {
  *  EventSource. Served from the shared cache, so it costs nothing extra. */
 router.get('/playback-state', async (req, res) => {
   requireConfig()
-  const { state } = await current()
+  const { state, status } = await current()
+
+  // A null body means "nothing playing", which is a normal and common answer.
+  // Returning that when the poll actually failed makes a dead integration look
+  // like a quiet one, and the site renders both the same way, so a broken token
+  // could sit there for weeks looking like nobody had played anything. Only
+  // report a failure when there is no cached answer to fall back on.
+  if (status === 'error' && !state) throw new ApiError('Spotify is unavailable.', 502)
+
   res.json(state)
 })
 
