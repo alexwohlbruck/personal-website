@@ -24,7 +24,13 @@ const enter = (delay: number) => ({
 <template>
   <div>
     <!-- Hero ---------------------------------------------------------------->
-    <section class="grid items-end gap-12 pb-16 pt-32 md:pt-40 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
+    <section
+      class="relative grid items-end gap-12 pb-16 pt-32 md:pt-40 lg:grid-cols-[1.6fr_1fr] lg:gap-16"
+    >
+      <span
+        class="topo pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2"
+        aria-hidden="true"
+      />
       <div>
         <Motion as="h1" v-bind="enter(0)" class="display">Alex<br />Wohlbruck</Motion>
 
@@ -107,7 +113,11 @@ const enter = (delay: number) => ({
         box-shadow: var(--sheen), var(--tile-ring), var(--shadow-2);
       "
     >
-      <span class="contours pointer-events-none absolute inset-0 opacity-70" aria-hidden="true" />
+      <span
+        class="ruled pointer-events-none absolute inset-0 opacity-70"
+        style="--rule-gap: 2rem"
+        aria-hidden="true"
+      />
       <div class="relative">
         <h2 class="title mx-auto max-w-2xl text-4xl md:text-5xl">
           Got something worth building?
