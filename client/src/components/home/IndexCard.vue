@@ -15,7 +15,7 @@ useIntervalFn(() => (now.value = new Date()), 30_000)
 
 const localTime = computed(() =>
   new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
+    timeZone: site.timezone,
     hour: 'numeric',
     minute: '2-digit',
   }).format(now.value),

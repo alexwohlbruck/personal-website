@@ -3,25 +3,21 @@ import { Motion } from 'motion-v'
 import { ArrowUpRight } from '@lucide/vue'
 import { assetUrl } from '@/lib/assets'
 import { timeline } from '@/data/timeline'
-import { site } from '@/data/site'
 import { monthShort } from '@/lib/format'
 import { duration, ease, inView, step } from '@/lib/motion'
 import type { TimelineEvent } from '@/data/types'
 
 /**
- * In the source data `start` is the later boundary and `end` the earlier one,
- * so a span reads end → start. Entries without an end are single moments,
- * except the current role, which runs to now. Spans inside one year fall back
- * to months, so nothing reads "2019–2019".
+ * A single moment shows one year. A span inside one year falls back to months,
+ * so nothing reads "2019–2019".
  */
 function period(event: TimelineEvent): string {
-  const isCurrent = event.title === site.currently.company
-  if (isCurrent) return `${event.start.getFullYear()}–Now`
-  if (!event.end) return String(event.start.getFullYear())
-  if (event.end.getFullYear() === event.start.getFullYear()) {
-    return `${monthShort(event.end)}–${monthShort(event.start)} ${event.start.getFullYear()}`
+  if (event.ongoing) return `${event.from.getFullYear()}–Now`
+  if (!event.to) return String(event.from.getFullYear())
+  if (event.from.getFullYear() === event.to.getFullYear()) {
+    return `${monthShort(event.from)}–${monthShort(event.to)} ${event.from.getFullYear()}`
   }
-  return `${event.end.getFullYear()}–${event.start.getFullYear()}`
+  return `${event.from.getFullYear()}–${event.to.getFullYear()}`
 }
 </script>
 
@@ -52,8 +48,9 @@ function period(event: TimelineEvent): string {
         />
 
         <div class="flex items-center gap-2.5">
+          <!-- An icon that isn't in assets yet resolves to '', so skip it. -->
           <img
-            v-if="event.icon"
+            v-if="event.icon && assetUrl(event.icon)"
             :src="assetUrl(event.icon)"
             :alt="`${event.title} logo`"
             class="size-5 shrink-0 rounded-sm"

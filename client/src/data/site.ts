@@ -2,11 +2,12 @@ export const site = {
   name: 'Alex Wohlbruck',
   initials: 'AW',
   role: 'Software engineer & designer',
-  location: 'Charlotte, NC',
+  location: 'Brooklyn, NY',
+  timezone: 'America/New_York',
   currently: {
-    title: 'Associate Full Stack Developer',
-    company: 'Spectrum Reach',
-    since: new Date('2023-10-23'),
+    title: 'Software Engineer',
+    company: 'Subway Builder',
+    since: new Date('2025-10-01'),
   },
   /** The hero statement. Say the thing, then stop. */
   statement:

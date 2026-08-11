@@ -34,10 +34,12 @@ export interface SkillGroups {
 }
 
 export interface TimelineEvent {
-  /** The more recent boundary of the event. */
-  start: Date
-  /** The earlier boundary, for spans rather than moments. */
-  end?: Date
+  /** When it began. */
+  from: Date
+  /** When it ended. Leave off for a single moment, like a graduation. */
+  to?: Date
+  /** Still going, so the range runs to now. */
+  ongoing?: boolean
   title: string
   description: string
   icon?: string
