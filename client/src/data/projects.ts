@@ -34,7 +34,7 @@ export const projects: Project[] = [
     color: '#c41e1e',
     icon: 'svg/coopoly-deal.svg',
     description:
-      'A multiplayer card game in the spirit of Monopoly Deal. One player opens a room, up to six join with a six digit code, and the first to collect three complete property sets wins. The theme is a joke that got further out of hand than planned.\n\nBun and Hono on the back end with WebSockets keeping every hand in sync, React on the front. The whole thing ships as one Docker container.',
+      'A multiplayer card game in the spirit of Monopoly Deal. One player opens a room, up to six join with a six digit code, and the first to collect three complete property sets wins.\n\nBun and Hono on the back end with WebSockets keeping every hand in sync, React on the front. The whole thing ships as one Docker container.',
     start: new Date('2026-02-26'),
     end: new Date(),
     url: 'https://coopoly.deal',

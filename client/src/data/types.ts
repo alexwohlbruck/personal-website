@@ -48,6 +48,8 @@ export interface TimelineEvent {
   to?: Date
   /** Still going, so the range runs to now. */
   ongoing?: boolean
+  /** Colours the thread on the timeline. Defaults to work. */
+  kind?: 'work' | 'education' | 'life'
   title: string
   description: string
   icon?: string

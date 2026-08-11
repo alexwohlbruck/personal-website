@@ -40,13 +40,6 @@ export const timeline: TimelineEvent[] = [
     icon: 'svg/xenial.svg',
   },
   {
-    from: new Date('May 7, 2022'),
-    title: 'Appalachian State',
-    url: 'https://www.appstate.edu/',
-    description: 'Graduated Appalachian State University, with a B.S. in computer science.',
-    icon: 'svg/appstate.svg',
-  },
-  {
     from: new Date('December 16, 2020'),
     to: new Date('May 6, 2022'),
     title: 'Worxstr',
@@ -67,10 +60,12 @@ export const timeline: TimelineEvent[] = [
   },
   {
     from: new Date('August 16, 2018'),
+    to: new Date('May 7, 2022'),
+    kind: 'education',
     title: 'Appalachian State',
     url: 'https://www.appstate.edu/',
     description:
-      'Became an undergrad student at Appalachian State University, studying for a B.S. in computer science.',
+      'Four years at Appalachian State University, finishing with a B.S. in computer science. Both PunchAlert stints happened while I was enrolled.',
     icon: 'svg/appstate.svg',
   },
   {
@@ -85,6 +80,7 @@ export const timeline: TimelineEvent[] = [
   {
     from: new Date('August 18, 2014'),
     to: new Date('May 30, 2018'),
+    kind: 'education',
     title: 'Myers Park High',
     description:
       'I started learning to code with some of my friends during high school when I went to Myers Park.',
@@ -92,6 +88,7 @@ export const timeline: TimelineEvent[] = [
   },
   {
     from: new Date('May 11, 2000'),
+    kind: 'life',
     title: 'Birth',
     description: 'I was born in Charlotte, NC at the turn of the century.',
   },

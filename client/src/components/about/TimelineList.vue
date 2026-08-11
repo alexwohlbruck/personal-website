@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Motion } from 'motion-v'
 import { ArrowUpRight } from '@lucide/vue'
 import { assetUrl } from '@/lib/assets'
@@ -19,72 +20,170 @@ function period(event: TimelineEvent): string {
   }
   return `${event.from.getFullYear()}–${event.to.getFullYear()}`
 }
+
+function closesAt(event: TimelineEvent) {
+  if (event.ongoing) return Date.now()
+  return (event.to ?? event.from).getTime()
+}
+
+/**
+ * Threads, laid out like transit lines.
+ *
+ * Entries are listed newest first, so reading down the page walks backwards
+ * through time and an entry's duration runs *upward* from where it starts.
+ * Anything still running when a later entry began overlaps it, so its thread
+ * climbs past that entry rather than stopping.
+ *
+ * `reach` is the highest row an entry's thread climbs to: the first row above
+ * it whose entry had already begun before this one ended. Two entries are
+ * concurrent when their reaches overlap, which happens exactly when one
+ * entry's reach extends up to or past the other's row. That makes lane
+ * assignment a plain greedy sweep, and rows map to CSS grid rows, so the
+ * threads need no measurement to draw.
+ */
+const rows = computed(() => {
+  const events = timeline
+  const ends = events.map(closesAt)
+
+  const reach = events.map((_, i) => {
+    for (let j = 0; j < i; j++) {
+      if (events[j]!.from.getTime() <= ends[i]!) return j
+    }
+    return i
+  })
+
+  const lanes: number[] = []
+  events.forEach((_, i) => {
+    // Conflicts are precisely the entries this thread climbs past.
+    const taken = new Set<number>()
+    for (let j = reach[i]!; j < i; j++) taken.add(lanes[j]!)
+    let lane = 0
+    while (taken.has(lane)) lane++
+    lanes[i] = lane
+  })
+
+  return events.map((event, i) => ({
+    event,
+    row: i,
+    reach: reach[i]!,
+    lane: lanes[i]!,
+    label: period(event),
+    color:
+      event.ongoing
+        ? 'var(--accent)'
+        : event.kind === 'education'
+          ? 'var(--marine)'
+          : 'var(--ink-3)',
+  }))
+})
+
+const laneCount = computed(() => Math.max(...rows.value.map((r) => r.lane)) + 1)
 </script>
 
 <template>
-  <ol class="relative">
-    <!-- The margin rule the whole column hangs off. -->
-    <span
-      class="absolute bottom-6 left-[4.75rem] top-3 w-px bg-rule sm:left-[7.5rem]"
-      aria-hidden="true"
-    />
+  <ol
+    class="grid gap-y-9 [--dot:0.62rem] [--lane:0.75rem]"
+    :style="{
+      gridTemplateColumns: `var(--date-col) repeat(${laneCount}, var(--lane)) minmax(0, 1fr)`,
+    }"
+  >
+    <li v-for="entry in rows" :key="`${entry.event.title}-${entry.row}`" class="contents">
+      <time
+        class="label tabular pr-5 pt-[0.15rem] text-right text-ink-3"
+        :style="{ gridRow: entry.row + 1, gridColumn: 1 }"
+      >
+        {{ entry.label }}
+      </time>
 
-    <Motion
-      v-for="(event, index) in timeline"
-      :key="`${event.title}-${index}`"
-      as="li"
-      :initial="{ opacity: 0, x: -10, filter: 'blur(3px)' }"
-      :while-in-view="{ opacity: 1, x: 0, filter: 'blur(0px)' }"
-      :in-view-options="inView"
-      :transition="{ duration: duration.base, ease, delay: step(index % 4) }"
-      class="group relative grid grid-cols-[4.75rem_1fr] gap-x-6 pb-9 sm:grid-cols-[7.5rem_1fr]"
-    >
-      <time class="label tabular pt-1 pr-3 text-right text-ink-3">{{ period(event) }}</time>
+      <!--
+        The thread. It runs from this entry's dot up to the dot of the highest
+        entry it overlaps, so concurrent runs sit side by side in their lanes.
+        Entries that overlapped nothing have no thread, only their dot.
+      -->
+      <span
+        v-if="entry.reach < entry.row"
+        aria-hidden="true"
+        class="w-[3px] justify-self-center rounded-full"
+        :style="{
+          gridRow: `${entry.reach + 1} / ${entry.row + 1}`,
+          gridColumn: entry.lane + 2,
+          marginTop: 'var(--dot)',
+          height: '100%',
+          background: entry.color,
+          opacity: entry.event.ongoing ? 0.9 : 0.6,
+        }"
+      />
 
-      <div class="relative">
-        <span
-          class="absolute -left-[1.6875rem] top-[0.4rem] size-[9px] rounded-full border-2 border-paper bg-ink-3 transition-colors duration-300 group-hover:bg-accent sm:-left-[1.6875rem]"
-          aria-hidden="true"
-        />
+      <span
+        aria-hidden="true"
+        class="size-[9px] justify-self-center self-start rounded-full ring-2 ring-paper"
+        :style="{
+          gridRow: entry.row + 1,
+          gridColumn: entry.lane + 2,
+          marginTop: 'calc(var(--dot) - 4.5px)',
+          background: entry.color,
+        }"
+      />
 
+      <Motion
+        as="div"
+        :initial="{ opacity: 0, x: -10, filter: 'blur(3px)' }"
+        :while-in-view="{ opacity: 1, x: 0, filter: 'blur(0px)' }"
+        :in-view-options="inView"
+        :transition="{ duration: duration.base, ease, delay: step(entry.row % 4) }"
+        class="group min-w-0 pl-5"
+        :style="{ gridRow: entry.row + 1, gridColumn: laneCount + 2 }"
+      >
         <div class="flex items-center gap-2.5">
-          <!-- An icon that isn't in assets yet resolves to '', so skip it. -->
           <img
-            v-if="event.icon && assetUrl(event.icon)"
-            :src="assetUrl(event.icon)"
-            :alt="`${event.title} logo`"
+            v-if="entry.event.icon && assetUrl(entry.event.icon)"
+            :src="assetUrl(entry.event.icon)"
+            :alt="`${entry.event.title} logo`"
             class="size-5 shrink-0 rounded-sm"
             loading="lazy"
           />
           <h3 class="title text-xl">
-            <!-- The title carries the outbound link when there is one. -->
             <a
-              v-if="event.url"
-              :href="event.url"
+              v-if="entry.event.url"
+              :href="entry.event.url"
               target="_blank"
               rel="noopener noreferrer"
               class="group/link inline-flex items-baseline gap-1.5 transition-colors hover:text-accent"
             >
-              {{ event.title }}
+              {{ entry.event.title }}
               <ArrowUpRight
                 class="size-3.5 shrink-0 self-center text-ink-3 opacity-0 transition-all duration-300 ease-out-quint group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 group-hover/link:text-accent group-hover/link:opacity-100"
               />
             </a>
-            <template v-else>{{ event.title }}</template>
+            <template v-else>{{ entry.event.title }}</template>
           </h3>
         </div>
 
-        <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-3">{{ event.description }}</p>
+        <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-3">
+          {{ entry.event.description }}
+        </p>
 
         <RouterLink
-          v-if="event.project"
-          :to="{ name: 'project', params: { name: event.project } }"
+          v-if="entry.event.project"
+          :to="{ name: 'project', params: { name: entry.event.project } }"
           class="nudge mt-2.5 inline-flex items-center gap-1 text-sm text-accent"
         >
           See the project
           <ArrowUpRight class="size-3.5" />
         </RouterLink>
-      </div>
-    </Motion>
+      </Motion>
+    </li>
   </ol>
 </template>
+
+<style scoped>
+ol {
+  --date-col: 4.75rem;
+}
+
+@media (width >= 40rem) {
+  ol {
+    --date-col: 7.5rem;
+  }
+}
+</style>
