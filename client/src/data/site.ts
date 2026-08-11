@@ -11,7 +11,7 @@ export const site = {
   },
   /** The hero statement. Say the thing, then stop. */
   statement:
-    'I design and build software for the web. Mostly maps, tools, and interfaces that stay out of your way.',
+    'I design and build software for the web. Maps, tools, and interfaces that stay out of your way.',
   /** Rotates under the hero statement. */
   alsoA: [
     'web developer',
