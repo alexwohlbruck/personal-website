@@ -42,13 +42,6 @@ const elsewhere = [
             </a>
           </div>
         </div>
-
-        <div class="card p-5">
-          <p class="text-sm font-medium">Response time</p>
-          <p class="mt-2 text-sm leading-relaxed text-ink-3">
-            Usually a day or two. If it's urgent, LinkedIn gets my attention fastest.
-          </p>
-        </div>
       </aside>
     </section>
 
