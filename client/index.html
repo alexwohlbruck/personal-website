@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Alex Wohlbruck · Software engineer &amp; designer</title>
+    <meta
+      name="description"
+      content="Alex Wohlbruck is a software engineer and designer in Charlotte, NC. He builds maps, tools, and interfaces for the web."
+    />
+    <meta name="google-site-verification" content="9_Bt8QeiOBOtINDNrvFF99KClO3pDlbTHJ0SPL9Gc5o" />
+    <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#100f0d" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Alex Wohlbruck · Software engineer &amp; designer" />
+    <meta
+      property="og:description"
+      content="Maps, tools, and interfaces for the web. Selected work from 2015 to now."
+    />
+    <meta property="og:url" content="https://alex.wohlbruck.com" />
+    <meta name="twitter:card" content="summary" />
+
+    <script>
+      // Applied before first paint so the page never flashes the wrong theme.
+      ;(() => {
+        const stored = localStorage.getItem('theme')
+        const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.dataset.theme = stored === 'light' || stored === 'dark' ? stored : system
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>
+      This site needs JavaScript to run. The short version: I'm Alex Wohlbruck, a software
+      engineer and designer in Charlotte, NC. Reach me at
+      <a href="https://github.com/alexwohlbruck">github.com/alexwohlbruck</a>.
+    </noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

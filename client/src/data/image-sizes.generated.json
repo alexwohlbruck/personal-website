@@ -1,0 +1,414 @@
+{
+  "cat-facts/console.png": [
+    2400,
+    1800
+  ],
+  "cat-facts/fact-2.png": [
+    2400,
+    1800
+  ],
+  "cat-facts/fact.png": [
+    2400,
+    1800
+  ],
+  "cat-facts/facts.png": [
+    2400,
+    1800
+  ],
+  "cat-facts/home.png": [
+    2400,
+    1800
+  ],
+  "cat-facts/profile.png": [
+    2400,
+    1800
+  ],
+  "cat-facts/recipients.png": [
+    2400,
+    1800
+  ],
+  "clicky/game.png": [
+    2400,
+    1652
+  ],
+  "clicky/logo.png": [
+    2400,
+    1800
+  ],
+  "clicky/name.png": [
+    2400,
+    1800
+  ],
+  "covalent/final.jpg": [
+    4000,
+    6000
+  ],
+  "covalent/gif-1.gif": [
+    688,
+    1264
+  ],
+  "covalent/gif-2.gif": [
+    960,
+    1936
+  ],
+  "covalent/gif-3.gif": [
+    960,
+    1936
+  ],
+  "covalent/gif-4.gif": [
+    720,
+    1280
+  ],
+  "covalent/gif-5.gif": [
+    960,
+    1936
+  ],
+  "covalent/progress-1.jpg": [
+    4080,
+    3072
+  ],
+  "covalent/progress-10.jpg": [
+    756,
+    1004
+  ],
+  "covalent/progress-11.jpg": [
+    1333,
+    1004
+  ],
+  "covalent/progress-12.jpg": [
+    4080,
+    3072
+  ],
+  "covalent/progress-13.jpg": [
+    3072,
+    4080
+  ],
+  "covalent/progress-14.jpg": [
+    756,
+    1004
+  ],
+  "covalent/progress-15.jpg": [
+    669,
+    1004
+  ],
+  "covalent/progress-2.jpg": [
+    1333,
+    1004
+  ],
+  "covalent/progress-3.jpg": [
+    756,
+    1004
+  ],
+  "covalent/progress-4.jpg": [
+    756,
+    1004
+  ],
+  "covalent/progress-5.jpg": [
+    756,
+    1004
+  ],
+  "covalent/progress-6.jpg": [
+    3072,
+    4080
+  ],
+  "covalent/progress-7.jpg": [
+    756,
+    1004
+  ],
+  "covalent/progress-8.jpg": [
+    756,
+    1004
+  ],
+  "covalent/progress-9.jpg": [
+    1664,
+    1253
+  ],
+  "covalent/slide-1.png": [
+    1200,
+    900
+  ],
+  "covalent/slide-2.png": [
+    1200,
+    900
+  ],
+  "covalent/slide-3.png": [
+    1200,
+    900
+  ],
+  "covalent/slide-4.png": [
+    1200,
+    900
+  ],
+  "covalent/slide-5.png": [
+    1200,
+    900
+  ],
+  "gp-wallpaper/main.png": [
+    1920,
+    1200
+  ],
+  "jukebox/album-mobile.png": [
+    360,
+    640
+  ],
+  "jukebox/album.png": [
+    1024,
+    768
+  ],
+  "jukebox/artist.png": [
+    1024,
+    768
+  ],
+  "jukebox/chat.png": [
+    383,
+    768
+  ],
+  "jukebox/friends.png": [
+    383,
+    768
+  ],
+  "jukebox/home-mobile.png": [
+    360,
+    640
+  ],
+  "jukebox/home.png": [
+    1024,
+    768
+  ],
+  "jukebox/new.png": [
+    2400,
+    1800
+  ],
+  "jukebox/now-playing.png": [
+    360,
+    640
+  ],
+  "jukebox/original.png": [
+    2400,
+    1800
+  ],
+  "jukebox/queue.png": [
+    383,
+    768
+  ],
+  "jukebox/search.png": [
+    1024,
+    768
+  ],
+  "jukebox/songs.png": [
+    1365,
+    768
+  ],
+  "parchment/bike-parking-mobile.png": [
+    1206,
+    2622
+  ],
+  "parchment/collections-mobile.png": [
+    1206,
+    2622
+  ],
+  "parchment/day-night.png": [
+    2400,
+    1800
+  ],
+  "parchment/directions.png": [
+    2400,
+    1800
+  ],
+  "parchment/integrations.png": [
+    2400,
+    1800
+  ],
+  "parchment/landing.png": [
+    2400,
+    1800
+  ],
+  "parchment/library-mobile.png": [
+    1206,
+    2622
+  ],
+  "parchment/main.png": [
+    2400,
+    1800
+  ],
+  "parchment/place.png": [
+    2400,
+    1800
+  ],
+  "parchment/search.png": [
+    2400,
+    1800
+  ],
+  "parchment/settings.png": [
+    2400,
+    1800
+  ],
+  "parchment/streetview.png": [
+    2400,
+    1800
+  ],
+  "parchment/transit-station-mobile.png": [
+    1206,
+    2622
+  ],
+  "parchment/transit.png": [
+    2400,
+    1800
+  ],
+  "parchment/weather-mobile.png": [
+    1206,
+    2622
+  ],
+  "portfolio/about.png": [
+    2400,
+    1800
+  ],
+  "portfolio/contact.png": [
+    2400,
+    1800
+  ],
+  "portfolio/full.png": [
+    2400,
+    11580
+  ],
+  "portfolio/home.png": [
+    2400,
+    1800
+  ],
+  "portfolio/project.png": [
+    2400,
+    1800
+  ],
+  "portfolio/work.png": [
+    2400,
+    1800
+  ],
+  "rack-finder/contribute.png": [
+    2400,
+    1600
+  ],
+  "rack-finder/dark.png": [
+    2400,
+    1600
+  ],
+  "rack-finder/detail.png": [
+    1170,
+    2531
+  ],
+  "rack-finder/filter.png": [
+    2400,
+    1600
+  ],
+  "rack-finder/main-large.png": [
+    2400,
+    1600
+  ],
+  "rack-finder/main.png": [
+    1170,
+    2531
+  ],
+  "rack-finder/onboarding.png": [
+    1170,
+    2531
+  ],
+  "rack-finder/poster.png": [
+    893,
+    1156
+  ],
+  "rack-finder/preferences.png": [
+    2400,
+    1600
+  ],
+  "rps/color.png": [
+    2400,
+    1652
+  ],
+  "rps/finish.png": [
+    2400,
+    1652
+  ],
+  "rps/instructions.png": [
+    2400,
+    1652
+  ],
+  "rps/play.png": [
+    2400,
+    1652
+  ],
+  "rps/title.png": [
+    2400,
+    1800
+  ],
+  "worxstr/blog.png": [
+    2400,
+    1776
+  ],
+  "worxstr/contact.png": [
+    2400,
+    1776
+  ],
+  "worxstr/dark.png": [
+    2400,
+    1776
+  ],
+  "worxstr/dashboard.png": [
+    2400,
+    1776
+  ],
+  "worxstr/home-2.png": [
+    2400,
+    1776
+  ],
+  "worxstr/home.png": [
+    2400,
+    1800
+  ],
+  "worxstr/job.png": [
+    2400,
+    1776
+  ],
+  "worxstr/jobs.png": [
+    2400,
+    1776
+  ],
+  "worxstr/messages.png": [
+    2400,
+    1800
+  ],
+  "worxstr/payment.png": [
+    2400,
+    1776
+  ],
+  "worxstr/payments.png": [
+    2400,
+    1776
+  ],
+  "worxstr/pricing.png": [
+    2400,
+    1776
+  ],
+  "worxstr/schedule.png": [
+    2400,
+    1776
+  ],
+  "worxstr/settings.png": [
+    2400,
+    1800
+  ],
+  "worxstr/shift-assign.png": [
+    2400,
+    1890
+  ],
+  "worxstr/shift.png": [
+    2400,
+    1776
+  ],
+  "worxstr/support.png": [
+    2400,
+    1776
+  ],
+  "worxstr/users.png": [
+    2400,
+    1800
+  ]
+}

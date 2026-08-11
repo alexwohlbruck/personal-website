@@ -1,0 +1,576 @@
+@import 'tailwindcss';
+
+/* Theme is driven by a data attribute so the toggle can override the OS. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/**
+ * Exposure, the same display face Parchment and Barrelman use. It has no
+ * weight axis. Thickness comes from EXPO, where -100 is thickest, 0 default
+ * and 100 thinnest, so every display size sets its own value below.
+ */
+@font-face {
+  font-family: 'Exposure';
+  src: url('@/assets/fonts/Exposure-Variable.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------------
+   Palette
+
+   Paper and ink, both warm. Nothing is pure white or pure black. The light
+   theme is a sheet of off-white stock. The dark theme is the same page under a
+   low lamp. One accent (clay) carries every interactive signal.
+--------------------------------------------------------------------------- */
+
+:root {
+  --paper: oklch(98.4% 0.004 85);
+  --paper-sunk: oklch(95.8% 0.006 85);
+  --surface: oklch(99.6% 0.002 85);
+  --surface-2: oklch(97.2% 0.005 85);
+
+  --ink: oklch(21% 0.012 62);
+  --ink-2: oklch(45% 0.012 62);
+  --ink-3: oklch(62% 0.012 62);
+
+  --rule: oklch(21% 0.012 62 / 0.12);
+  --rule-strong: oklch(21% 0.012 62 / 0.22);
+
+  --accent: oklch(52% 0.145 42);
+  --accent-hover: oklch(46% 0.15 42);
+  --accent-wash: oklch(52% 0.145 42 / 0.09);
+
+  /* Lighting: a hairline of light on top edges, shadow pooling below. */
+  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 1), inset 0 -1px 0 oklch(21% 0.012 62 / 0.06);
+  --shadow-1: 0 1px 1px oklch(21% 0.012 62 / 0.05), 0 2px 6px -3px oklch(21% 0.012 62 / 0.1);
+  --shadow-2: 0 1px 2px oklch(21% 0.012 62 / 0.06), 0 6px 16px -8px oklch(21% 0.012 62 / 0.16);
+  --shadow-3: 0 2px 4px oklch(21% 0.012 62 / 0.06), 0 18px 40px -20px oklch(21% 0.012 62 / 0.28);
+  --shadow-press: inset 0 2px 4px oklch(21% 0.012 62 / 0.14);
+
+  --tile-ring: 0 0 0 1px oklch(21% 0.012 62 / 0.1);
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --paper: oklch(17% 0.006 75);
+  --paper-sunk: oklch(13.5% 0.006 75);
+  --surface: oklch(21.5% 0.007 75);
+  --surface-2: oklch(19% 0.006 75);
+
+  --ink: oklch(93% 0.008 85);
+  --ink-2: oklch(73% 0.01 80);
+  --ink-3: oklch(56% 0.01 80);
+
+  --rule: oklch(93% 0.008 85 / 0.14);
+  --rule-strong: oklch(93% 0.008 85 / 0.26);
+
+  --accent: oklch(74% 0.13 48);
+  --accent-hover: oklch(80% 0.12 50);
+  --accent-wash: oklch(74% 0.13 48 / 0.14);
+
+  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.07);
+  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 0.1), inset 0 -1px 0 oklch(0% 0 0 / 0.3);
+  --shadow-1: 0 1px 1px oklch(0% 0 0 / 0.3), 0 2px 6px -3px oklch(0% 0 0 / 0.4);
+  --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.35), 0 6px 16px -8px oklch(0% 0 0 / 0.55);
+  --shadow-3: 0 2px 4px oklch(0% 0 0 / 0.4), 0 18px 40px -20px oklch(0% 0 0 / 0.75);
+  --shadow-press: inset 0 2px 4px oklch(0% 0 0 / 0.45);
+
+  --tile-ring: 0 0 0 1px oklch(93% 0.008 85 / 0.1);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: 'Exposure', ui-serif, Iowan Old Style, Georgia, serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, monospace;
+
+  --color-paper: var(--paper);
+  --color-paper-sunk: var(--paper-sunk);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-wash: var(--accent-wash);
+
+  --shadow-e1: var(--shadow-1);
+  --shadow-e2: var(--shadow-2);
+  --shadow-e3: var(--shadow-3);
+
+  --radius-tile: 0.75rem;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --text-display: clamp(2.75rem, 1.2rem + 7vw, 6.5rem);
+  --text-display--line-height: 0.94;
+  --text-display--letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--rule);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    overflow-wrap: break-word;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--accent-wash);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Numbers in dates, counters and meters line up in columns. */
+  time,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Type
+--------------------------------------------------------------------------- */
+
+@utility display {
+  font-family: var(--font-serif);
+  font-size: var(--text-display);
+  line-height: 0.96;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+  font-variation-settings: 'EXPO' -12;
+  font-feature-settings: 'liga' 0, 'ss01' 0, 'ss02' 0, 'ss03' 0, 'ss04' 0, 'ss05' 0, 'ss06' 0;
+}
+
+/**
+ * Display headings. Pair with a `text-*` size. Exposure runs thicker as the
+ * EXPO value drops, so the smaller sizes get a touch more weight to hold up
+ * next to Geist.
+ */
+@utility title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  font-variation-settings: 'EXPO' -20;
+  font-feature-settings: 'liga' 0, 'ss01' 0, 'ss02' 0, 'ss03' 0, 'ss04' 0, 'ss05' 0, 'ss06' 0;
+}
+
+/** Small mono type for dates, counters and list indices. Never a heading. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility prose-body {
+  color: var(--ink-2);
+  line-height: 1.65;
+  font-size: 1rem;
+
+  @media (width >= 48rem) {
+    font-size: 1.0625rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Paper motifs
+
+   A ruled sheet, a dot grid, and the red margin line down the left of the page.
+   All of them sit at very low contrast. You feel them, you do not read them.
+--------------------------------------------------------------------------- */
+
+@utility ruled {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--rule-gap, 2rem) - 1px),
+    var(--rule) calc(var(--rule-gap, 2rem) - 1px),
+    var(--rule) var(--rule-gap, 2rem)
+  );
+}
+
+@utility dotted-grid {
+  background-image: radial-gradient(var(--rule) 1px, transparent 1px);
+  background-size: var(--dot-gap, 1.5rem) var(--dot-gap, 1.5rem);
+}
+
+/* ---------------------------------------------------------------------------
+   Depth
+
+   Nothing here is flat: surfaces catch a hairline of light along their top edge
+   and drop a soft shadow. Pressing a control inverts both.
+--------------------------------------------------------------------------- */
+
+@utility raised {
+  background-image: linear-gradient(to bottom, var(--surface), var(--surface-2));
+  box-shadow: var(--sheen), var(--tile-ring), var(--shadow-2);
+}
+
+@utility sunk {
+  background-color: var(--paper-sunk);
+  box-shadow: var(--shadow-press), var(--tile-ring);
+}
+
+@layer components {
+  /* Buttons ---------------------------------------------------------------- */
+  .btn {
+    --btn-bg: linear-gradient(to bottom, var(--surface), var(--surface-2));
+    --btn-fg: var(--ink);
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.625rem;
+    padding: 0.625rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    color: var(--btn-fg);
+    background-image: var(--btn-bg);
+    box-shadow: var(--sheen-strong), var(--tile-ring), var(--shadow-2);
+    transition:
+      transform 0.2s var(--ease-out-quint),
+      box-shadow 0.2s var(--ease-out-quint),
+      filter 0.2s var(--ease-out-quint);
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--sheen-strong), var(--tile-ring), var(--shadow-3);
+  }
+
+  .btn:active {
+    transform: translateY(0.5px);
+    box-shadow: var(--shadow-press), var(--tile-ring);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .btn-accent {
+    --btn-bg: linear-gradient(to bottom, var(--accent), var(--accent-hover));
+    --btn-fg: oklch(99% 0.005 85);
+    box-shadow:
+      inset 0 1px 0 oklch(100% 0 0 / 0.25),
+      0 0 0 1px oklch(30% 0.1 42 / 0.5),
+      var(--shadow-2);
+  }
+
+  .btn-accent:hover {
+    box-shadow:
+      inset 0 1px 0 oklch(100% 0 0 / 0.25),
+      0 0 0 1px oklch(30% 0.1 42 / 0.5),
+      var(--shadow-3);
+  }
+
+  [data-theme='dark'] .btn-accent {
+    --btn-fg: oklch(18% 0.02 60);
+  }
+
+  .btn-ghost {
+    --btn-bg: none;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--ink-2);
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--accent-wash);
+    color: var(--ink);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+  }
+
+  .btn-icon {
+    padding: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Cards ------------------------------------------------------------------ */
+  .card {
+    background-image: linear-gradient(to bottom, var(--surface), var(--surface-2));
+    box-shadow: var(--sheen), var(--tile-ring), var(--shadow-1);
+    border-radius: 0.875rem;
+  }
+
+  /* Fields ----------------------------------------------------------------- */
+  .field {
+    width: 100%;
+    background-color: var(--paper-sunk);
+    color: var(--ink);
+    border-radius: 0.625rem;
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9375rem;
+    box-shadow: var(--shadow-press), var(--tile-ring);
+    transition:
+      box-shadow 0.2s var(--ease-out-quint),
+      background-color 0.2s var(--ease-out-quint);
+  }
+
+  .field::placeholder {
+    color: var(--ink-3);
+  }
+
+  .field:focus {
+    outline: none;
+    background-color: var(--surface);
+    box-shadow:
+      var(--shadow-press),
+      0 0 0 1px var(--accent),
+      0 0 0 4px var(--accent-wash);
+  }
+
+  /* Chips ------------------------------------------------------------------ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.625rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+    background-color: var(--paper-sunk);
+    box-shadow: var(--tile-ring);
+    transition:
+      color 0.2s var(--ease-out-quint),
+      background-color 0.2s var(--ease-out-quint),
+      box-shadow 0.2s var(--ease-out-quint);
+  }
+
+  .chip-active {
+    color: var(--accent);
+    background-color: var(--accent-wash);
+    box-shadow: 0 0 0 1px var(--accent-wash);
+  }
+
+  /* Links ------------------------------------------------------------------ */
+  .link {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+    transition:
+      color 0.2s var(--ease-out-quint),
+      text-decoration-color 0.2s var(--ease-out-quint);
+  }
+
+  .link:hover {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Chevron nudge on "see all" style links (transitions.dev: learn-more-hover)
+--------------------------------------------------------------------------- */
+
+.nudge svg {
+  transition: transform 0.35s var(--ease-out-quint);
+}
+
+.nudge:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---------------------------------------------------------------------------
+   Keyframes
+--------------------------------------------------------------------------- */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Page transitions
+
+   Cross-fade with a whisper of vertical travel. The router waits for the leave
+   to finish before restoring scroll, so pages never jump mid-fade.
+--------------------------------------------------------------------------- */
+
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.28s var(--ease-out-quint),
+    transform 0.28s var(--ease-out-quint),
+    filter 0.28s var(--ease-out-quint);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(2px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+  filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active,
+  .nudge svg {
+    transition: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   PhotoSwipe, dressed as paper
+--------------------------------------------------------------------------- */
+
+.pswp {
+  --pswp-bg: oklch(96% 0.006 85 / 0.86);
+  --pswp-placeholder-bg: transparent;
+  --pswp-icon-color: var(--ink);
+  --pswp-icon-color-secondary: transparent;
+  --pswp-icon-stroke-width: 0;
+  --pswp-error-text-color: var(--ink-2);
+  backdrop-filter: blur(20px) saturate(1.1);
+}
+
+[data-theme='dark'] .pswp {
+  --pswp-bg: oklch(12% 0.006 75 / 0.88);
+}
+
+.pswp__img {
+  border-radius: 10px;
+  box-shadow: var(--shadow-3);
+}
+
+.pswp__button {
+  border-radius: 8px;
+  transition: background-color 0.2s var(--ease-out-quint);
+}
+
+.pswp__button:hover {
+  background-color: var(--accent-wash) !important;
+}
+
+.pswp__counter {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-2);
+  opacity: 1;
+  font-variant-numeric: tabular-nums;
+  margin-inline-start: 1rem;
+}
+
+.pswp__caption {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
