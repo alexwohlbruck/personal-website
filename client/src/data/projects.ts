@@ -52,7 +52,7 @@ export const projects: Project[] = [
     url: 'https://coopoly.deal',
     github: 'https://github.com/alexwohlbruck/coopoly-deal',
     cover: 'game.jpg',
-    images: ['game.jpg', 'lobby.jpg', 'main.jpg', 'endgame.jpg', 'settings.jpg'],
+    images: ['main.jpg', 'lobby.jpg', 'game.jpg', 'settings.jpg', 'endgame.jpg'],
     tags: ['client-side', 'server-side', 'realtime', 'graphic-design', 'ux'],
   },
   {

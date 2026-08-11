@@ -22,12 +22,12 @@ export function monthYear(date: Date): string {
 }
 
 /**
- * "2023–Now", "2020–2022", or "Jul–Dec 2023" for spans inside one year. A
- * one-off project gets a bare year.
+ * "2020–2022", or "Jul–Dec 2023" for spans inside one year. Anything still
+ * running, or with no recorded end, shows the year it began and stops there.
  */
 export function dateRange(start: Date, end?: Date): string {
   if (!end) return String(start.getFullYear())
-  if (isToday(end)) return `${start.getFullYear()}–Now`
+  if (isToday(end)) return String(start.getFullYear())
   if (start.getFullYear() === end.getFullYear()) {
     return `${monthShort(start)}–${monthShort(end)} ${end.getFullYear()}`
   }

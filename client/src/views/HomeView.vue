@@ -12,7 +12,7 @@ import { site } from '@/data/site'
 import { duration, ease, inView, step } from '@/lib/motion'
 
 const featured = featuredProjects
-const alsoRan = moreProjects(5)
+const alsoRan = moreProjects(4)
 
 const enter = (delay: number) => ({
   initial: { opacity: 0, y: 14, filter: 'blur(4px)' },
@@ -36,7 +36,7 @@ const enter = (delay: number) => ({
 
         <Motion as="div" v-bind="enter(0.18)" class="mt-9 flex flex-wrap items-center gap-3">
           <AppButton variant="accent" :to="{ name: 'projects' }" class="nudge">
-            See the work
+            See my work
             <ArrowRight class="size-4" />
           </AppButton>
           <AppButton :to="{ name: 'contact' }">Get in touch</AppButton>
@@ -73,7 +73,7 @@ const enter = (delay: number) => ({
       </div>
 
       <!-- The rest, at a glance. Not curated, just what came next. -->
-      <div class="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div class="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Motion
           v-for="(project, index) in alsoRan"
           :key="project.name"
