@@ -43,14 +43,14 @@ const size = computed(() => projectImageSize(props.project.name, coverFile.value
 
       <div class="flex flex-1 items-start gap-4 p-5">
         <ProjectTile :project="project" :size="40" />
+        <!-- Title on its own line: Exposure is wide enough that sharing a row
+             with the date wrapped "Parchment Maps" onto two lines. -->
         <div class="min-w-0 flex-1">
-          <div class="flex items-baseline justify-between gap-3">
-            <h3 class="title text-xl">{{ project.title }}</h3>
-            <time class="label shrink-0 text-ink-3">{{
-              dateRange(project.start, project.end)
-            }}</time>
-          </div>
-          <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-3">
+          <h3 class="title text-xl">{{ project.title }}</h3>
+          <time class="label mt-1.5 block text-ink-3">
+            {{ dateRange(project.start, project.end) }}
+          </time>
+          <p class="mt-2.5 line-clamp-2 text-sm leading-relaxed text-ink-3">
             {{ project.description }}
           </p>
         </div>

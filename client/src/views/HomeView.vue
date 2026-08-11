@@ -91,7 +91,7 @@ const enter = (delay: number) => ({
         box-shadow: var(--sheen), var(--tile-ring), var(--shadow-2);
       "
     >
-      <span class="ruled pointer-events-none absolute inset-0 opacity-60" style="--rule-gap: 2rem" />
+      <span class="contours pointer-events-none absolute inset-0 opacity-70" aria-hidden="true" />
       <div class="relative">
         <h2 class="title mx-auto max-w-2xl text-4xl md:text-5xl">
           Got something worth building?

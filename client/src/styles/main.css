@@ -19,68 +19,98 @@
 /* ---------------------------------------------------------------------------
    Palette
 
-   Paper and ink, both warm. Nothing is pure white or pure black. The light
-   theme is a sheet of off-white stock. The dark theme is the same page under a
-   low lamp. One accent (clay) carries every interactive signal.
+   Parchment and iron gall ink. The light theme is a sheet of warm rag paper;
+   the dark theme is the same ink pooled thick, a red-black rather than a grey
+   one. Nothing here is neutral: every grey carries some red or ochre in it.
+
+   Two colours do the talking. Rust is the interactive signal. Marine is the
+   map colour, borrowed from the water on an old chart, and it only appears
+   where something is being plotted rather than clicked.
 --------------------------------------------------------------------------- */
 
 :root {
-  --paper: oklch(98.4% 0.004 85);
-  --paper-sunk: oklch(95.8% 0.006 85);
-  --surface: oklch(99.6% 0.002 85);
-  --surface-2: oklch(97.2% 0.005 85);
+  --paper: oklch(96.4% 0.015 84);
+  --paper-sunk: oklch(93.4% 0.021 80);
+  --surface: oklch(98.4% 0.009 85);
+  --surface-2: oklch(95.6% 0.015 83);
 
-  --ink: oklch(21% 0.012 62);
-  --ink-2: oklch(45% 0.012 62);
-  --ink-3: oklch(62% 0.012 62);
+  --ink: oklch(26% 0.036 38);
+  --ink-2: oklch(45% 0.034 40);
+  --ink-3: oklch(57% 0.028 45);
 
-  --rule: oklch(21% 0.012 62 / 0.12);
-  --rule-strong: oklch(21% 0.012 62 / 0.22);
+  --rule: oklch(26% 0.036 38 / 0.16);
+  --rule-strong: oklch(26% 0.036 38 / 0.3);
 
-  --accent: oklch(52% 0.145 42);
-  --accent-hover: oklch(46% 0.15 42);
-  --accent-wash: oklch(52% 0.145 42 / 0.09);
+  --accent: oklch(47% 0.135 32);
+  --accent-hover: oklch(41% 0.14 30);
+  --accent-wash: oklch(47% 0.135 32 / 0.1);
+
+  --marine: oklch(50% 0.062 218);
+  --marine-wash: oklch(50% 0.062 218 / 0.12);
 
   /* Lighting: a hairline of light on top edges, shadow pooling below. */
-  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.9);
-  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 1), inset 0 -1px 0 oklch(21% 0.012 62 / 0.06);
-  --shadow-1: 0 1px 1px oklch(21% 0.012 62 / 0.05), 0 2px 6px -3px oklch(21% 0.012 62 / 0.1);
-  --shadow-2: 0 1px 2px oklch(21% 0.012 62 / 0.06), 0 6px 16px -8px oklch(21% 0.012 62 / 0.16);
-  --shadow-3: 0 2px 4px oklch(21% 0.012 62 / 0.06), 0 18px 40px -20px oklch(21% 0.012 62 / 0.28);
-  --shadow-press: inset 0 2px 4px oklch(21% 0.012 62 / 0.14);
+  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.75);
+  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 0.9), inset 0 -1px 0 oklch(26% 0.036 38 / 0.07);
+  --shadow-1: 0 1px 1px oklch(26% 0.036 38 / 0.06), 0 2px 6px -3px oklch(26% 0.036 38 / 0.12);
+  --shadow-2: 0 1px 2px oklch(26% 0.036 38 / 0.07), 0 6px 16px -8px oklch(26% 0.036 38 / 0.18);
+  --shadow-3: 0 2px 4px oklch(26% 0.036 38 / 0.07), 0 18px 40px -20px oklch(26% 0.036 38 / 0.3);
+  --shadow-press: inset 0 2px 4px oklch(26% 0.036 38 / 0.15);
 
-  --tile-ring: 0 0 0 1px oklch(21% 0.012 62 / 0.1);
+  --tile-ring: 0 0 0 1px oklch(26% 0.036 38 / 0.12);
+
+  /* Grain multiplies into the paper, so the noise reads as fibre, not fog. */
+  --grain-blend: multiply;
+  --grain: var(--grain-strong);
 
   color-scheme: light;
 }
 
 [data-theme='dark'] {
-  --paper: oklch(17% 0.006 75);
-  --paper-sunk: oklch(13.5% 0.006 75);
-  --surface: oklch(21.5% 0.007 75);
-  --surface-2: oklch(19% 0.006 75);
+  --paper: oklch(18% 0.018 40);
+  --paper-sunk: oklch(14.5% 0.016 38);
+  --surface: oklch(22% 0.02 42);
+  --surface-2: oklch(19.6% 0.018 40);
 
-  --ink: oklch(93% 0.008 85);
-  --ink-2: oklch(73% 0.01 80);
-  --ink-3: oklch(56% 0.01 80);
+  --ink: oklch(92% 0.021 82);
+  --ink-2: oklch(74% 0.025 76);
+  --ink-3: oklch(58% 0.026 60);
 
-  --rule: oklch(93% 0.008 85 / 0.14);
-  --rule-strong: oklch(93% 0.008 85 / 0.26);
+  --rule: oklch(92% 0.021 82 / 0.16);
+  --rule-strong: oklch(92% 0.021 82 / 0.3);
 
-  --accent: oklch(74% 0.13 48);
-  --accent-hover: oklch(80% 0.12 50);
-  --accent-wash: oklch(74% 0.13 48 / 0.14);
+  --accent: oklch(70% 0.13 40);
+  --accent-hover: oklch(77% 0.12 44);
+  --accent-wash: oklch(70% 0.13 40 / 0.16);
 
-  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.07);
-  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 0.1), inset 0 -1px 0 oklch(0% 0 0 / 0.3);
+  --marine: oklch(68% 0.072 210);
+  --marine-wash: oklch(68% 0.072 210 / 0.16);
+
+  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.06);
+  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 0.09), inset 0 -1px 0 oklch(0% 0 0 / 0.3);
   --shadow-1: 0 1px 1px oklch(0% 0 0 / 0.3), 0 2px 6px -3px oklch(0% 0 0 / 0.4);
   --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.35), 0 6px 16px -8px oklch(0% 0 0 / 0.55);
   --shadow-3: 0 2px 4px oklch(0% 0 0 / 0.4), 0 18px 40px -20px oklch(0% 0 0 / 0.75);
   --shadow-press: inset 0 2px 4px oklch(0% 0 0 / 0.45);
 
-  --tile-ring: 0 0 0 1px oklch(93% 0.008 85 / 0.1);
+  --tile-ring: 0 0 0 1px oklch(92% 0.021 82 / 0.12);
+
+  /* Screen instead, so the noise lifts out of the dark rather than muddying it.
+     Screen amplifies far more than multiply, so the dark sheet gets the
+     lighter grain or the page reads as television static. */
+  --grain-blend: screen;
+  --grain: var(--grain-soft);
 
   color-scheme: dark;
+}
+
+/**
+ * One tiling square of fractal noise, at two strengths. It is blended into the
+ * background colour rather than laid over the content, so text stays crisp and
+ * only the paper underneath gets its tooth.
+ */
+:root {
+  --grain-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.38'/%3E%3C/svg%3E");
+  --grain-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.11'/%3E%3C/svg%3E");
 }
 
 @theme inline {
@@ -100,6 +130,8 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-wash: var(--accent-wash);
+  --color-marine: var(--marine);
+  --color-marine-wash: var(--marine-wash);
 
   --shadow-e1: var(--shadow-1);
   --shadow-e2: var(--shadow-2);
@@ -137,6 +169,8 @@
 
   body {
     background-color: var(--paper);
+    background-image: var(--grain);
+    background-blend-mode: var(--grain-blend);
     color: var(--ink);
     font-family: var(--font-sans);
     font-synthesis-weight: none;
@@ -224,10 +258,11 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Paper motifs
+   Paper and map motifs
 
-   A ruled sheet, a dot grid, and the red margin line down the left of the page.
-   All of them sit at very low contrast. You feel them, you do not read them.
+   A ruled sheet, a dot grid, a surveyor's graticule and a set of elevation
+   contours. All of them sit at very low contrast. You feel them, you do not
+   read them.
 --------------------------------------------------------------------------- */
 
 @utility ruled {
@@ -243,6 +278,35 @@
 @utility dotted-grid {
   background-image: radial-gradient(var(--rule) 1px, transparent 1px);
   background-size: var(--dot-gap, 1.5rem) var(--dot-gap, 1.5rem);
+}
+
+/** Lat/long lines, as on the margin of a chart. */
+@utility graticule {
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--rule) 0 1px,
+      transparent 1px var(--grid-gap, 3rem)
+    ),
+    repeating-linear-gradient(to bottom, var(--rule) 0 1px, transparent 1px var(--grid-gap, 3rem));
+}
+
+/**
+ * Elevation contours. Two off-centre ring systems read as terrain rather than
+ * as a target, and the ellipses keep them from looking machine-made.
+ */
+@utility contours {
+  background-image:
+    repeating-radial-gradient(
+      ellipse 62% 44% at 18% 28%,
+      transparent 0 25px,
+      var(--rule) 25px 26px
+    ),
+    repeating-radial-gradient(
+      ellipse 52% 68% at 86% 74%,
+      transparent 0 31px,
+      var(--rule) 31px 32px
+    );
 }
 
 /* ---------------------------------------------------------------------------

@@ -133,14 +133,14 @@ const isWeekend = (date: Date) => [0, 6].includes(date.getDay())
           <div
             v-for="block in blocksFor(day)"
             :key="block.key"
-            class="absolute inset-x-[3px] rounded-[5px] bg-accent-wash"
+            class="absolute inset-x-[3px] rounded-[5px] bg-marine-wash"
             :style="{
               top: `${block.top}%`,
               height: `${block.height}%`,
-              boxShadow: 'inset 0 0 0 1px var(--accent)',
+              boxShadow: 'inset 0 0 0 1px var(--marine)',
             }"
           >
-            <span class="block truncate px-1.5 py-1 text-[0.625rem] text-accent">Busy</span>
+            <span class="block truncate px-1.5 py-1 text-[0.625rem] text-marine">Busy</span>
           </div>
 
           <!-- Now marker -->
