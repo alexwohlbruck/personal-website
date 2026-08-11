@@ -1,4 +1,48 @@
 {
+  "barrelman/accounts.png": [
+    2400,
+    1800
+  ],
+  "barrelman/api-keys.png": [
+    2400,
+    1800
+  ],
+  "barrelman/dash.png": [
+    2400,
+    1800
+  ],
+  "barrelman/features.jpg": [
+    2400,
+    1800
+  ],
+  "barrelman/jobs.png": [
+    2400,
+    1800
+  ],
+  "barrelman/landing.jpg": [
+    2400,
+    1800
+  ],
+  "barrelman/osm.jpg": [
+    2400,
+    1800
+  ],
+  "barrelman/pricing.jpg": [
+    2400,
+    1800
+  ],
+  "barrelman/regions.png": [
+    2400,
+    1800
+  ],
+  "barrelman/scripts.png": [
+    2400,
+    1800
+  ],
+  "barrelman/world.jpg": [
+    2400,
+    1800
+  ],
   "cat-facts/console.png": [
     2400,
     1800
@@ -36,6 +80,26 @@
     1800
   ],
   "clicky/name.png": [
+    2400,
+    1800
+  ],
+  "coopoly-deal/endgame.jpg": [
+    2400,
+    1800
+  ],
+  "coopoly-deal/game.jpg": [
+    2400,
+    1800
+  ],
+  "coopoly-deal/lobby.jpg": [
+    2400,
+    1800
+  ],
+  "coopoly-deal/main.jpg": [
+    2400,
+    1800
+  ],
+  "coopoly-deal/settings.jpg": [
     2400,
     1800
   ],
@@ -220,8 +284,8 @@
     1800
   ],
   "parchment/landing.png": [
-    2400,
-    1800
+    3600,
+    2700
   ],
   "parchment/library-mobile.png": [
     1206,

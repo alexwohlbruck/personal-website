@@ -4,13 +4,15 @@ import { ArrowRight } from '@lucide/vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import SectionHeading from '@/components/ui/SectionHeading.vue'
 import ProjectCard from '@/components/project/ProjectCard.vue'
+import ProjectMini from '@/components/project/ProjectMini.vue'
 import RotatingWord from '@/components/home/RotatingWord.vue'
 import IndexCard from '@/components/home/IndexCard.vue'
-import { projects } from '@/data/projects'
+import { featuredProjects, moreProjects, projects } from '@/data/projects'
 import { site } from '@/data/site'
 import { duration, ease, inView, step } from '@/lib/motion'
 
-const featured = projects.slice(0, 3)
+const featured = featuredProjects
+const alsoRan = moreProjects(5)
 
 const enter = (delay: number) => ({
   initial: { opacity: 0, y: 14, filter: 'blur(4px)' },
@@ -70,7 +72,21 @@ const enter = (delay: number) => ({
         </Motion>
       </div>
 
-      <div class="mt-8 flex justify-center">
+      <!-- The rest, at a glance. Not curated, just what came next. -->
+      <div class="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+        <Motion
+          v-for="(project, index) in alsoRan"
+          :key="project.name"
+          :initial="{ opacity: 0, y: 14, filter: 'blur(4px)' }"
+          :while-in-view="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :in-view-options="inView"
+          :transition="{ duration: duration.base, ease, delay: step(index) }"
+        >
+          <ProjectMini :project="project" />
+        </Motion>
+      </div>
+
+      <div class="mt-10 flex justify-center">
         <AppButton :to="{ name: 'projects' }" variant="ghost" class="nudge">
           See all {{ projects.length }} projects
           <ArrowRight class="size-4" />

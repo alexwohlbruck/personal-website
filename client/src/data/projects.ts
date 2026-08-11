@@ -25,7 +25,19 @@ export const projects: Project[] = [
     end: new Date(),
     url: 'https://barrelman.dev',
     github: 'https://github.com/alexwohlbruck/barrelman',
-    images: [],
+    images: [
+      'landing.jpg',
+      'features.jpg',
+      'osm.jpg',
+      'world.jpg',
+      'dash.png',
+      'regions.png',
+      'jobs.png',
+      'scripts.png',
+      'api-keys.png',
+      'accounts.png',
+      'pricing.jpg',
+    ],
     tags: ['client-side', 'server-side', 'apis', 'databases', 'cartography'],
   },
   {
@@ -39,7 +51,8 @@ export const projects: Project[] = [
     end: new Date(),
     url: 'https://coopoly.deal',
     github: 'https://github.com/alexwohlbruck/coopoly-deal',
-    images: [],
+    cover: 'game.jpg',
+    images: ['game.jpg', 'lobby.jpg', 'main.jpg', 'endgame.jpg', 'settings.jpg'],
     tags: ['client-side', 'server-side', 'realtime', 'graphic-design', 'ux'],
   },
   {
@@ -53,7 +66,7 @@ export const projects: Project[] = [
     end: new Date(),
     url: 'https://parchment.app',
     github: 'https://github.com/alexwohlbruck/parchment',
-    cover: 'day-night.png',
+    cover: 'landing.png',
     images: [
       'landing.png',
       'main.png',
@@ -341,6 +354,18 @@ export const projects: Project[] = [
     ],
   },
 ]
+
+/** Hand-picked for the home page, in the order they appear there. */
+const featuredNames = ['parchment', 'barrelman', 'portolan']
+
+export const featuredProjects = featuredNames
+  .map((name) => projects.find((project) => project.name === name))
+  .filter((project): project is Project => Boolean(project))
+
+/** Fills the rest of the home page: newest first, minus anything featured. */
+export function moreProjects(count: number): Project[] {
+  return projects.filter((project) => !featuredNames.includes(project.name)).slice(0, count)
+}
 
 export function findProject(name: string): Project | undefined {
   return projects.find((project) => project.name === name)
