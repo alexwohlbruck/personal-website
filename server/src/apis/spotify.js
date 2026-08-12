@@ -242,7 +242,7 @@ export async function getTop(range = 'month', { artists = 12 } = {}) {
 
 /** Most recently liked songs, newest first. Spotify returns them in save order,
  *  which is exactly the order worth showing. */
-export async function getLikedTracks(limit = 17) {
+export async function getLikedTracks(limit = 16) {
   return cached(`spotify:liked:${limit}`, TTL.liked, async () => {
     const body = await call(`/me/tracks?limit=${limit}`)
     return (body?.items ?? [])

@@ -47,7 +47,25 @@ const note = computed(() => RANGES.find((option) => option.key === range.value)?
       note="Here's what I've been listening to lately."
     />
 
-    <div class="mt-10 grid gap-6 lg:grid-cols-2 lg:items-start">
+    <div v-if="available.length > 1" class="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <span class="label text-ink-3">Listening window</span>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="option in available"
+          :key="option.key"
+          type="button"
+          class="chip cursor-pointer"
+          :class="range === option.key && 'chip-active'"
+          :aria-pressed="range === option.key"
+          @click="range = option.key"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+      <span class="text-xs text-ink-3">{{ note }}</span>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2 lg:items-start" :class="available.length > 1 ? 'mt-6' : 'mt-10'">
       <!-- Keep cards content-sized. Equal-width columns do not need empty
            stretched cards to look balanced. -->
       <div class="space-y-6">
@@ -61,28 +79,12 @@ const note = computed(() => RANGES.find((option) => option.key === range.value)?
         </div>
 
         <div v-if="top?.artists.length" class="card p-5">
-          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h3 class="label text-ink-3">Artists</h3>
-            <div v-if="available.length > 1" class="flex flex-wrap justify-end gap-2">
-              <button
-                v-for="option in available"
-                :key="option.key"
-                type="button"
-                class="chip cursor-pointer"
-                :class="range === option.key && 'chip-active'"
-                :aria-pressed="range === option.key"
-                @click="range = option.key"
-              >
-                {{ option.label }}
-              </button>
-            </div>
-          </div>
-          <p v-if="available.length > 1" class="mb-5 text-xs text-ink-3">{{ note }}</p>
+          <h3 class="label mb-5 text-ink-3">Artists</h3>
           <ArtistRow :artists="top.artists" />
         </div>
       </div>
 
-      <div v-if="liked.length" class="card p-5">
+      <div v-if="liked.length" class="card p-5 pb-7">
         <h3 class="label mb-2 text-ink-3">Freshly liked</h3>
         <TrackList :tracks="liked" />
       </div>
