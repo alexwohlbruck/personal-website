@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { BACKEND_URL } from '@/data/site'
-import type { CalendarEvent, InstagramPost, SpotifyPlaybackState } from '@/data/types'
+import type {
+  CalendarEvent,
+  InstagramImage,
+  InstagramPost,
+  SpotifyPlaybackState,
+} from '@/data/types'
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (!BACKEND_URL) throw new Error('No backend configured')
@@ -120,6 +125,42 @@ export const useLiveStore = defineStore('live', () => {
   const INSTAGRAM_PAGE = 12
 
   /**
+   * Guarantees every post has a `media` array, so nothing downstream has to
+   * guess. Responses are cached for minutes by the browser and by the server,
+   * which means a payload written before `media` existed can still arrive after
+   * a deploy. Reading `.length` off that took the whole section down, and a
+   * missing field is not worth a blank page.
+   */
+  function normalise(posts: InstagramPost[]): InstagramPost[] {
+    return posts
+      .map((post) => ({
+        ...post,
+        media: post.media?.filter(Boolean) ?? (post.media_url ? [post.media_url] : []),
+      }))
+      .filter((post) => post.media.length > 0)
+  }
+
+  /**
+   * Every photo, flattened out of its post.
+   *
+   * Most posts here are albums, so a grid of posts would show one cover each
+   * and hide the rest. Flattening means the grid is photos rather than posts.
+   * The post each one came from is carried along for its caption and link.
+   */
+  const instagramImages = computed<InstagramImage[]>(() =>
+    instagram.value.flatMap((post) =>
+      post.media.map((url, i) => ({
+        key: `${post.id}:${i}`,
+        url,
+        permalink: post.permalink,
+        caption: post.caption,
+        position: i + 1,
+        total: post.media.length,
+      })),
+    ),
+  )
+
+  /**
    * Pulls the next page and appends it. Photos already loaded stay loaded, so
    * paging back through the slideshow costs nothing and the browser keeps the
    * images it has already decoded.
@@ -133,7 +174,7 @@ export const useLiveStore = defineStore('live', () => {
       const page = await api<{ posts: InstagramPost[]; next: string | null }>(
         `instagram/grid?limit=${INSTAGRAM_PAGE}`,
       )
-      instagram.value = page.posts
+      instagram.value = normalise(page.posts)
       instagramCursor.value = page.next
       instagramDone.value = !page.next
       instagramStatus.value = 'ready'
@@ -151,7 +192,7 @@ export const useLiveStore = defineStore('live', () => {
       const page = await api<{ posts: InstagramPost[]; next: string | null }>(
         `instagram/grid?limit=${INSTAGRAM_PAGE}&after=${encodeURIComponent(instagramCursor.value)}`,
       )
-      instagram.value = [...instagram.value, ...page.posts]
+      instagram.value = [...instagram.value, ...normalise(page.posts)]
       instagramCursor.value = page.next
       instagramDone.value = !page.next
     } catch {
@@ -189,6 +230,7 @@ export const useLiveStore = defineStore('live', () => {
     fetchSpotify,
     stopSpotifyPolling,
     instagram,
+    instagramImages,
     instagramStatus,
     instagramDone,
     fetchInstagram,

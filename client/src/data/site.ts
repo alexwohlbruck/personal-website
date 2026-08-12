@@ -20,7 +20,7 @@ export const site = {
     'software engineer',
     'pianist',
     'environmentalist',
-    'cyclist',
+    'bike commuter',
     'OpenStreetMap contributor',
     'cat owner',
     'cheese lover',

@@ -77,8 +77,27 @@ export interface SpotifyPlaybackState {
 export interface InstagramPost {
   id: string
   permalink: string
+  /** The cover, which is the first image in `media`. */
   media_url: string
+  /** Every image in the post. Most of these are albums rather than singles. */
+  media: string[]
   caption?: string
+}
+
+/**
+ * A single photo, lifted out of whatever post it belongs to.
+ *
+ * The grid shows photos rather than posts, so an album of twenty contributes
+ * twenty tiles. It keeps a pointer back to its post for the caption and link.
+ */
+export interface InstagramImage {
+  key: string
+  url: string
+  permalink: string
+  caption?: string
+  /** Which photo of its post this is, and how many there are. */
+  position: number
+  total: number
 }
 
 /**

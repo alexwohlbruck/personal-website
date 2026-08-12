@@ -21,7 +21,20 @@ const OAUTH = 'https://api.instagram.com/oauth/access_token'
 
 export const SCOPES = ['instagram_business_basic']
 
-const FIELDS = ['id', 'caption', 'media_type', 'media_url', 'permalink', 'thumbnail_url'].join(',')
+/**
+ * `children` is what turns a carousel post into its photos. Most of this
+ * account's posts are albums of up to twenty images, so without it the grid
+ * shows one cover each and the rest are unreachable.
+ */
+const FIELDS = [
+  'id',
+  'caption',
+  'media_type',
+  'media_url',
+  'permalink',
+  'thumbnail_url',
+  'children{id,media_type,media_url,thumbnail_url}',
+].join(',')
 
 /** The grid changes a few times a month at most. */
 const CACHE_TTL = 15 * 60_000
@@ -53,6 +66,16 @@ export async function getProfile() {
 }
 
 /**
+ * The still image for a post or one of its children.
+ *
+ * Videos and reels carry the clip itself in media_url, which an <img> cannot
+ * render, so the poster frame is the only usable thing on them.
+ */
+function still(item) {
+  return item.media_type === 'VIDEO' ? item.thumbnail_url : item.media_url
+}
+
+/**
  * One page of the grid, newest first.
  *
  * `after` is an opaque cursor from the previous page's `next`. Instagram pages
@@ -75,14 +98,16 @@ export async function getMedia({ limit = 12, after } = {}) {
     const body = await fetchJson(`${GRAPH}/me/media?${params}`)
 
     const posts = (body?.data ?? [])
-      .map((post) => ({
-        id: post.id,
-        permalink: post.permalink,
-        // Videos and reels have no still of their own in media_url, so the
-        // thumbnail is the only thing that renders in an <img>.
-        media_url: post.media_type === 'VIDEO' ? post.thumbnail_url : post.media_url,
-        caption: post.caption,
-      }))
+      .map((post) => {
+        const media = (post.children?.data ?? [post]).map(still).filter(Boolean)
+        return {
+          id: post.id,
+          permalink: post.permalink,
+          caption: post.caption,
+          media_url: media[0],
+          media,
+        }
+      })
       .filter((post) => Boolean(post.media_url))
 
     // A cursor comes back even on the last page. `paging.next` is the only

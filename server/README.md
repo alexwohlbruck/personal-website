@@ -19,7 +19,7 @@ answers `503` instead of taking the process down.
 | -------------------------- | ---------------------------------------------- |
 | `GET /spotify/stream`      | SSE. Pushes the current track when it changes.  |
 | `GET /spotify/playback-state` | The same answer as one request.             |
-| `GET /instagram/grid`      | Recent posts.                                   |
+| `GET /instagram/grid`      | A page of posts, each with all its photos.      |
 | `GET /calendar`            | Busy intervals for the next seven days.         |
 | `POST /mailer/contact`     | Contact form. Rate limited to 5 per 10 minutes. |
 | `GET /health`              | Which integrations are configured.              |
@@ -98,6 +98,11 @@ personal account can't be read by any Instagram API any more.
 3. Under **Instagram > API setup with Instagram business login**, generate a
    long-lived access token. Paste it into `.env` as `INSTAGRAM_ACCESS_TOKEN`.
 4. `npm run auth:instagram` to check it works and record its expiry.
+
+`/instagram/grid` takes `limit` and an `after` cursor, and answers with
+`{ posts, next }`. Each post carries a `media` array holding every photo in it,
+because most posts on this account are albums of up to twenty: without the
+`children` field the API returns one cover each and the rest are unreachable.
 
 **There is no refresh token here.** Unlike Spotify, this API has no permanent
 credential you mint short-lived tokens from. The long-lived token is its own
