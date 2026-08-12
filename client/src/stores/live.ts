@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
-import { BACKEND_URL } from '@/data/site'
+import { computed, ref, watch } from 'vue'
+import { BACKEND_URL, JUKEBOX_URL } from '@/data/site'
 import type {
   CalendarEvent,
   InstagramImage,
@@ -29,6 +29,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 type Status = 'idle' | 'loading' | 'ready' | 'error'
+type AudioStatus = 'idle' | 'loading' | 'playing' | 'error'
 
 /**
  * Everything on the site that comes from the Express server. Each section owns
@@ -40,6 +41,10 @@ export const useLiveStore = defineStore('live', () => {
   let stream: EventSource | undefined
   let spotifyTimer: ReturnType<typeof setTimeout> | undefined
   let polling = false
+  /** Kept in the store rather than a card so route changes never stop audio. */
+  let spotifyAudio: HTMLAudioElement | undefined
+  const spotifyAudioStatus = ref<AudioStatus>('idle')
+  const spotifyAudioPlaying = ref(false)
 
   const listening = ref<SpotifyListening | null>(null)
   const listeningStatus = ref<Status>('idle')
@@ -52,6 +57,73 @@ export const useLiveStore = defineStore('live', () => {
 
   const calendar = ref<CalendarEvent[]>([])
   const calendarStatus = ref<Status>('idle')
+
+  function audioStreamUrl(progressMs: number) {
+    const state = spotify.value
+    if (!state?.item.id) return null
+    const url = new URL('/v1/stream', JUKEBOX_URL)
+    url.searchParams.set('spotifyTrackId', state.item.id)
+    // A finished timestamp is not a playable offset. Jukebox begins the
+    // transcode at this point rather than requiring the browser to seek a
+    // chunked response.
+    const offset = Math.min(Math.max(0, progressMs), Math.max(0, state.item.duration_ms - 1))
+    url.searchParams.set('startMs', String(Math.round(offset)))
+    return url.href
+  }
+
+  function getSpotifyAudio() {
+    if (spotifyAudio) return spotifyAudio
+    spotifyAudio = new Audio()
+    spotifyAudio.preload = 'none'
+    spotifyAudio.addEventListener('error', () => {
+      spotifyAudioPlaying.value = false
+      spotifyAudioStatus.value = 'error'
+    })
+    return spotifyAudio
+  }
+
+  async function startSpotifyAudio(progressMs: number) {
+    if (!spotify.value?.is_playing) return
+    const url = audioStreamUrl(progressMs)
+    if (!url) return
+
+    const audio = getSpotifyAudio()
+    spotifyAudioStatus.value = 'loading'
+    audio.src = url
+    audio.load()
+    try {
+      await audio.play()
+      spotifyAudioPlaying.value = true
+      spotifyAudioStatus.value = 'playing'
+    } catch {
+      spotifyAudioPlaying.value = false
+      spotifyAudioStatus.value = 'error'
+    }
+  }
+
+  function stopSpotifyAudio() {
+    spotifyAudioPlaying.value = false
+    spotifyAudioStatus.value = 'idle'
+    spotifyAudio?.pause()
+    spotifyAudio?.removeAttribute('src')
+    spotifyAudio?.load()
+  }
+
+  watch(
+    () => spotify.value?.item.id,
+    (id, previous) => {
+      if (spotifyAudioPlaying.value && id && id !== previous && spotify.value?.is_playing) {
+        void startSpotifyAudio(spotify.value.progress_ms)
+      }
+    },
+  )
+
+  watch(
+    () => spotify.value?.is_playing,
+    (isPlaying) => {
+      if (spotifyAudioPlaying.value && !isPlaying) stopSpotifyAudio()
+    },
+  )
 
   /**
    * The server holds one connection open and writes the track when it changes,
@@ -255,6 +327,10 @@ export const useLiveStore = defineStore('live', () => {
     spotifyStatus,
     fetchSpotify,
     stopSpotifyPolling,
+    spotifyAudioStatus,
+    spotifyAudioPlaying,
+    startSpotifyAudio,
+    stopSpotifyAudio,
     listening,
     listeningStatus,
     fetchListening,

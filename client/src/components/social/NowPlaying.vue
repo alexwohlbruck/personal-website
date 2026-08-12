@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
+import { Volume2, VolumeX } from '@lucide/vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import RecordSleeve from '@/components/social/RecordSleeve.vue'
 import { useLiveStore } from '@/stores/live'
-import { JUKEBOX_URL, links } from '@/data/site'
+import { links } from '@/data/site'
 import { formatDuration, relativeTime } from '@/lib/format'
 
 withDefaults(defineProps<{ compact?: boolean }>(), { compact: false })
@@ -41,68 +42,14 @@ const status = computed(() => {
   return playing.value ? 'Listening now' : `Last played ${relativeTime(live.spotify.timestamp)}`
 })
 
-/** Audio must begin from a click. Apart from satisfying browser autoplay rules,
- * it avoids opening a Jukebox transcode for visitors who only want the title. */
-const audio = ref<HTMLAudioElement>()
-const audible = ref(false)
-const audioError = ref(false)
-
 const streamUrl = computed(() => {
-  if (!track.value?.id) return null
-  const url = new URL('/v1/stream', JUKEBOX_URL)
-  url.searchParams.set('spotifyTrackId', track.value.id)
-  return url.href
+  return Boolean(track.value?.id && playing.value)
 })
-
-function syncedStreamUrl() {
-  if (!streamUrl.value) return null
-  const url = new URL(streamUrl.value)
-  // Jukebox starts its live transcode at this offset. Clamp just below the end
-  // so a timestamp collected as the song finishes does not request past it.
-  const offset = Math.min(Math.max(0, progress.value), Math.max(0, (track.value?.duration_ms ?? 1) - 1))
-  url.searchParams.set('startMs', String(Math.round(offset)))
-  return url.href
-}
-
-async function startAudio() {
-  const url = syncedStreamUrl()
-  if (!audio.value || !url) return
-
-  audioError.value = false
-  audible.value = true
-  audio.value.src = url
-  audio.value.load()
-
-  try {
-    await audio.value.play()
-  } catch {
-    audible.value = false
-    audioError.value = true
-  }
-}
-
-function stopAudio() {
-  audible.value = false
-  audio.value?.pause()
-  if (audio.value) audio.value.removeAttribute('src')
-}
 
 async function toggleAudio() {
-  if (audible.value) stopAudio()
-  else await startAudio()
+  if (live.spotifyAudioPlaying) live.stopSpotifyAudio()
+  else await live.startSpotifyAudio(progress.value)
 }
-
-watch(streamUrl, async (next, previous) => {
-  if (!audible.value || !playing.value || !next || next === previous) return
-  await startAudio()
-})
-
-watch(playing, (isPlaying) => {
-  // Do not keep an old stream audible after Spotify itself has stopped.
-  if (audible.value && !isPlaying) stopAudio()
-})
-
-onBeforeUnmount(stopAudio)
 </script>
 
 <template>
@@ -148,11 +95,13 @@ onBeforeUnmount(stopAudio)
         compact && 'w-full',
       ]"
     >
-      <a
-        :href="track.external_urls.spotify"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="shrink-0"
+      <button
+        type="button"
+        class="group relative shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent disabled:cursor-not-allowed"
+        :disabled="!streamUrl"
+        :aria-label="live.spotifyAudioPlaying ? 'Mute live playback' : 'Unmute live playback'"
+        :aria-pressed="live.spotifyAudioPlaying"
+        @click="toggleAudio"
       >
         <RecordSleeve
           :artwork="artwork"
@@ -174,7 +123,15 @@ onBeforeUnmount(stopAudio)
             />
           </span>
         </RecordSleeve>
-      </a>
+        <span
+          class="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border border-rule bg-paper text-ink-2 shadow-sm transition-colors group-hover:border-accent group-hover:text-accent"
+          :class="live.spotifyAudioPlaying && 'border-accent bg-accent text-paper'"
+          aria-hidden="true"
+        >
+          <VolumeX v-if="live.spotifyAudioPlaying" class="size-3.5" />
+          <Volume2 v-else class="size-3.5" />
+        </span>
+      </button>
 
       <div class="min-w-0 flex-1" :class="compact && 'text-right'">
         <a
@@ -202,20 +159,9 @@ onBeforeUnmount(stopAudio)
       </div>
     </div>
 
-    <div v-if="track" class="mt-3 flex items-center gap-2">
-      <audio ref="audio" preload="none" @error="audioError = true; audible = false" />
-      <button
-        type="button"
-        class="rounded-full border border-ink-3/25 px-3 py-1.5 text-xs font-medium text-ink-2 transition-colors hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50"
-        :disabled="!streamUrl || !playing"
-        :aria-pressed="audible"
-        @click="toggleAudio"
-      >
-        {{ audible ? 'Mute live playback' : 'Unmute live playback' }}
-      </button>
-      <span v-if="audioError" class="text-xs text-ink-3">Playback is unavailable right now.</span>
-      <span v-else-if="!playing" class="text-xs text-ink-3">Playback resumes when the music does.</span>
-    </div>
+    <p v-if="track && live.spotifyAudioStatus === 'error'" class="mt-3 text-xs text-ink-3">
+      Playback is unavailable right now.
+    </p>
 
     <p v-if="!compact && track" class="mt-3 text-xs text-ink-3">{{ status }}</p>
   </div>
