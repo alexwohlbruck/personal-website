@@ -1,0 +1,77 @@
+export const site = {
+  name: 'Alex Wohlbruck',
+  initials: 'AW',
+  role: 'Software engineer & designer',
+  location: 'Brooklyn, NY',
+  timezone: 'America/New_York',
+  currently: {
+    title: 'Software Engineer',
+    company: 'Subway Builder',
+    since: new Date('2025-10-01'),
+  },
+  /** The hero statement. Say the thing, then stop. */
+  statement:
+    'I create software for the web. Maps, tools, games, and interfaces designed to delight.',
+  /** Rotates under the hero statement. */
+  alsoA: [
+    'web developer',
+    'graphic designer',
+    'photographer',
+    'software engineer',
+    'pianist',
+    'environmentalist',
+    'bike commuter',
+    'OpenStreetMap contributor',
+    'cat owner',
+    'cheese lover',
+    'coffee shop frequenter',
+    'problem solver',
+    'musician',
+    'urbanist',
+    'programmer',
+    'designer',
+    'traveler',
+    'nerd',
+    'techie',
+  ],
+} as const
+
+export const links = {
+  linkedin: 'https://linkedin.com/in/alexwohlbruck',
+  github: 'https://github.com/alexwohlbruck',
+  instagram: 'https://instagram.com/alexwohlbruck',
+  spotify: 'https://open.spotify.com/user/alexwohlbruck',
+  musescore: 'https://musescore.com/user/29055565',
+  twitter: 'https://twitter.com/alexwohlbruck',
+  strava: 'https://www.strava.com/athletes/95789735',
+  osm: 'https://www.openstreetmap.org/user/alexwohlbruck',
+} as const
+
+export interface SocialLink {
+  label: string
+  /** Filename under `assets/svg/`. */
+  icon: string
+  href?: string
+  /** Named route, for internal destinations. */
+  to?: string
+  handle: string
+}
+
+export const socials: SocialLink[] = [
+  { label: 'Email', icon: 'at', to: 'contact', handle: 'Send a message' },
+  { label: 'GitHub', icon: 'github', href: links.github, handle: '@alexwohlbruck' },
+  { label: 'LinkedIn', icon: 'linkedin', href: links.linkedin, handle: 'in/alexwohlbruck' },
+  { label: 'Instagram', icon: 'instagram', href: links.instagram, handle: '@alexwohlbruck' },
+  { label: 'Spotify', icon: 'spotify', href: links.spotify, handle: 'alexwohlbruck' },
+  { label: 'MuseScore', icon: 'musescore', href: links.musescore, handle: 'Sheet music' },
+  { label: 'Strava', icon: 'strava', href: links.strava, handle: 'Rides & runs' },
+  { label: 'OpenStreetMap', icon: 'osm', href: links.osm, handle: 'Map edits' },
+]
+
+/**
+ * Set `VITE_BACKEND_URL` to point at the Express server. When it is unset the
+ * live sections (Spotify, Instagram, availability, contact form) degrade to a
+ * quiet offline state instead of erroring.
+ */
+export const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:3000' : '')

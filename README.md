@@ -1,20 +1,42 @@
 # Personal website
 
+[alex.wohlbruck.com](https://alex.wohlbruck.com). Portfolio, projects, and a few live odds and ends.
+
+Two pieces: a Vue 3 client and a small Express server that proxies the Spotify,
+Instagram, Google Calendar and mail integrations.
+
+## Stack
+
+| | |
+|---|---|
+| Framework | Vue 3.5 (`<script setup>`, TypeScript) |
+| Build | Vite 8 |
+| Styling | Tailwind CSS v4, CSS-first tokens in `client/src/styles/main.css` |
+| Motion | [motion-v](https://motion.dev/docs/vue), CSS transitions on a shared token scale |
+| Lightbox | PhotoSwipe 5 |
+| Primitives | Reka UI (dialog), custom everything else |
+| State | Pinia for the live integrations. Static content is plain modules. |
+| Type | Instrument Serif (display), Geist (UI), Geist Mono (labels), self-hosted via Fontsource |
+
+Design notes: paper-and-ink palette in oklch, light and dark, following the OS
+by default with a three-state toggle. Surfaces are lit from above: a hairline
+highlight on top edges, a soft shadow below, inverted when pressed.
+
 ## Requirements
-- [Node.js](https://nodejs.org/en/)
-- [Yarn](https://yarnpkg.com/en/docs/install)
+
+- [Node.js](https://nodejs.org/en/) 20+
 
 ## Project setup
-### Install dependencies
+
 ```bash
-cd server
-yarn install
-cd ../client
-yarn install
+cd server && npm install
+cd ../client && npm install
 ```
 
-### Set up environment
+### Environment
+
 #### `server/.env`
+
 | Name                  | Type   | Recommended value         |  Description |
 |-----------------------|--------|---------------------------|-----------------------------------------------|
 | PORT                  | number | 3000                      | Port to run the server on                     |
@@ -34,27 +56,43 @@ yarn install
 | SPOTIFY_REFRESH_TOKEN | string |                           | Refresh token from Spotify Developer Console  |
 
 #### `client/.env`
-| Name                | Type   | Recommended value |  Description              |
-|---------------------|--------|-------------------|---------------------------|
-| VUE_APP_BACKEND_URL | string | {backendUrl}      | URL to the backend server |
 
-## Running for development
-### Start the server
+| Name              | Type   | Recommended value       |  Description              |
+|-------------------|--------|-------------------------|---------------------------|
+| VITE_BACKEND_URL  | string | http://localhost:3000   | URL to the backend server |
+
+Leave `VITE_BACKEND_URL` unset and the live sections (now playing, photos,
+availability, contact form) fall back to a quiet offline state instead of
+erroring. The rest of the site is fully static.
+
+## Development
+
 ```bash
-cd server
-yarn start
+cd server && npm run dev
 ```
 
-### Start the frontend
-In a new terminal:
 ```bash
-cd client
-yarn serve
+cd client && npm run dev
 ```
 
-## Building for production
-### Frontend compiles and minifies for production
+The client runs on port 2000.
+
+## Building
+
 ```bash
-cd client
-yarn build
+cd client && npm run build
 ```
+
+`npm run build` regenerates `src/data/image-sizes.generated.json` first (see
+`scripts/generate-image-manifest.mjs`), which is what lets galleries reserve
+layout space before an image loads and gives PhotoSwipe its zoom targets. Run it
+on its own with `npm run images` after adding screenshots.
+
+Other scripts: `npm run typecheck`, `npm run preview`.
+
+## Adding a project
+
+1. Drop screenshots in `client/src/assets/portfolio/<slug>/`.
+2. Add an icon to `client/src/assets/svg/`.
+3. Append an entry to `client/src/data/projects.ts` (newest first).
+4. `npm run images`.

@@ -1,0 +1,60 @@
+<svg
+   width="2.8657906in"
+   height="2.865021in"
+   viewBox="0 0 72.791081 72.771533"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer2"
+     transform="translate(-123.75475,-174.02766)">
+    <rect
+       style="fill:#1e1c1c;fill-opacity:1;stroke:none;stroke-width:0.514743;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+       id="rect6-6"
+       width="72.77153"
+       height="72.791084"
+       x="-246.79919"
+       y="123.75475"
+       ry="16.320663"
+       transform="rotate(-90)" />
+    <path
+       id="rect3-1-9"
+       style="fill:#0062cf;fill-opacity:1;stroke:#1e1c1c;stroke-width:1.5;stroke-dasharray:none;stroke-opacity:1"
+       d="m 47.625001,15.875 v 12.7 H 76.2 a 6.3500005,6.3500005 45 0 1 6.35,6.35 v 0 28.575 h 12.7 V 34.925 C 95.249999,24.403976 86.721024,15.875001 76.2,15.875 Z"
+       transform="matrix(0,-0.70730619,0.70730619,0,141.10057,269.91833)" />
+    <path
+       id="rect3-0-61-5"
+       style="fill:#009952;fill-opacity:1;stroke:#1e1c1c;stroke-width:1.5;stroke-dasharray:none;stroke-opacity:1"
+       d="m 34.924998,15.875 v 12.7 L 63.5,28.574999 h 10e-7 A 19.049999,19.049999 45 0 1 82.55,47.624998 v 1e-6 28.575 H 95.249999 V 47.625 C 95.249999,28.575 82.55,15.875 63.5,15.875 Z"
+       transform="matrix(0,-0.70730619,0.70730619,0,132.11779,260.93555)" />
+    <path
+       id="rect3-0-3-2-3"
+       style="fill:#d82233;fill-opacity:1;stroke:#1e1c1c;stroke-width:1.5;stroke-dasharray:none;stroke-opacity:1"
+       d="m 22.224998,15.874999 v 12.7 H 50.8 l 0,0 a 31.75,31.75 45.000001 0 1 31.749999,31.75 v 28.574999 h 12.7 V 66.667284 c 0,-3.502747 0.04603,-9.195978 -0.403314,-12.667345 C 91.976591,31.827255 74.087228,15.874999 50.8,15.874999 Z"
+       transform="matrix(0,-0.70730619,0.70730619,0,123.13499,251.95276)" />
+    <circle
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.132462"
+       id="path7-0-2"
+       cx="-207.04173"
+       cy="169.21109"
+       transform="rotate(-90)"
+       r="3.1791139" />
+    <circle
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.132462"
+       id="path7-4-4-9"
+       cx="-198.02205"
+       cy="169.21109"
+       transform="rotate(-90)"
+       r="3.1791139" />
+    <circle
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.132462"
+       id="path7-4-9-4-4"
+       cx="-189.06989"
+       cy="169.21109"
+       transform="rotate(-90)"
+       r="3.1791139" />
+  </g>
+</svg>

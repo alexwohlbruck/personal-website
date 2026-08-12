@@ -1,35 +1,26 @@
-const router = require('express').Router()
-const calendar = require('../apis/calendar')
+import { Router } from 'express'
+import { getBusy } from '../apis/calendar.js'
+
+const router = Router()
+
+const WEEK = 7 * 24 * 60 * 60_000
 
 router.get('/', async (req, res) => {
+  const timezone = String(req.query.timezone || 'America/New_York')
 
-  const timezone = req.query.timezone || 'America/New_York'
+  const start = new Date()
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start.getTime() + WEEK)
 
-  // Get beginning and end of the current week (today plus 7 days)
-  const today = (new Date()).setHours(0, 0, 0, 0)
-  const oneDay = 1000 * 60 * 60 * 24
-  const oneWeek = oneDay * 7
+  const events = await getBusy(start, end, timezone)
 
-  const weekStart = new Date(today)
-  const weekEnd = new Date(weekStart.getTime() + oneWeek)
+  // A few minutes is safe. The grid is drawn in hour rows, so an entry added
+  // just now is not visible at a different position than it was a moment ago.
+  res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600')
 
-  const { data } = await calendar.events.list({
-    calendarId: process.env.GOOGLE_CALENDAR_ID,
-    timeMin: weekStart,
-    timeMax: weekEnd,
-    timeZone: timezone,
-  })
-
-  const events = []
-  for (const event of data.items) {
-    events.push({
-      start: event.start.dateTime,
-      end: event.end.dateTime,
-      summary: event.summary,
-    })
-  }
-
+  // Still called "events" on the wire so the client keeps working, but there is
+  // nothing in them now beyond a start and an end.
   res.json({ events })
 })
 
-module.exports = router
+export default router

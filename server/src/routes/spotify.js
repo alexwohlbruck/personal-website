@@ -1,97 +1,66 @@
-const router = require('express').Router()
-const { spotify } = require('../apis')
-const { setTimeout_, log } = require('../util')
+import { Router } from 'express'
+import { getListening } from '../apis/spotify.js'
+import { config } from '../config.js'
+import { current, subscribe } from '../lib/now-playing.js'
+import { openStream } from '../lib/sse.js'
+import { ApiError } from '../util.js'
 
-/* Spotify helper functions */
+const router = Router()
 
-// Use refresh token to get a new access token
-async function refreshSpotifyAccessToken() {
-  const data = await spotify.refreshAccessToken()
-  spotify.setAccessToken(data.body['access_token'])
-
-  // Refresh again one minute before expiration
-  const expiresIn = parseInt(data.body['expires_in'])
-  setTimeout_(refreshSpotifyAccessToken, (expiresIn - 60) * 1000)
+function requireConfig() {
+  if (!config.spotify.configured) throw new ApiError('Spotify is not configured', 503)
 }
 
-// Retrieve Spotify player state
-let playbackTimeout
-async function getSpotifyPlaybackState(io) {
-  const { body: playbackState } = await spotify.getMyCurrentPlaybackState()
+/**
+ * The live one. Holds the connection open and writes a frame whenever the track
+ * changes, so the browser is told rather than having to ask.
+ */
+router.get('/stream', async (req, res) => {
+  requireConfig()
 
-  let response = {}
+  const { send, close } = openStream(req, res)
 
-  const isPlayingPodcast = playbackState.currently_playing_type === 'episode'
-  const currentlyPlaying = !isPlayingPodcast && !!playbackState.timestamp
+  const { state } = await current()
+  send('playback', state)
 
-  if (currentlyPlaying) {
-    response = playbackState
-  }
-  else {
-    // No playback state available, get last item in history
-    const { body: history } = await spotify.getMyRecentlyPlayedTracks({ limit: 1 })
+  close(subscribe((next) => send('playback', next)))
+})
 
-    if (history.items.length) {
-      const item = history.items[0]
-
-      response.is_playing = false
-      response.timestamp = item.played_at
-      response.item = item.track
-      response.progress_ms = item.track.duration_ms
-    }
-    else {
-      return null
-    }
-  }
-
-  if (!response || !response.item) return null
-
-  const progress = parseInt(response.progress_ms)
-  const duration = parseInt(response.item.duration_ms)
-  const timeLeft = duration - progress
-
-  log(`Playing song: ${response?.item.name}, Time left: ${Math.round(timeLeft / 1000)}s`)
-
-  // Rerun the function when the song is over
-  if (response.is_playing) {
-    clearTimeout(playbackTimeout)
-    playbackTimeout = setTimeout(() => {
-      return getSpotifyPlaybackState(io)
-    }, (timeLeft + 2000))
-  }
-
-  io.emit('SET_SPOTIFY_PLAYBACK_STATE', response)
-
-  return response
-}
-
-/* Spotify routes */
-
+/** The same answer as one request, for a first paint or a browser without
+ *  EventSource. Served from the shared cache, so it costs nothing extra. */
 router.get('/playback-state', async (req, res) => {
-  const io = req.app.get('socketio')
-  const playbackState = await getSpotifyPlaybackState(io)
-  res.status(200).json(playbackState)
+  requireConfig()
+  const { state, status } = await current()
+
+  // A null body means "nothing playing", which is a normal and common answer.
+  // Returning that when the poll actually failed makes a dead integration look
+  // like a quiet one, and the site renders both the same way, so a broken token
+  // could sit there for weeks looking like nobody had played anything. Only
+  // report a failure when there is no cached answer to fall back on.
+  if (status === 'error' && !state) throw new ApiError('Spotify is unavailable.', 502)
+
+  // Deliberately uncached. A progress bar built from a cached position is worse
+  // than no progress bar, and the server already answers this from memory.
+  res.set('Cache-Control', 'no-store')
+  res.json(state)
 })
 
-router.get('/authorize', async (req, res) => {
-  const url = await spotify.createAuthorizeURL([
-    'user-read-playback-state',
-    'user-read-recently-played',
-  ])
-  console.log(url)
-  res.status(200).json({url})
+/**
+ * Top artists, genres and liked songs, in one request.
+ *
+ * One endpoint rather than four because the page draws them together and four
+ * round trips would mean four chances to draw half a section. Each part is
+ * cached at its own TTL upstream, so bundling them costs nothing extra: a
+ * response is mostly assembled from memory.
+ */
+router.get('/listening', async (req, res) => {
+  requireConfig()
+
+  // The server has its own per-part cache. Do not let a browser retain a
+  // response from before a newly granted Spotify scope: it would make a null
+  // top-artists panel linger for half an hour after authorization succeeds.
+  res.set('Cache-Control', 'no-store')
+  res.json(await getListening())
 })
 
-router.get('/token', async (req, res) => {
-  const { code } = req.query
-  const data = await spotify.getRefreshToken(code)
-  res.status(200).json(data) 
-})
-
-async function init() {
-  await refreshSpotifyAccessToken()
-}
-
-init()
-
-module.exports = router
+export default router
