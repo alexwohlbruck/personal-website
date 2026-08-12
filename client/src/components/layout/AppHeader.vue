@@ -118,14 +118,13 @@ function isActive(name: string) {
 
               <nav class="flex flex-col">
                 <RouterLink
-                  v-for="(item, index) in nav"
+                  v-for="item in nav"
                   :key="item.name"
                   :to="{ name: item.name }"
                   class="flex items-baseline justify-between border-t border-rule px-3 py-3.5"
                   :class="isActive(item.name) ? 'text-accent' : 'text-ink'"
                 >
                   <span class="title text-2xl">{{ item.label }}</span>
-                  <span class="label text-ink-3">{{ String(index + 1).padStart(2, '0') }}</span>
                 </RouterLink>
               </nav>
             </DialogContent>
