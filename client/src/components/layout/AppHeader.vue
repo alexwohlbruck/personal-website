@@ -119,11 +119,11 @@ function togglePlayback() {
           @click="togglePlayback"
         >
           <span
-            class="playback-artwork shrink-0 overflow-hidden"
+            class="playback-artwork shrink-0 overflow-hidden transition-[width,opacity,transform,filter] duration-200 ease-out-quint"
             :class="
               live.spotifyAudioPlaying
-                ? 'playback-artwork-visible w-9 sm:w-7'
-                : 'w-0 opacity-0'
+                ? 'w-9 scale-100 opacity-100 blur-0 delay-75 sm:w-7 sm:translate-x-0'
+                : 'w-0 scale-75 opacity-0 blur-[2px] sm:-translate-x-1 sm:scale-100 sm:blur-0'
             "
             aria-hidden="true"
           >
@@ -232,23 +232,12 @@ function togglePlayback() {
   transform: scale(0.72);
 }
 
-.playback-artwork {
-  clip-path: inset(0 50% round 0.25rem);
-  transition:
-    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 180ms ease-out,
-    clip-path 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.playback-artwork-visible {
-  clip-path: inset(0 round 0.25rem);
-  opacity: 1;
-  transition-delay: 0ms, 70ms, 0ms;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .playback-icon-enter-active,
-  .playback-icon-leave-active,
+  .playback-icon-leave-active {
+    transition: none;
+  }
+
   .playback-artwork {
     transition: none;
   }
