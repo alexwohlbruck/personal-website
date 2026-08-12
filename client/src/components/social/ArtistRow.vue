@@ -11,7 +11,7 @@ defineProps<{ artists: SpotifyArtist[] }>()
 </script>
 
 <template>
-  <ul class="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 lg:grid-cols-6">
+  <ul class="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
     <Motion
       v-for="(artist, index) in artists"
       :key="artist.id"

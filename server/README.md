@@ -49,9 +49,10 @@ playing, once a minute; on failure, backing off from one minute to fifteen.
    exactly. Spotify requires https everywhere else, and `localhost` does not
    count as a loopback address.
 3. Put the client ID and secret in `.env`.
-4. `npm run auth:spotify`, click the link, approve. It prints the
-   `SPOTIFY_REFRESH_TOKEN` line to paste in. Refresh tokens don't expire, so
-   this is a one-time thing.
+4. `npm run auth:spotify`, click the link, approve. It saves the new refresh
+   token to `.tokens.json` and prints the `SPOTIFY_REFRESH_TOKEN` line to keep
+   in `.env` for a future deployment. Refresh tokens don't expire, so this is a
+   one-time thing.
 
 Scopes requested: `user-read-playback-state`, `user-read-recently-played`,
 `user-top-read`, `user-library-read`. All four are reads — none can change

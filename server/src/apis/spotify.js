@@ -24,6 +24,7 @@ const basicAuth = () =>
 let accessToken
 let expiresAt = 0
 let inflight
+let refreshTokenUsed
 
 /**
  * Access tokens last an hour. Rather than a boot-time timer that refreshes on a
@@ -32,13 +33,18 @@ let inflight
  * requests shares a single refresh instead of racing to spend the same code.
  */
 async function getAccessToken() {
-  if (accessToken && Date.now() < expiresAt) return accessToken
+  const refreshToken = getToken('spotify_refresh_token', config.spotify.refreshToken)
+  if (!refreshToken) throw new ApiError('Spotify is not configured', 503)
+
+  // A newly authorized token is written to .tokens.json while this process is
+  // alive. Do not make the site wait for the old one-hour access token to age
+  // out before it can use the expanded scopes.
+  if (accessToken && refreshToken === refreshTokenUsed && Date.now() < expiresAt) {
+    return accessToken
+  }
   if (inflight) return inflight
 
   inflight = (async () => {
-    const refreshToken = getToken('spotify_refresh_token', config.spotify.refreshToken)
-    if (!refreshToken) throw new ApiError('Spotify is not configured', 503)
-
     const body = await fetchJson(ACCOUNTS, {
       method: 'POST',
       headers: {
@@ -49,6 +55,7 @@ async function getAccessToken() {
     })
 
     accessToken = body.access_token
+    refreshTokenUsed = body.refresh_token ?? refreshToken
     // A minute of headroom so a token never expires mid-request.
     expiresAt = Date.now() + (Number(body.expires_in) - 60) * 1000
 

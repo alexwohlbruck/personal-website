@@ -25,6 +25,7 @@ import http from 'node:http'
 import { randomBytes } from 'node:crypto'
 import { config } from '../src/config.js'
 import { authorizeUrl, exchangeCode, SCOPES } from '../src/apis/spotify.js'
+import { setToken } from '../src/tokens.js'
 import { log } from '../src/util.js'
 
 if (!config.spotify.clientId || !config.spotify.clientSecret) {
@@ -36,6 +37,12 @@ const args = process.argv.slice(2)
 const codeArg = args.find((arg) => arg.startsWith('--code='))?.slice('--code='.length)
 
 function report(token) {
+  // `getToken` prefers .tokens.json over .env. Saving the newly issued refresh
+  // token here matters: otherwise a perfectly successful reauthorization keeps
+  // using an older, narrower token from that file until someone removes it by
+  // hand.
+  if (token.refresh_token) setToken('spotify_refresh_token', token.refresh_token)
+
   log('\nAdd this to server/.env:\n', 'FgGreen')
   console.log(`SPOTIFY_REFRESH_TOKEN=${token.refresh_token}\n`)
   log(`Scopes granted: ${token.scope}`, 'FgGray')
