@@ -65,7 +65,7 @@ export const timeline: TimelineEvent[] = [
     title: 'Appalachian State',
     url: 'https://www.appstate.edu/',
     description:
-      'Four years at Appalachian State University, finishing with a B.S. in computer science. Both PunchAlert stints happened while I was enrolled.',
+      'Four years at Appalachian State University, finishing with a B.S. in computer science.',
     icon: 'svg/appstate.svg',
   },
   {
