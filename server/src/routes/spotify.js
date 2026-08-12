@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { getListening } from '../apis/spotify.js'
 import { config } from '../config.js'
 import { current, subscribe } from '../lib/now-playing.js'
 import { openStream } from '../lib/sse.js'
@@ -42,6 +43,24 @@ router.get('/playback-state', async (req, res) => {
   // than no progress bar, and the server already answers this from memory.
   res.set('Cache-Control', 'no-store')
   res.json(state)
+})
+
+/**
+ * Top artists, genres, history, likes, playlists and podcasts, in one request.
+ *
+ * One endpoint rather than six because the page draws them together and six
+ * round trips would mean six chances to draw half a section. Each part is
+ * cached at its own TTL upstream, so bundling them costs nothing extra: a
+ * response is mostly assembled from memory with at most the five-minute history
+ * going out to Spotify.
+ */
+router.get('/listening', async (req, res) => {
+  requireConfig()
+
+  // Safe to cache in the open. Nothing here is per-visitor, and the shortest
+  // lived part of it is a play history that only moves when a song ends.
+  res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800')
+  res.json(await getListening())
 })
 
 export default router

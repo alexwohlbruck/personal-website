@@ -5,6 +5,7 @@ import type {
   CalendarEvent,
   InstagramImage,
   InstagramPost,
+  SpotifyListening,
   SpotifyPlaybackState,
 } from '@/data/types'
 
@@ -35,6 +36,9 @@ export const useLiveStore = defineStore('live', () => {
   let stream: EventSource | undefined
   let spotifyTimer: ReturnType<typeof setTimeout> | undefined
   let polling = false
+
+  const listening = ref<SpotifyListening | null>(null)
+  const listeningStatus = ref<Status>('idle')
 
   const instagram = ref<InstagramPost[]>([])
   const instagramStatus = ref<Status>('idle')
@@ -120,6 +124,24 @@ export const useLiveStore = defineStore('live', () => {
     clearTimeout(spotifyTimer)
     spotifyTimer = undefined
     polling = false
+  }
+
+  /**
+   * Top artists, genres, history, likes, playlists and podcasts.
+   *
+   * Fetched once per page load and never refreshed. Nothing in it moves on a
+   * timescale a visitor would sit through, and the server caches every part of
+   * it for hours anyway, so re-asking would only ever return the same answer.
+   */
+  async function fetchListening() {
+    if (listening.value || listeningStatus.value === 'loading') return
+    listeningStatus.value = 'loading'
+    try {
+      listening.value = await api<SpotifyListening>('spotify/listening')
+      listeningStatus.value = 'ready'
+    } catch {
+      listeningStatus.value = 'error'
+    }
   }
 
   const INSTAGRAM_PAGE = 12
@@ -229,6 +251,9 @@ export const useLiveStore = defineStore('live', () => {
     spotifyStatus,
     fetchSpotify,
     stopSpotifyPolling,
+    listening,
+    listeningStatus,
+    fetchListening,
     instagram,
     instagramImages,
     instagramStatus,

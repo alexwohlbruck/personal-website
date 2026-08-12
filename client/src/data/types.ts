@@ -74,6 +74,78 @@ export interface SpotifyPlaybackState {
   }
 }
 
+export interface SpotifyArtist {
+  id: string
+  name: string
+  url: string
+  image: string | null
+  genres: string[]
+}
+
+/** A genre and how strongly it shows up, relative to the leading one. 0–1. */
+export interface SpotifyGenre {
+  name: string
+  weight: number
+}
+
+/** A track as it appears in a list rather than in the player. */
+export interface SpotifyListTrack {
+  id: string
+  name: string
+  url: string
+  /** Already joined, since nothing renders them separately. */
+  artists: string
+  album: string
+  artwork: string | null
+  duration_ms: number
+  /** On history entries only. */
+  played_at?: string
+  /** On liked songs only. */
+  added_at?: string
+}
+
+export interface SpotifyPlaylist {
+  id: string
+  name: string
+  url: string
+  image: string | null
+  description: string
+  tracks: number
+}
+
+export interface SpotifyShow {
+  id: string
+  name: string
+  url: string
+  image: string | null
+  publisher: string
+  added_at: string
+}
+
+/** Which window of listening history a set of favourites covers. */
+export type SpotifyRange = 'month' | 'sixMonths' | 'allTime'
+
+export interface SpotifyTop {
+  artists: SpotifyArtist[]
+  genres: SpotifyGenre[]
+  tracks: SpotifyListTrack[]
+}
+
+/**
+ * Everything the listening section draws.
+ *
+ * Every field is independently nullable: the server fetches them in parallel
+ * and half of them need scopes an older token was never granted, so a null here
+ * means "that panel has nothing to say" rather than "the request failed".
+ */
+export interface SpotifyListening {
+  ranges: Record<SpotifyRange, SpotifyTop | null>
+  recent: SpotifyListTrack[] | null
+  liked: SpotifyListTrack[] | null
+  playlists: { items: SpotifyPlaylist[]; total: number } | null
+  shows: SpotifyShow[] | null
+}
+
 export interface InstagramPost {
   id: string
   permalink: string
