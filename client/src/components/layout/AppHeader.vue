@@ -101,11 +101,11 @@ function togglePlayback() {
         <button
           v-if="playing && track"
           type="button"
-          class="group flex h-9 items-center overflow-hidden rounded-lg border border-rule bg-paper-sunk/60 text-left shadow-sm transition-[width,padding,gap,border-color,background-color] duration-300 ease-out-quint hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          class="group flex h-9 items-center overflow-hidden text-left transition-[width,padding,gap,border-color,background-color,box-shadow] duration-300 ease-out-quint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           :class="
             live.spotifyAudioPlaying
-              ? 'w-44 gap-2 py-1 pl-1 pr-2 sm:w-56'
-              : 'w-9 justify-center p-0'
+              ? 'w-44 gap-2 rounded-lg border border-rule bg-paper-sunk/60 py-1 pl-1 pr-2 shadow-sm hover:border-accent sm:w-56'
+              : 'w-9 justify-center border border-transparent bg-transparent p-0 shadow-none hover:border-transparent'
           "
           :aria-label="live.spotifyAudioPlaying ? `Mute ${track.name}` : `Unmute ${track.name}`"
           :aria-pressed="live.spotifyAudioPlaying"
