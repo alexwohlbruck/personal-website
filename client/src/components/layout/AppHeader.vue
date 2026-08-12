@@ -101,24 +101,52 @@ function togglePlayback() {
         <button
           v-if="playing && track"
           type="button"
-          class="group flex h-9 max-w-44 items-center gap-2 rounded-lg border border-rule bg-paper-sunk/60 py-1 pl-1 pr-2 text-left shadow-sm transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:max-w-56"
+          class="group flex h-9 items-center overflow-hidden rounded-lg border border-rule bg-paper-sunk/60 text-left shadow-sm transition-[width,padding,gap,border-color,background-color] duration-300 ease-out-quint hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          :class="
+            live.spotifyAudioPlaying
+              ? 'w-44 gap-2 py-1 pl-1 pr-2 sm:w-56'
+              : 'w-9 justify-center p-0'
+          "
           :aria-label="live.spotifyAudioPlaying ? `Mute ${track.name}` : `Unmute ${track.name}`"
           :aria-pressed="live.spotifyAudioPlaying"
           @click="togglePlayback"
         >
-          <img
-            v-if="artwork"
-            :src="artwork"
-            alt=""
-            class="size-7 shrink-0 rounded-[4px] object-cover shadow-sm"
-          />
-          <span v-else class="size-7 shrink-0 rounded-[4px] bg-paper" aria-hidden="true" />
-          <span class="hidden min-w-0 flex-1 sm:block">
+          <span
+            class="shrink-0 overflow-hidden transition-[width,opacity,transform] duration-200 ease-out-quint"
+            :class="
+              live.spotifyAudioPlaying
+                ? 'w-7 translate-x-0 opacity-100 delay-75'
+                : 'w-0 -translate-x-1 opacity-0'
+            "
+            aria-hidden="true"
+          >
+            <img
+              v-if="artwork"
+              :src="artwork"
+              alt=""
+              class="size-7 rounded-[4px] object-cover shadow-sm"
+            />
+            <span v-else class="block size-7 rounded-[4px] bg-paper" />
+          </span>
+          <span
+            class="hidden min-w-0 flex-1 transition-[opacity,transform] duration-200 ease-out-quint sm:block"
+            :class="
+              live.spotifyAudioPlaying
+                ? 'translate-x-0 opacity-100 delay-100'
+                : 'pointer-events-none translate-x-1 opacity-0'
+            "
+          >
             <span class="block truncate text-xs font-medium">{{ track.name }}</span>
             <span class="block truncate text-[0.65rem] text-ink-3">{{ track.artists[0]?.name }}</span>
           </span>
-          <Volume2 v-if="live.spotifyAudioPlaying" class="size-3.5 shrink-0 text-accent" />
-          <VolumeX v-else class="size-3.5 shrink-0 text-ink-3 group-hover:text-accent" />
+          <Transition name="playback-icon" mode="out-in">
+            <Volume2
+              v-if="live.spotifyAudioPlaying"
+              key="unmuted"
+              class="size-3.5 shrink-0 text-accent"
+            />
+            <VolumeX v-else key="muted" class="size-3.5 shrink-0 text-ink-3 group-hover:text-accent" />
+          </Transition>
         </button>
 
         <ThemeToggle />
@@ -171,3 +199,27 @@ function togglePlayback() {
     </div>
   </header>
 </template>
+
+<style scoped>
+.playback-icon-enter-active,
+.playback-icon-leave-active {
+  transition:
+    opacity 160ms ease-out,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 160ms ease-out;
+}
+
+.playback-icon-enter-from,
+.playback-icon-leave-to {
+  opacity: 0;
+  filter: blur(2px);
+  transform: scale(0.72);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playback-icon-enter-active,
+  .playback-icon-leave-active {
+    transition: none;
+  }
+}
+</style>
