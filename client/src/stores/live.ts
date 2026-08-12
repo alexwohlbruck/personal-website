@@ -13,6 +13,10 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (!BACKEND_URL) throw new Error('No backend configured')
   const response = await fetch(`${BACKEND_URL}/${path}`, {
     ...init,
+    // The server caches each provider response at the right cadence. Bypassing
+    // the browser cache here prevents a response from before a newly granted
+    // Spotify scope from keeping an empty panel on screen for half an hour.
+    cache: 'no-store',
     // Only the POST carries a body. Adding this header to the reads would
     // make them non-simple requests and cost a CORS preflight each.
     headers: init?.body ? { 'Content-Type': 'application/json' } : undefined,

@@ -56,9 +56,10 @@ router.get('/playback-state', async (req, res) => {
 router.get('/listening', async (req, res) => {
   requireConfig()
 
-  // Safe to cache in the open. Nothing here is per-visitor, and the shortest
-  // lived part of it is liked songs, which only move when something is saved.
-  res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=3600')
+  // The server has its own per-part cache. Do not let a browser retain a
+  // response from before a newly granted Spotify scope: it would make a null
+  // top-artists panel linger for half an hour after authorization succeeds.
+  res.set('Cache-Control', 'no-store')
   res.json(await getListening())
 })
 
