@@ -43,6 +43,7 @@ export const useLiveStore = defineStore('live', () => {
   let polling = false
   /** Kept in the store rather than a card so route changes never stop audio. */
   let spotifyAudio: HTMLAudioElement | undefined
+  let audioRequest = 0
   const spotifyAudioStatus = ref<AudioStatus>('idle')
   const spotifyAudioPlaying = ref(false)
 
@@ -71,15 +72,15 @@ export const useLiveStore = defineStore('live', () => {
     return url.href
   }
 
-  function getSpotifyAudio() {
-    if (spotifyAudio) return spotifyAudio
-    spotifyAudio = new Audio()
-    spotifyAudio.preload = 'none'
-    spotifyAudio.addEventListener('error', () => {
+  function createSpotifyAudio() {
+    const audio = new Audio()
+    audio.preload = 'none'
+    audio.addEventListener('error', () => {
+      if (audio !== spotifyAudio) return
       spotifyAudioPlaying.value = false
       spotifyAudioStatus.value = 'error'
     })
-    return spotifyAudio
+    return audio
   }
 
   async function startSpotifyAudio(progressMs: number) {
@@ -87,21 +88,55 @@ export const useLiveStore = defineStore('live', () => {
     const url = audioStreamUrl(progressMs)
     if (!url) return
 
-    const audio = getSpotifyAudio()
+    const request = ++audioRequest
+    const previous = spotifyAudio
+    const audio = createSpotifyAudio()
     spotifyAudioStatus.value = 'loading'
+    audio.volume = previous ? 0 : 1
     audio.src = url
     audio.load()
     try {
       await audio.play()
+      // A later track change won while this source was resolving.
+      if (request !== audioRequest) {
+        audio.pause()
+        audio.removeAttribute('src')
+        return
+      }
+
+      spotifyAudio = audio
       spotifyAudioPlaying.value = true
       spotifyAudioStatus.value = 'playing'
+      if (previous) crossfade(previous, audio)
     } catch {
+      if (request !== audioRequest) return
       spotifyAudioPlaying.value = false
       spotifyAudioStatus.value = 'error'
     }
   }
 
+  /** Let the new track buffer and start before fading the old one out. */
+  function crossfade(oldAudio: HTMLAudioElement, newAudio: HTMLAudioElement) {
+    const duration = 450
+    const started = performance.now()
+    const oldVolume = oldAudio.volume
+
+    const frame = (now: number) => {
+      const progress = Math.min(1, (now - started) / duration)
+      oldAudio.volume = oldVolume * (1 - progress)
+      newAudio.volume = progress
+      if (progress < 1) requestAnimationFrame(frame)
+      else {
+        oldAudio.pause()
+        oldAudio.removeAttribute('src')
+        oldAudio.load()
+      }
+    }
+    requestAnimationFrame(frame)
+  }
+
   function stopSpotifyAudio() {
+    audioRequest += 1
     spotifyAudioPlaying.value = false
     spotifyAudioStatus.value = 'idle'
     spotifyAudio?.pause()

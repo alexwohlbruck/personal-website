@@ -20,7 +20,7 @@ import { log } from '../util.js'
 
 /** While a track is playing, never wait longer than this between checks, so a
  *  skip or a pause shows up reasonably soon rather than at the end of the song. */
-const ACTIVE_MAX = 10_000
+const ACTIVE_MAX = 5_000
 const ACTIVE_MIN = 5_000
 /** Nothing playing changes slowly. */
 const IDLE = 60_000
