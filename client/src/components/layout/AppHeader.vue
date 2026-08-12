@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWindowScroll } from '@vueuse/core'
 import { Motion, LayoutGroup } from 'motion-v'
@@ -14,10 +14,11 @@ import {
   DialogTrigger,
   VisuallyHidden,
 } from 'reka-ui'
-import { Menu, X } from '@lucide/vue'
+import { LoaderCircle, Menu, Volume2, VolumeX, X } from '@lucide/vue'
 import ThemeToggle from './ThemeToggle.vue'
 import { ease } from '@/lib/motion'
 import { site } from '@/data/site'
+import { useLiveStore } from '@/stores/live'
 
 const nav = [
   { name: 'projects', label: 'Projects' },
@@ -29,12 +30,25 @@ const nav = [
 const route = useRoute()
 const { y } = useWindowScroll()
 const menuOpen = ref(false)
+const live = useLiveStore()
+const playing = computed(() => Boolean(live.spotify?.is_playing && live.spotify.item))
+const track = computed(() => live.spotify?.item)
+const artwork = computed(() => {
+  const images = track.value?.album.images ?? []
+  return images[images.length - 2]?.url ?? images[0]?.url
+})
+
+onMounted(() => void live.fetchSpotify())
 
 watch(() => route.fullPath, () => (menuOpen.value = false))
 
 function isActive(name: string) {
   // Detail pages keep their parent lit.
   return route.name === name || (name === 'projects' && route.name === 'project')
+}
+
+function togglePlayback() {
+  live.toggleSpotifyAudio(live.spotify?.progress_ms ?? 0)
 }
 </script>
 
@@ -63,7 +77,7 @@ function isActive(name: string) {
         <span class="title hidden text-[0.95rem] sm:block">{{ site.name }}</span>
       </RouterLink>
 
-      <div class="flex items-center gap-1.5">
+      <div class="flex min-w-0 items-center gap-1.5">
         <LayoutGroup>
           <nav class="mr-1 hidden items-center md:flex">
             <RouterLink
@@ -83,6 +97,73 @@ function isActive(name: string) {
             </RouterLink>
           </nav>
         </LayoutGroup>
+
+        <button
+          v-if="playing && track"
+          type="button"
+          class="btn btn-icon group relative flex min-w-0 shrink items-center overflow-hidden text-left transition-[transform,width,padding,gap,border-color,background-color,box-shadow,filter] duration-300 ease-out-quint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          :class="
+            live.spotifyAudioPlaying
+              ? 'w-9 justify-center p-0 sm:min-w-36 sm:w-56 sm:justify-start sm:gap-2 sm:rounded-lg sm:border-rule sm:bg-paper-sunk/60 sm:py-1 sm:pl-1 sm:pr-2 sm:shadow-sm sm:hover:border-accent'
+              : 'w-9 justify-center gap-0 p-0'
+          "
+          :disabled="live.spotifyAudioStatus === 'loading'"
+          :aria-label="
+            live.spotifyAudioStatus === 'loading'
+              ? `Loading ${track.name}`
+              : live.spotifyAudioPlaying
+                ? `Mute ${track.name}`
+                : `Unmute ${track.name}`
+          "
+          :aria-pressed="live.spotifyAudioPlaying"
+          @click="togglePlayback"
+        >
+          <span
+            class="playback-artwork shrink-0 overflow-hidden transition-[opacity,filter] duration-500 ease-out-quint md:transition-[width,opacity,transform,filter] md:duration-200"
+            :class="
+              live.spotifyAudioPlaying
+                ? 'w-9 opacity-100 blur-0 md:w-7 md:translate-x-0'
+                : 'w-9 opacity-0 blur-[10px] md:w-0 md:-translate-x-1 md:blur-0'
+            "
+            aria-hidden="true"
+          >
+            <img
+              v-if="artwork"
+              :src="artwork"
+              alt=""
+              class="size-9 object-cover sm:size-7 sm:rounded-[4px] sm:shadow-sm"
+            />
+            <span v-else class="block size-9 bg-paper sm:size-7 sm:rounded-[4px]" />
+          </span>
+          <span
+            class="playback-labels hidden min-w-0 transition-[width,opacity,transform,filter] duration-200 ease-out-quint sm:block"
+            :class="
+              live.spotifyAudioPlaying
+                ? 'flex-1 translate-x-0 opacity-100 blur-0 delay-100'
+                : 'pointer-events-none w-0 flex-none translate-x-1 opacity-0 blur-[2px]'
+            "
+          >
+            <span class="block truncate text-xs font-medium">{{ track.name }}</span>
+            <span class="block truncate text-[0.65rem] text-ink-3">{{ track.artists[0]?.name }}</span>
+          </span>
+          <Transition name="playback-icon" mode="out-in">
+            <LoaderCircle
+              v-if="live.spotifyAudioStatus === 'loading'"
+              key="loading"
+              class="absolute inset-0 z-10 m-auto size-3.5 shrink-0 animate-spin text-ink-3 sm:static sm:m-0"
+            />
+            <Volume2
+              v-else-if="live.spotifyAudioPlaying"
+              key="unmuted"
+              class="absolute inset-0 z-10 m-auto size-3.5 shrink-0 text-paper drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)] sm:static sm:m-0 sm:text-accent sm:drop-shadow-none"
+            />
+            <VolumeX
+              v-else
+              key="muted"
+              class="absolute inset-0 z-10 m-auto size-3.5 shrink-0 text-ink-3 group-hover:text-accent sm:static sm:m-0"
+            />
+          </Transition>
+        </button>
 
         <ThemeToggle />
 
@@ -134,3 +215,35 @@ function isActive(name: string) {
     </div>
   </header>
 </template>
+
+<style scoped>
+.playback-icon-enter-active,
+.playback-icon-leave-active {
+  transition:
+    opacity 160ms ease-out,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 160ms ease-out;
+}
+
+.playback-icon-enter-from,
+.playback-icon-leave-to {
+  opacity: 0;
+  filter: blur(2px);
+  transform: scale(0.72);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playback-icon-enter-active,
+  .playback-icon-leave-active {
+    transition: none;
+  }
+
+  .playback-artwork {
+    transition: none;
+  }
+
+  .playback-labels {
+    transition: none;
+  }
+}
+</style>
