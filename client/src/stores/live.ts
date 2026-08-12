@@ -72,6 +72,10 @@ export const useLiveStore = defineStore('live', () => {
     // chunked response.
     const offset = Math.min(Math.max(0, progressMs), Math.max(0, item.duration_ms - 1))
     url.searchParams.set('startMs', String(Math.round(offset)))
+    // Jukebox advances the source by the time it spent resolving and starting
+    // the stream, so a warm muted stream begins near the live position rather
+    // than a few seconds behind it.
+    url.searchParams.set('requestedAtMs', String(Date.now()))
     return url.href
   }
 
