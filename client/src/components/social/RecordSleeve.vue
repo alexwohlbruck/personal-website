@@ -45,8 +45,12 @@ withDefaults(
 
 <style scoped>
 .sleeve {
-  /* How far the record clears the sleeve, as a fraction of the sleeve. */
-  --peek: 0.17;
+  /* How far the record clears the sleeve while playing, as a fraction of the
+     sleeve. The box is always this wide, so sliding the record in and out
+     never reflows the text beside it. */
+  --peek: 0.3;
+  /* How much of that it gives back when nothing is playing. */
+  --tuck: 0.12;
   --disc: calc(var(--cover) * 0.94);
 
   position: relative;
@@ -54,10 +58,6 @@ withDefaults(
   flex-shrink: 0;
   width: calc(var(--cover) * (1 + var(--peek)));
   height: var(--cover);
-}
-
-.sleeve.is-playing {
-  --peek: 0.34;
 }
 
 /* Positioning and rotation are kept on separate elements: the slot holds the
@@ -69,7 +69,14 @@ withDefaults(
   width: var(--disc);
   height: var(--disc);
   margin-top: calc(var(--disc) / -2);
-  transition: left 0.7s var(--ease-out-quint);
+  /* Resting position is tucked; playing slides it out to where `left` put it.
+     A transform rather than an offset, so the slide never costs a layout. */
+  transform: translateX(calc(var(--cover) * var(--tuck) * -1));
+  transition: transform 0.7s var(--ease-out-quint);
+}
+
+.is-playing .slot {
+  transform: translateX(0);
 }
 
 .disc {
@@ -115,19 +122,22 @@ withDefaults(
   background: conic-gradient(
     from 210deg,
     transparent 0deg,
-    oklch(100% 0 0 / 0.14) 26deg,
+    oklch(100% 0 0 / 0.18) 26deg,
     transparent 62deg,
     transparent 180deg,
-    oklch(100% 0 0 / 0.09) 206deg,
+    oklch(100% 0 0 / 0.11) 206deg,
     transparent 242deg,
     transparent 360deg
   );
   mask-image: radial-gradient(circle at 50% 50%, transparent 0 28%, #000 34%);
 }
 
+/* Sized to stay behind the sleeve at full extension. A real 12" label is a
+   touch wider than this; one that peeks out reads as a rendering fault rather
+   than as a record. */
 .label {
   position: absolute;
-  inset: 27%;
+  inset: 31%;
   border-radius: 50%;
   background-color: var(--accent-solid);
   background-size: cover;
@@ -137,7 +147,7 @@ withDefaults(
 
 .hole {
   position: absolute;
-  inset: 47.5%;
+  inset: 48%;
   border-radius: 50%;
   background: var(--paper);
   box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.35);
@@ -179,6 +189,13 @@ withDefaults(
 @media (prefers-reduced-motion: reduce) {
   .slot {
     transition: none;
+  }
+
+  /* The global reduced-motion rule collapses every animation to an instant, so
+     the record would sit at whatever angle 360deg lands on. Left where it is
+     instead, which for a still record is the honest pose. */
+  .disc {
+    animation: none;
   }
 }
 </style>

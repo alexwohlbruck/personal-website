@@ -2,7 +2,6 @@
 import PageHeader from '@/components/layout/PageHeader.vue'
 import SectionHeading from '@/components/ui/SectionHeading.vue'
 import SocialList from '@/components/social/SocialList.vue'
-import NowPlaying from '@/components/social/NowPlaying.vue'
 import ListeningPanel from '@/components/social/ListeningPanel.vue'
 import InstagramGrid from '@/components/social/InstagramGrid.vue'
 </script>
@@ -18,17 +17,10 @@ import InstagramGrid from '@/components/social/InstagramGrid.vue'
       <SocialList />
     </section>
 
-    <section class="py-10">
-      <SectionHeading title="Currently in my ears" />
-      <div class="card max-w-xl p-6">
-        <NowPlaying />
-      </div>
-    </section>
-
     <ListeningPanel />
 
     <section class="py-10">
-      <SectionHeading title="Recently seen" />
+      <SectionHeading title="Recent sights" />
       <InstagramGrid />
     </section>
   </div>

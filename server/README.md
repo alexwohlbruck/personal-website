@@ -19,6 +19,7 @@ answers `503` instead of taking the process down.
 | -------------------------- | ---------------------------------------------- |
 | `GET /spotify/stream`      | SSE. Pushes the current track when it changes.  |
 | `GET /spotify/playback-state` | The same answer as one request.             |
+| `GET /spotify/listening`   | Liked songs, top artists and genres.            |
 | `GET /instagram/grid`      | A page of posts, each with all its photos.      |
 | `GET /calendar`            | Busy intervals for the next seven days.         |
 | `POST /mailer/contact`     | Contact form. Rate limited to 5 per 10 minutes. |
@@ -52,8 +53,39 @@ playing, once a minute; on failure, backing off from one minute to fifteen.
    `SPOTIFY_REFRESH_TOKEN` line to paste in. Refresh tokens don't expire, so
    this is a one-time thing.
 
-Scopes requested: `user-read-playback-state`, `user-read-recently-played`.
-Neither can change what's playing.
+Scopes requested: `user-read-playback-state`, `user-read-recently-played`,
+`user-top-read`, `user-library-read`. All four are reads — none can change
+what's playing, follow anyone, or touch a playlist.
+
+**Adding a scope means re-running `npm run auth:spotify`.** A refresh token
+carries the scopes it was granted and never gains new ones, so an older token
+keeps working for playback while the newly scoped endpoints answer `403`. That
+is survivable by design — `/spotify/listening` returns `null` for the parts it
+could not fetch and the site drops those panels — but it does mean the section
+stays half empty until the token is re-minted.
+
+## Why there is no "top playlists" or "most-played podcasts"
+
+Both were tried and cut. Spotify's Web API has no play counts and no listening
+history for anything other than tracks:
+
+- `/me/player/recently-played` returns **tracks only** — never a podcast
+  episode, confirmed by inspecting fifty consecutive entries. There is no way
+  to rank podcasts by how much they've been listened to; the closest available
+  signal is `/me/shows`, which is *saved* order, not *played* order, and
+  presenting it as the latter would just be wrong.
+- Ranking playlists by counting each one's appearances as a play context in
+  that same fifty-track history was tried next. It technically works, but the
+  window is a single non-pageable page (roughly a day or two), and only plays
+  Spotify tags with an explicit playlist context count at all — most casual
+  listening (Liked Songs, radio, casting from another device) carries none.
+  That thin, easily-missed signal isn't worth building a panel around.
+
+What Spotify *does* compute and stand behind is `/me/top/artists`, over
+`short_term` / `medium_term` / `long_term` windows — genuine "top" data, not an
+inference. Genres are derived from that (see `tallyGenres` in
+`src/apis/spotify.js`), since Spotify has no genre endpoint of its own but does
+tag every artist with a genre list.
 
 **If the dashboard won't save your redirect URIs**, it's usually not the row
 you're adding. The form validates the whole set, and Spotify now only accepts
@@ -197,3 +229,8 @@ Covers the poller and the SSE stream against a stubbed Spotify: payload shape,
 that repeat callers are served from cache, that a stream opens with the current
 track and gets pushed a new one when it changes, and that a finished track falls
 back to history.
+
+Also covers `/spotify/listening` against a token missing `user-library-read`:
+that top artists and genres survive the 403 next to liked songs rather than
+failing together, that genre weight is ranked and scaled correctly, and that a
+track flattens down to what a list row needs.
