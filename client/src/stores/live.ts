@@ -5,6 +5,7 @@ import type {
   CalendarEvent,
   InstagramImage,
   InstagramPost,
+  OpenStreetMapStats,
   SpotifyListening,
   SpotifyPlaybackState,
 } from '@/data/types'
@@ -59,6 +60,9 @@ export const useLiveStore = defineStore('live', () => {
   /** Cursor for the page after the ones already loaded. Null once at the end. */
   const instagramCursor = ref<string | null>(null)
   const instagramDone = ref(false)
+
+  const osm = ref<OpenStreetMapStats | null>(null)
+  const osmStatus = ref<Status>('idle')
 
   const calendar = ref<CalendarEvent[]>([])
   const calendarStatus = ref<Status>('idle')
@@ -459,6 +463,17 @@ export const useLiveStore = defineStore('live', () => {
     instagramStatus.value = 'ready'
   }
 
+  async function fetchOsm() {
+    if (osm.value || osmStatus.value === 'loading') return
+    osmStatus.value = 'loading'
+    try {
+      osm.value = await api<OpenStreetMapStats>('osm/stats')
+      osmStatus.value = 'ready'
+    } catch {
+      osmStatus.value = 'error'
+    }
+  }
+
   async function fetchCalendar() {
     if (calendar.value.length) return
     calendarStatus.value = 'loading'
@@ -500,6 +515,9 @@ export const useLiveStore = defineStore('live', () => {
     instagramDone,
     fetchInstagram,
     loadMoreInstagram,
+    osm,
+    osmStatus,
+    fetchOsm,
     calendar,
     calendarStatus,
     fetchCalendar,

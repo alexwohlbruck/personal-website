@@ -7,7 +7,7 @@ import { duration, ease, inView, step } from '@/lib/motion'
 </script>
 
 <template>
-  <ul class="grid gap-x-10 sm:grid-cols-2">
+  <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
     <Motion
       v-for="(social, index) in socials"
       :key="social.label"
@@ -24,13 +24,13 @@ import { duration, ease, inView, step } from '@/lib/motion'
             ? { to: { name: social.to } }
             : { href: social.href, target: '_blank', rel: 'noopener noreferrer' }
         "
-        class="group flex items-center gap-4 border-b border-rule py-4 transition-colors"
+        class="card group flex h-full items-center gap-3 p-4 transition-transform duration-300 ease-out-quint hover:-translate-y-0.5 hover:shadow-e2"
       >
         <span
-          class="grid size-9 shrink-0 place-items-center rounded-lg bg-paper-sunk text-ink-2 transition-all duration-300 ease-out-quint group-hover:bg-accent-wash group-hover:text-accent"
+          class="grid size-8 shrink-0 place-items-center rounded-lg bg-paper-sunk text-ink-2 transition-all duration-300 ease-out-quint group-hover:bg-accent-wash group-hover:text-accent"
           style="box-shadow: var(--tile-ring)"
         >
-          <InlineIcon :name="social.icon" :size="16" />
+          <InlineIcon :name="social.icon" :size="14" />
         </span>
 
         <span class="min-w-0 flex-1">
@@ -41,7 +41,8 @@ import { duration, ease, inView, step } from '@/lib/motion'
         </span>
 
         <ArrowUpRight
-          class="size-4 text-ink-3 transition-all duration-300 ease-out-quint group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+          class="size-3.5 text-ink-3 transition-all duration-300 ease-out-quint group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+          aria-hidden="true"
         />
       </component>
     </Motion>

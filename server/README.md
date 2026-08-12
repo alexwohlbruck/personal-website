@@ -22,8 +22,28 @@ answers `503` instead of taking the process down.
 | `GET /spotify/listening`   | Liked songs, top artists and genres.            |
 | `GET /instagram/grid`      | A page of posts, each with all its photos.      |
 | `GET /calendar`            | Busy intervals for the next seven days.         |
+| `GET /osm/stats`           | Lifetime and recent OpenStreetMap activity.      |
 | `POST /mailer/contact`     | Contact form. Rate limited to 5 per 10 minutes. |
 | `GET /health`              | Which integrations are configured.              |
+
+## OpenStreetMap lifetime stats
+
+The public changeset endpoint returns at most 100 results per request. The site
+therefore starts from a checked-in lifetime archive. On the first page request
+after the 24-hour cache expires, it checks the profile count and incrementally
+fetches only changesets newer than its in-memory archive. An unchanged day costs
+one OSM request; a typical editing day costs two. Concurrent page requests share
+the same refresh.
+
+The checked-in starting point can be refreshed locally before a deploy:
+
+```bash
+npm run stats:osm
+```
+
+The generator follows the same incremental approach. A missing archive is
+rebuilt sequentially, and every run verifies its total against the profile
+before writing only the fields used by the site.
 
 ## How now playing works
 

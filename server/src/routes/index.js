@@ -3,6 +3,7 @@ import { config } from '../config.js'
 import calendar from './calendar.js'
 import instagram from './instagram.js'
 import mailer from './mailer.js'
+import osm from './osm.js'
 import spotify from './spotify.js'
 
 const router = Router()
@@ -11,6 +12,7 @@ router.use('/spotify', spotify)
 router.use('/instagram', instagram)
 router.use('/calendar', calendar)
 router.use('/mailer', mailer)
+router.use('/osm', osm)
 
 /**
  * Which integrations have credentials. Useful when the site's live sections are

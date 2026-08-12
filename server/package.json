@@ -11,6 +11,7 @@
     "start": "node .",
     "dev": "nodemon .",
     "test": "node --test \"test/*.test.js\"",
+    "stats:osm": "node scripts/osm-stats.js",
     "auth:spotify": "node scripts/spotify-auth.js",
     "auth:instagram": "node scripts/instagram-auth.js",
     "auth:google": "node scripts/google-auth.js"

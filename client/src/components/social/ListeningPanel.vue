@@ -25,8 +25,8 @@ const liked = computed(() => live.listening?.liked ?? [])
 
 const RANGES: { key: SpotifyRange; label: string; note: string }[] = [
   { key: 'month', label: '4 weeks', note: 'What Spotify makes of the last four weeks.' },
-  { key: 'sixMonths', label: '6 months', note: 'What Spotify makes of the last six months.' },
-  { key: 'allTime', label: 'all time', note: 'As far back as Spotify keeps count.' },
+  { key: 'sixMonths', label: '6 months', note: 'Last half year of listening.' },
+  { key: 'allTime', label: 'All time', note: 'As far back as Spotify keeps count.' },
 ]
 
 const range = ref<SpotifyRange>('month')

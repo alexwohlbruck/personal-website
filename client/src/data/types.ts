@@ -158,6 +158,37 @@ export interface InstagramImage {
   total: number
 }
 
+export interface OpenStreetMapPlace {
+  label: string
+  /** Changesets whose centre falls in this area. */
+  count: number
+  lat: number
+  lon: number
+}
+
+export interface OpenStreetMapStats {
+  profile: string
+  /** Lifetime changeset count from the public OSM user profile. */
+  changesets: number
+  memberSince: string
+  /** Map objects changed across the archived changesets. */
+  mappedObjects: number
+  sampleSize: number
+  /** Whether the archive count matches the current profile count. */
+  isLifetime: boolean
+  lastEdit: string | null
+  places: OpenStreetMapPlace[]
+  /** Broad topics inferred from changeset comments. */
+  themes: { name: string; count: number }[]
+  recent: {
+    id: number
+    comment: string
+    changes: number
+    createdAt: string
+    url: string
+  }[]
+}
+
 /**
  * A busy interval and nothing else. The server asks Google for free/busy rather
  * than for events, so titles never reach it in the first place.
