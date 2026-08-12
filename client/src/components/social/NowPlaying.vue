@@ -77,7 +77,14 @@ const status = computed(() => {
       >.
     </p>
 
-    <div v-else class="mt-3 flex items-center gap-3" :class="!compact && 'gap-4'">
+    <div
+      v-else
+      class="mt-3 flex items-center gap-3"
+      :class="[
+        !compact && 'gap-4',
+        compact && 'w-full',
+      ]"
+    >
       <a
         :href="track.external_urls.spotify"
         target="_blank"
@@ -106,7 +113,7 @@ const status = computed(() => {
         </RecordSleeve>
       </a>
 
-      <div class="min-w-0 flex-1">
+      <div class="min-w-0 flex-1" :class="compact && 'text-right'">
         <a
           :href="track.external_urls.spotify"
           target="_blank"
