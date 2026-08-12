@@ -47,7 +47,7 @@ const note = computed(() => RANGES.find((option) => option.key === range.value)?
       note="Straight off the account, and about as curated as a browser history."
     />
 
-    <div class="mt-10 grid items-start gap-6 lg:grid-cols-2">
+    <div class="mt-10 grid gap-6 lg:grid-cols-2">
       <div class="card p-6">
         <NowPlaying />
       </div>
