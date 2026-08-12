@@ -30,9 +30,7 @@ const summary = computed(() => projectSummary(props.project))
       class="pointer-events-none absolute -inset-x-4 inset-y-0 -z-10 rounded-lg bg-accent-wash opacity-0 transition-opacity duration-200 group-hover:opacity-100"
     />
 
-    <span
-      class="mt-8 shrink-0 transition-transform duration-300 ease-out-quint group-hover:-translate-y-0.5 md:mt-0"
-    >
+    <span class="shrink-0 transition-transform duration-300 ease-out-quint group-hover:-translate-y-0.5">
       <ProjectTile :project="project" :size="48" />
     </span>
 
@@ -40,7 +38,7 @@ const summary = computed(() => projectSummary(props.project))
       <div class="md:hidden">
         <time class="label whitespace-nowrap text-ink-3 md:hidden">{{ period }}</time>
       </div>
-      <h3 class="title mt-1 text-2xl md:mt-0 md:text-[1.75rem]">{{ project.title }}</h3>
+      <h3 class="title text-2xl md:text-[1.75rem]">{{ project.title }}</h3>
       <p class="mt-2 line-clamp-2 text-sm text-ink-3 md:line-clamp-1">{{ summary }}</p>
       <ul class="mt-3 flex flex-wrap gap-1.5 md:hidden">
         <li v-for="tag in topTags" :key="tag" class="chip">{{ tag }}</li>
