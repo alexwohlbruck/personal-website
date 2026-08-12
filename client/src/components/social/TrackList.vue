@@ -28,7 +28,7 @@ defineProps<{ tracks: SpotifyListTrack[] }>()
         :href="track.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="group flex items-center gap-3 py-2.5"
+        class="group flex items-center gap-3 py-[0.5625rem]"
       >
         <img
           v-if="track.artwork"

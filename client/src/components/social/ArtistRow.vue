@@ -11,7 +11,7 @@ defineProps<{ artists: SpotifyArtist[] }>()
 </script>
 
 <template>
-  <ul class="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
+  <ul class="grid grid-cols-3 gap-x-4 gap-y-5 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
     <Motion
       v-for="(artist, index) in artists"
       :key="artist.id"
@@ -33,12 +33,12 @@ defineProps<{ artists: SpotifyArtist[] }>()
             :src="artist.image"
             :alt="artist.name"
             loading="lazy"
-            class="size-16 rounded-full object-cover transition-transform duration-300 ease-out-quint group-hover:-translate-y-1 sm:size-20"
+            class="size-14 rounded-full object-cover transition-transform duration-300 ease-out-quint group-hover:-translate-y-1 sm:size-16"
             style="box-shadow: var(--tile-ring), var(--shadow-2)"
           />
           <span
             v-else
-            class="grid size-16 place-items-center rounded-full bg-paper-sunk sm:size-20"
+            class="grid size-14 place-items-center rounded-full bg-paper-sunk sm:size-16"
             style="box-shadow: var(--tile-ring)"
           >
             <span class="title text-xl text-ink-3">{{ artist.name.charAt(0) }}</span>
@@ -53,7 +53,7 @@ defineProps<{ artists: SpotifyArtist[] }>()
         </span>
 
         <span
-          class="mt-2.5 block truncate text-xs text-ink-2 transition-colors group-hover:text-accent"
+          class="mt-2 block truncate text-xs text-ink-2 transition-colors group-hover:text-accent"
         >
           {{ artist.name }}
         </span>

@@ -15,7 +15,7 @@ defineProps<{ genres: SpotifyGenre[] }>()
 </script>
 
 <template>
-  <ul class="space-y-2.5">
+  <ul class="space-y-2">
     <Motion
       v-for="(genre, index) in genres"
       :key="genre.name"
@@ -29,7 +29,7 @@ defineProps<{ genres: SpotifyGenre[] }>()
         <span class="truncate text-sm text-ink-2">{{ genre.name }}</span>
         <span v-if="index === 0" class="label text-accent">top</span>
       </div>
-      <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-paper-sunk">
+      <div class="mt-1 h-1 overflow-hidden rounded-full bg-paper-sunk">
         <Motion
           as="div"
           class="h-full rounded-full"
