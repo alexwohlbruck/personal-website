@@ -142,12 +142,16 @@ export const useLiveStore = defineStore('live', () => {
     spotifyAudio?.pause()
     spotifyAudio?.removeAttribute('src')
     spotifyAudio?.load()
+    spotifyAudio = undefined
   }
 
   watch(
     () => spotify.value?.item.id,
     (id, previous) => {
       if (spotifyAudioPlaying.value && id && id !== previous && spotify.value?.is_playing) {
+        // Never let a stale track play through while the replacement is being
+        // resolved. The incoming source starts from Spotify's live position.
+        stopSpotifyAudio()
         void startSpotifyAudio(spotify.value.progress_ms)
       }
     },
