@@ -47,8 +47,7 @@ const streamUrl = computed(() => {
 })
 
 async function toggleAudio() {
-  if (live.spotifyAudioPlaying) live.stopSpotifyAudio()
-  else await live.startSpotifyAudio(progress.value)
+  if (!live.spotifyAudioPlaying) await live.startSpotifyAudio(progress.value)
 }
 </script>
 
@@ -97,9 +96,9 @@ async function toggleAudio() {
     >
       <button
         type="button"
-        class="group relative shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent disabled:cursor-not-allowed"
-        :disabled="!streamUrl"
-        :aria-label="live.spotifyAudioPlaying ? 'Mute live playback' : 'Unmute live playback'"
+        class="group relative shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent disabled:cursor-default"
+        :disabled="!streamUrl || live.spotifyAudioPlaying"
+        :aria-label="live.spotifyAudioPlaying ? 'Live playback is unmuted' : 'Unmute live playback'"
         :aria-pressed="live.spotifyAudioPlaying"
         @click="toggleAudio"
       >
@@ -128,8 +127,8 @@ async function toggleAudio() {
           :class="live.spotifyAudioPlaying && 'border-accent bg-accent text-paper'"
           aria-hidden="true"
         >
-          <VolumeX v-if="live.spotifyAudioPlaying" class="size-3.5" />
-          <Volume2 v-else class="size-3.5" />
+          <Volume2 v-if="live.spotifyAudioPlaying" class="size-3.5" />
+          <VolumeX v-else class="size-3.5" />
         </span>
       </button>
 
