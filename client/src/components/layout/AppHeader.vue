@@ -136,11 +136,11 @@ function togglePlayback() {
             <span v-else class="block size-9 bg-paper sm:size-7 sm:rounded-[4px]" />
           </span>
           <span
-            class="hidden min-w-0 transition-[width,opacity,transform] duration-200 ease-out-quint sm:block"
+            class="playback-labels hidden min-w-0 transition-[width,opacity,transform,filter] duration-[2000ms] ease-out-quint sm:block"
             :class="
               live.spotifyAudioPlaying
-                ? 'flex-1 translate-x-0 opacity-100 delay-100'
-                : 'pointer-events-none w-0 flex-none translate-x-1 opacity-0'
+                ? 'flex-1 translate-x-0 opacity-100 blur-0 delay-100'
+                : 'pointer-events-none w-0 flex-none translate-x-1 opacity-0 blur-[2px]'
             "
           >
             <span class="block truncate text-xs font-medium">{{ track.name }}</span>
@@ -239,6 +239,10 @@ function togglePlayback() {
   }
 
   .playback-artwork {
+    transition: none;
+  }
+
+  .playback-labels {
     transition: none;
   }
 }
