@@ -119,11 +119,11 @@ function togglePlayback() {
           @click="togglePlayback"
         >
           <span
-            class="playback-artwork shrink-0 overflow-hidden transition-[width,opacity,transform,filter] duration-300 ease-out-quint sm:duration-200"
+            class="playback-artwork shrink-0 overflow-hidden transition-[width,opacity,transform,filter] duration-500 ease-out-quint sm:duration-200"
             :class="
               live.spotifyAudioPlaying
-                ? 'w-9 scale-100 opacity-100 blur-0 delay-100 sm:w-7 sm:translate-x-0'
-                : 'w-0 scale-90 opacity-0 blur-[6px] sm:-translate-x-1 sm:scale-100 sm:blur-0'
+                ? 'w-9 opacity-100 blur-0 sm:w-7 sm:translate-x-0'
+                : 'w-0 opacity-0 blur-[10px] sm:-translate-x-1 sm:blur-0'
             "
             aria-hidden="true"
           >
