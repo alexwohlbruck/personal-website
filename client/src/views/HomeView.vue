@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { Motion } from 'motion-v'
+import { usePreferredReducedMotion } from '@vueuse/core'
 import { ArrowRight } from '@lucide/vue'
+import TopoField from '@/components/home/TopoField.vue'
+import WashSplash from '@/components/home/WashSplash.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import SectionHeading from '@/components/ui/SectionHeading.vue'
 import ProjectCard from '@/components/project/ProjectCard.vue'
@@ -19,22 +23,44 @@ const enter = (delay: number) => ({
   animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
   transition: { duration: duration.base, ease, delay },
 })
+
+/**
+ * The pools of light behind the hero lean towards the cursor. A transform and a
+ * long ease do the smoothing, so the pointer handler is only ever arithmetic.
+ */
+const reduced = usePreferredReducedMotion()
+const drift = ref({ x: 0, y: 0 })
+const washStyle = computed(() => ({
+  transform: `translate3d(${drift.value.x.toFixed(1)}px, ${drift.value.y.toFixed(1)}px, 0)`,
+}))
+
+function leanWash(event: PointerEvent) {
+  if (reduced.value === 'reduce') return
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  drift.value = {
+    x: ((event.clientX - rect.left) / rect.width - 0.5) * 22,
+    y: ((event.clientY - rect.top) / rect.height - 0.5) * 14,
+  }
+}
 </script>
 
 <template>
   <div>
     <!-- Hero ---------------------------------------------------------------->
     <section
-      class="relative grid items-end gap-12 pb-16 pt-32 md:pt-40 lg:grid-cols-[1.6fr_1fr] lg:gap-16"
+      class="hero-brush relative grid select-none items-end gap-12 pb-16 pt-32 md:pt-40 lg:grid-cols-[1.6fr_1fr] lg:gap-16"
+      @pointermove="leanWash"
+      @pointerleave="drift = { x: 0, y: 0 }"
     >
-      <span
-        class="topo pointer-events-none absolute inset-y-0 left-1/2 -z-20 w-screen -translate-x-1/2"
-        aria-hidden="true"
+      <TopoField
+        class="pointer-events-none absolute inset-y-0 left-1/2 -z-20 w-screen -translate-x-1/2"
       />
       <span
-        class="hero-wash pointer-events-none absolute -inset-x-40 -inset-y-32 -z-10"
+        class="hero-wash wash-drift pointer-events-none absolute -inset-x-40 -inset-y-32 -z-10"
+        :style="washStyle"
         aria-hidden="true"
       />
+      <WashSplash class="-z-10" />
       <div>
         <Motion as="h1" v-bind="enter(0)" class="display">Alex<br />Wohlbruck</Motion>
 
@@ -131,3 +157,43 @@ const enter = (delay: number) => ({
     </Motion>
   </div>
 </template>
+
+<style scoped>
+/*
+ * The hero is a surface you paint on, so it carries a brush instead of an arrow
+ * and does not hand you a text selection when you drag across it. The ring is
+ * drawn at the ink of each theme; a data URI cannot read a custom property, so
+ * the two colours are the tokens' own sRGB values written out. Controls inside
+ * the section set their own cursor and keep it.
+ */
+.hero-brush {
+  cursor:
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><circle cx="13" cy="13" r="8" fill="none" stroke="%23321e19" stroke-width="1.25" opacity="0.55"/><circle cx="13" cy="13" r="2" fill="%23321e19" opacity="0.45"/></svg>')
+      13 13,
+    crosshair;
+}
+
+[data-theme='dark'] .hero-brush {
+  cursor:
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><circle cx="13" cy="13" r="8" fill="none" stroke="%23ede1d5" stroke-width="1.25" opacity="0.5"/><circle cx="13" cy="13" r="2" fill="%23ede1d5" opacity="0.4"/></svg>')
+      13 13,
+    crosshair;
+}
+
+.wash-drift {
+  transition: transform 2s var(--ease-out-quint);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wash-drift {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Nothing to paint with, so don't offer a brush. */
+  .hero-brush {
+    cursor: auto;
+  }
+}
+</style>
