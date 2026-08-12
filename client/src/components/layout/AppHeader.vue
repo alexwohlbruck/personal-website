@@ -122,7 +122,7 @@ function togglePlayback() {
             class="shrink-0 overflow-hidden transition-[width,opacity,transform] duration-200 ease-out-quint"
             :class="
               live.spotifyAudioPlaying
-                ? 'w-7 translate-x-0 opacity-100 delay-75'
+                ? 'w-9 translate-x-0 opacity-100 delay-75 sm:w-7'
                 : 'w-0 -translate-x-1 opacity-0'
             "
             aria-hidden="true"
@@ -131,9 +131,9 @@ function togglePlayback() {
               v-if="artwork"
               :src="artwork"
               alt=""
-              class="size-7 rounded-[4px] object-cover shadow-sm"
+              class="size-9 object-cover sm:size-7 sm:rounded-[4px] sm:shadow-sm"
             />
-            <span v-else class="block size-7 rounded-[4px] bg-paper" />
+            <span v-else class="block size-9 bg-paper sm:size-7 sm:rounded-[4px]" />
           </span>
           <span
             class="hidden min-w-0 transition-[width,opacity,transform] duration-200 ease-out-quint sm:block"
