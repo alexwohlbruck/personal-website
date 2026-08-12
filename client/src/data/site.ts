@@ -69,9 +69,8 @@ export const socials: SocialLink[] = [
 ]
 
 /**
- * Set `VITE_BACKEND_URL` to point at the Express server. When it is unset the
- * live sections (Spotify, Instagram, availability, contact form) degrade to a
- * quiet offline state instead of erroring.
+ * Set `VITE_BACKEND_URL` when Vite runs separately from Express. Production
+ * ships both in one image, where the API lives at this same origin under /api.
  */
 export const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:3000' : '')
+  import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:3000' : '/api')

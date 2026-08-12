@@ -1,11 +1,16 @@
 import cors from 'cors'
 import express from 'express'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { startTokenRenewal } from './apis/instagram.js'
 import { config } from './config.js'
 import routes from './routes/index.js'
 import { log } from './util.js'
 
 const app = express()
+const production = process.env.NODE_ENV === 'production'
+const here = path.dirname(fileURLToPath(import.meta.url))
+const clientDist = path.resolve(here, '../../public')
 
 app.disable('x-powered-by')
 app.use(cors({ origin: allowOrigin }))
@@ -27,7 +32,21 @@ function allowOrigin(origin, callback) {
 }
 app.use(express.json({ limit: '32kb' }))
 app.use(express.urlencoded({ extended: true, limit: '32kb' }))
-app.use('/', routes)
+
+if (production) {
+  // The deployed image serves both the SPA and its API. Keeping APIs under one
+  // prefix prevents Vue's history fallback from ever answering an API request.
+  app.use('/api', routes)
+  app.use('/api', (req, res) => res.status(404).json({ message: 'Not found.' }))
+
+  app.use(express.static(clientDist, { index: false, maxAge: '1h' }))
+  // Vue Router owns all non-API paths after the first page load.
+  app.get('{*path}', (req, res) => res.sendFile(path.join(clientDist, 'index.html')))
+} else {
+  // Local development keeps the original root-level API paths, so the Vite
+  // client and existing tests can continue talking to http://localhost:3001.
+  app.use('/', routes)
+}
 
 /**
  * One place where failure becomes a status code.
