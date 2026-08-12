@@ -105,7 +105,7 @@ function togglePlayback() {
           :class="
             live.spotifyAudioPlaying
               ? 'w-9 justify-center p-0 sm:min-w-36 sm:w-56 sm:justify-start sm:gap-2 sm:rounded-lg sm:border-rule sm:bg-paper-sunk/60 sm:py-1 sm:pl-1 sm:pr-2 sm:shadow-sm sm:hover:border-accent'
-              : 'w-9 justify-center p-0'
+              : 'w-9 justify-center gap-0 p-0'
           "
           :disabled="live.spotifyAudioStatus === 'loading'"
           :aria-label="
