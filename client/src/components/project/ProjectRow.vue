@@ -31,7 +31,7 @@ const summary = computed(() => projectSummary(props.project))
     />
 
     <span
-      class="shrink-0 transition-transform duration-300 ease-out-quint group-hover:-translate-y-0.5"
+      class="mt-8 shrink-0 transition-transform duration-300 ease-out-quint group-hover:-translate-y-0.5 md:mt-0"
     >
       <ProjectTile :project="project" :size="48" />
     </span>
