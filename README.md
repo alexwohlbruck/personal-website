@@ -57,9 +57,10 @@ cd ../client && npm install
 
 #### `client/.env`
 
-| Name              | Type   | Recommended value       |  Description              |
-|-------------------|--------|-------------------------|---------------------------|
-| VITE_BACKEND_URL  | string | http://localhost:3000   | URL to the backend server |
+| Name              | Type   | Recommended value                 | Description                                      |
+|-------------------|--------|-----------------------------------|--------------------------------------------------|
+| VITE_BACKEND_URL  | string | http://localhost:3000             | URL to the backend server                        |
+| VITE_JUKEBOX_URL  | string | https://jukebox.wohlbruck.dev     | URL for the opt-in now-playing audio stream     |
 
 Leave `VITE_BACKEND_URL` unset and the live sections (now playing, photos,
 availability, contact form) fall back to a quiet offline state instead of

@@ -4,7 +4,7 @@ import { useIntervalFn } from '@vueuse/core'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import RecordSleeve from '@/components/social/RecordSleeve.vue'
 import { useLiveStore } from '@/stores/live'
-import { links } from '@/data/site'
+import { JUKEBOX_URL, links } from '@/data/site'
 import { formatDuration, relativeTime } from '@/lib/format'
 
 withDefaults(defineProps<{ compact?: boolean }>(), { compact: false })
@@ -40,6 +40,58 @@ const status = computed(() => {
   if (!live.spotify) return 'Listening'
   return playing.value ? 'Listening now' : `Last played ${relativeTime(live.spotify.timestamp)}`
 })
+
+/** Audio must begin from a click. Apart from satisfying browser autoplay rules,
+ * it avoids opening a Jukebox transcode for visitors who only want the title. */
+const audio = ref<HTMLAudioElement>()
+const audible = ref(false)
+const audioError = ref(false)
+
+const streamUrl = computed(() => {
+  if (!track.value?.id) return null
+  const url = new URL('/v1/stream', JUKEBOX_URL)
+  url.searchParams.set('spotifyTrackId', track.value.id)
+  return url.href
+})
+
+async function startAudio() {
+  if (!audio.value || !streamUrl.value) return
+
+  audioError.value = false
+  audible.value = true
+  audio.value.src = streamUrl.value
+  audio.value.load()
+
+  try {
+    await audio.value.play()
+  } catch {
+    audible.value = false
+    audioError.value = true
+  }
+}
+
+function stopAudio() {
+  audible.value = false
+  audio.value?.pause()
+  if (audio.value) audio.value.removeAttribute('src')
+}
+
+async function toggleAudio() {
+  if (audible.value) stopAudio()
+  else await startAudio()
+}
+
+watch(streamUrl, async (next, previous) => {
+  if (!audible.value || !playing.value || !next || next === previous) return
+  await startAudio()
+})
+
+watch(playing, (isPlaying) => {
+  // Do not keep an old stream audible after Spotify itself has stopped.
+  if (audible.value && !isPlaying) stopAudio()
+})
+
+onBeforeUnmount(stopAudio)
 </script>
 
 <template>
@@ -137,6 +189,21 @@ const status = computed(() => {
           </span>
         </div>
       </div>
+    </div>
+
+    <div v-if="track" class="mt-3 flex items-center gap-2">
+      <audio ref="audio" preload="none" @error="audioError = true; audible = false" />
+      <button
+        type="button"
+        class="rounded-full border border-ink-3/25 px-3 py-1.5 text-xs font-medium text-ink-2 transition-colors hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="!streamUrl || !playing"
+        :aria-pressed="audible"
+        @click="toggleAudio"
+      >
+        {{ audible ? 'Mute live playback' : 'Unmute live playback' }}
+      </button>
+      <span v-if="audioError" class="text-xs text-ink-3">Playback is unavailable right now.</span>
+      <span v-else-if="!playing" class="text-xs text-ink-3">Playback resumes when the music does.</span>
     </div>
 
     <p v-if="!compact && track" class="mt-3 text-xs text-ink-3">{{ status }}</p>

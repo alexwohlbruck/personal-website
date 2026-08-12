@@ -87,6 +87,7 @@ async function call(path) {
 function shapeTrack(track) {
   if (!track) return null
   return {
+    id: track.id,
     name: track.name,
     duration_ms: track.duration_ms,
     external_urls: { spotify: track.external_urls?.spotify ?? '' },

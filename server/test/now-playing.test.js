@@ -61,6 +61,7 @@ const DURATION = 4_000
 
 function makeTrack(name) {
   return {
+    id: '4uLU6hMCjMI75M1A2tKUQC',
     name,
     duration_ms: DURATION,
     // Fields Spotify has since removed, to prove they do not reach the client.
@@ -124,6 +125,7 @@ describe('now playing', () => {
     const state = await (await fetch(`${base}/spotify/playback-state`)).json()
 
     assert.equal(state.item.name, 'First Song')
+    assert.equal(state.item.id, '4uLU6hMCjMI75M1A2tKUQC')
     assert.equal(state.is_playing, true)
     assert.deepEqual(Object.keys(state).sort(), ['is_playing', 'item', 'progress_ms', 'timestamp'])
     assert.equal(state.item.popularity, undefined)
