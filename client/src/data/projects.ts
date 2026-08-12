@@ -315,7 +315,7 @@ export const projects: Project[] = [
     description:
       'This app lets you stream music from your Spotify account for free by streaming the isolated audio from the Youtube-equivalent music videos. You can search and play songs from Spotify, and the mp3 file will be streamed to the browser. I started to redesign the site with a better user interface and synchonized group playback, but I later scrapped it to work on other projects. There are some concept UI mockups in the screenshots below.',
     start: new Date('2017-02-10'),
-    url: 'https://jukebox-redux.herokuapp.com/',
+    url: 'https://jukebox.wohlbruck.dev',
     github: 'https://github.com/alexwohlbruck/jukebox',
     images: [
       'original.png',

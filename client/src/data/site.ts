@@ -74,3 +74,10 @@ export const socials: SocialLink[] = [
  */
 export const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:3000' : '/api')
+
+/**
+ * Jukebox resolves the Spotify track identifier supplied by the now-playing
+ * API and returns a live MP3 stream. It is deliberately separate from the
+ * Spotify Web Playback SDK: that SDK cannot play an arbitrary audio source.
+ */
+export const JUKEBOX_URL = import.meta.env.VITE_JUKEBOX_URL ?? 'https://jukebox.wohlbruck.dev'

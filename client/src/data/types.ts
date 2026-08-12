@@ -66,12 +66,22 @@ export interface SpotifyPlaybackState {
   timestamp: number | string
   progress_ms: number
   item: {
+    id: string
     name: string
     duration_ms: number
     external_urls: { spotify: string }
     album: { images: { url: string; width: number; height: number }[] }
     artists: { name: string; external_urls: { spotify: string } }[]
   }
+  /** First item from Spotify's dynamic queue, when available. */
+  next_item?: {
+    id: string
+    name: string
+    duration_ms: number
+    external_urls: { spotify: string }
+    album: { images: { url: string; width: number; height: number }[] }
+    artists: { name: string; external_urls: { spotify: string } }[]
+  } | null
 }
 
 /** A track as it appears in a list rather than in the player. */

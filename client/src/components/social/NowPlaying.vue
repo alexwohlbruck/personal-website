@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
+import { LoaderCircle, VolumeX } from '@lucide/vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import RecordSleeve from '@/components/social/RecordSleeve.vue'
 import { useLiveStore } from '@/stores/live'
@@ -40,6 +41,14 @@ const status = computed(() => {
   if (!live.spotify) return 'Listening'
   return playing.value ? 'Listening now' : `Last played ${relativeTime(live.spotify.timestamp)}`
 })
+
+const streamUrl = computed(() => {
+  return Boolean(track.value?.id && playing.value)
+})
+
+async function toggleAudio() {
+  if (!live.spotifyAudioPlaying) await live.startSpotifyAudio(progress.value)
+}
 </script>
 
 <template>
@@ -85,11 +94,19 @@ const status = computed(() => {
         compact && 'w-full',
       ]"
     >
-      <a
-        :href="track.external_urls.spotify"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="shrink-0"
+      <button
+        type="button"
+        class="group relative shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent disabled:cursor-default"
+        :disabled="!streamUrl || live.spotifyAudioPlaying || live.spotifyAudioStatus === 'loading'"
+        :aria-label="
+          live.spotifyAudioPlaying
+            ? 'Live playback is unmuted'
+            : live.spotifyAudioStatus === 'loading'
+              ? 'Loading live playback'
+              : 'Unmute live playback'
+        "
+        :aria-pressed="live.spotifyAudioPlaying"
+        @click="toggleAudio"
       >
         <RecordSleeve
           :artwork="artwork"
@@ -111,7 +128,15 @@ const status = computed(() => {
             />
           </span>
         </RecordSleeve>
-      </a>
+        <span
+          v-if="!live.spotifyAudioPlaying"
+          class="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border border-rule bg-paper text-ink-2 shadow-sm transition-colors group-hover:border-accent group-hover:text-accent"
+          aria-hidden="true"
+        >
+          <LoaderCircle v-if="live.spotifyAudioStatus === 'loading'" class="size-3.5 animate-spin" />
+          <VolumeX v-else class="size-3.5" />
+        </span>
+      </button>
 
       <div class="min-w-0 flex-1" :class="compact && 'text-right'">
         <a
@@ -138,6 +163,10 @@ const status = computed(() => {
         </div>
       </div>
     </div>
+
+    <p v-if="track && live.spotifyAudioStatus === 'error'" class="mt-3 text-xs text-ink-3">
+      Playback is unavailable right now.
+    </p>
 
     <p v-if="!compact && track" class="mt-3 text-xs text-ink-3">{{ status }}</p>
   </div>
