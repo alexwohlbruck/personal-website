@@ -3,6 +3,7 @@ import PageHeader from '@/components/layout/PageHeader.vue'
 import SectionHeading from '@/components/ui/SectionHeading.vue'
 import SocialList from '@/components/social/SocialList.vue'
 import NowPlaying from '@/components/social/NowPlaying.vue'
+import ListeningPanel from '@/components/social/ListeningPanel.vue'
 import InstagramGrid from '@/components/social/InstagramGrid.vue'
 </script>
 
@@ -23,6 +24,8 @@ import InstagramGrid from '@/components/social/InstagramGrid.vue'
         <NowPlaying />
       </div>
     </section>
+
+    <ListeningPanel />
 
     <section class="py-10">
       <SectionHeading title="Recently seen" />
