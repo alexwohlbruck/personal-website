@@ -13,13 +13,13 @@
           width='30'
         )
 
-      .row.align-center.m-y-30
+      .row.align-flex-start.m-y-30
         .icon.m-r-30
           project-tile(:project='project')
           
         .col
           enter-transition
-            h3.m-b-5.m-t-15
+            h3.m-b-5
               | {{ project.title }}
 
           enter-transition(:delay='.2')
