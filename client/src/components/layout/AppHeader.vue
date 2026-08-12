@@ -77,7 +77,7 @@ function togglePlayback() {
         <span class="title hidden text-[0.95rem] sm:block">{{ site.name }}</span>
       </RouterLink>
 
-      <div class="flex items-center gap-1.5">
+      <div class="flex min-w-0 items-center gap-1.5">
         <LayoutGroup>
           <nav class="mr-1 hidden items-center md:flex">
             <RouterLink
@@ -101,10 +101,10 @@ function togglePlayback() {
         <button
           v-if="playing && track"
           type="button"
-          class="group relative flex h-9 items-center overflow-hidden text-left transition-[width,padding,gap,border-color,background-color,box-shadow] duration-300 ease-out-quint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          class="group relative flex h-9 min-w-0 shrink items-center overflow-hidden text-left transition-[width,padding,gap,border-color,background-color,box-shadow] duration-300 ease-out-quint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           :class="
             live.spotifyAudioPlaying
-              ? 'w-9 justify-center rounded-md border border-transparent bg-transparent p-0 shadow-none sm:w-56 sm:justify-start sm:gap-2 sm:rounded-lg sm:border-rule sm:bg-paper-sunk/60 sm:py-1 sm:pl-1 sm:pr-2 sm:shadow-sm sm:hover:border-accent'
+              ? 'w-9 justify-center rounded-md border border-transparent bg-transparent p-0 shadow-none sm:min-w-36 sm:w-56 sm:justify-start sm:gap-2 sm:rounded-lg sm:border-rule sm:bg-paper-sunk/60 sm:py-1 sm:pl-1 sm:pr-2 sm:shadow-sm sm:hover:border-accent'
               : 'w-9 justify-center rounded-lg border border-rule bg-paper-sunk/60 p-0 shadow-sm hover:border-accent'
           "
           :disabled="live.spotifyAudioStatus === 'loading'"
