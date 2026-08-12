@@ -48,6 +48,8 @@ export const useLiveStore = defineStore('live', () => {
   let audioRequest = 0
   const spotifyAudioStatus = ref<AudioStatus>('idle')
   const spotifyAudioPlaying = ref(false)
+  /** A muted stream advances with Spotify before the visitor elects to hear it. */
+  const spotifyAudioReady = ref(false)
 
   const listening = ref<SpotifyListening | null>(null)
   const listeningStatus = ref<Status>('idle')
@@ -79,6 +81,7 @@ export const useLiveStore = defineStore('live', () => {
     audio.addEventListener('error', () => {
       if (audio !== spotifyAudio) return
       spotifyAudioPlaying.value = false
+      spotifyAudioReady.value = false
       spotifyAudioStatus.value = 'error'
     })
     return audio
@@ -113,6 +116,13 @@ export const useLiveStore = defineStore('live', () => {
 
   async function startSpotifyAudio(progressMs: number) {
     if (!spotify.value?.is_playing) return
+    if (spotifyAudio && spotifyAudioReady.value) {
+      spotifyAudio.muted = false
+      spotifyAudioPlaying.value = true
+      spotifyAudioStatus.value = 'playing'
+      preloadNextSpotifyAudio()
+      return
+    }
     const url = audioStreamUrl(progressMs)
     if (!url) return
 
@@ -134,6 +144,7 @@ export const useLiveStore = defineStore('live', () => {
 
       spotifyAudio = audio
       spotifyAudioPlaying.value = true
+      spotifyAudioReady.value = true
       spotifyAudioStatus.value = 'playing'
       if (previous) crossfade(previous, audio)
       preloadNextSpotifyAudio()
@@ -141,6 +152,37 @@ export const useLiveStore = defineStore('live', () => {
       if (request !== audioRequest) return
       spotifyAudioPlaying.value = false
       spotifyAudioStatus.value = 'error'
+    }
+  }
+
+  /**
+   * A muted element is eligible for autoplay in browsers that block audible
+   * autoplay. Starting it now is what keeps its clock near Spotify's; the
+   * click merely unmutes an already-running stream.
+   */
+  async function warmSpotifyAudio(progressMs: number) {
+    if (!spotify.value?.is_playing || spotifyAudio) return
+    const url = audioStreamUrl(progressMs)
+    if (!url) return
+
+    const request = ++audioRequest
+    const audio = createSpotifyAudio()
+    audio.muted = true
+    audio.src = url
+    audio.load()
+    try {
+      await audio.play()
+      if (request !== audioRequest) {
+        audio.pause()
+        audio.removeAttribute('src')
+        return
+      }
+      spotifyAudio = audio
+      spotifyAudioReady.value = true
+      spotifyAudioStatus.value = 'idle'
+    } catch {
+      // Some browsers disallow muted autoplay too. The sleeve still starts a
+      // fresh stream from the live offset when clicked.
     }
   }
 
@@ -167,6 +209,7 @@ export const useLiveStore = defineStore('live', () => {
   function stopSpotifyAudio() {
     audioRequest += 1
     spotifyAudioPlaying.value = false
+    spotifyAudioReady.value = false
     spotifyAudioStatus.value = 'idle'
     spotifyAudio?.pause()
     spotifyAudio?.removeAttribute('src')
@@ -178,7 +221,8 @@ export const useLiveStore = defineStore('live', () => {
   watch(
     () => spotify.value?.item.id,
     (id, previous) => {
-      if (spotifyAudioPlaying.value && id && id !== previous && spotify.value?.is_playing) {
+      if (!id || id === previous || !spotify.value?.is_playing) return
+      if (spotifyAudioPlaying.value) {
         if (preloadedSpotifyTrackId === id && preloadedSpotifyAudio && spotifyAudio) {
           void playPreloadedSpotifyAudio(spotifyAudio, preloadedSpotifyAudio)
         } else {
@@ -187,6 +231,9 @@ export const useLiveStore = defineStore('live', () => {
           stopSpotifyAudio()
           void startSpotifyAudio(spotify.value.progress_ms)
         }
+      } else {
+        stopSpotifyAudio()
+        void warmSpotifyAudio(spotify.value.progress_ms)
       }
     },
   )
