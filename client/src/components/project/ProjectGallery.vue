@@ -3,9 +3,9 @@ import { computed, ref } from 'vue'
 import { Motion } from 'motion-v'
 import { useMediaQuery } from '@vueuse/core'
 import { Expand } from '@lucide/vue'
+import ImageViewer, { type ViewerImage } from '@/components/ui/ImageViewer.vue'
 import ProgressiveImage from '@/components/ui/ProgressiveImage.vue'
-import { useLightbox, type LightboxItem } from '@/composables/useLightbox'
-import { projectImage, projectImageSet, projectImageSize } from '@/lib/assets'
+import { projectImage, projectImageSet } from '@/lib/assets'
 import { duration, ease, inView, step } from '@/lib/motion'
 import type { Project } from '@/data/types'
 
@@ -17,22 +17,24 @@ function caption(file: string) {
   return stem.charAt(0).toUpperCase() + stem.slice(1)
 }
 
-const gallery = ref<HTMLElement | null>(null)
+const opened = ref<number | null>(null)
 
-const items = computed<LightboxItem[]>(() =>
-  props.project.images.map((file) => {
-    const { width, height } = projectImageSize(props.project.name, file)
-    return {
-      // Full resolution here on purpose: this is the one place it is warranted.
-      src: projectImage(props.project.name, file),
-      width,
-      height,
-      alt: `${props.project.title}: ${caption(file)}`,
-    }
-  }),
+/** Renditions for the grid: intrinsic size, srcset and the blur-up. */
+const thumbs = computed(() =>
+  props.project.images.map((file) => projectImageSet(props.project.name, file)),
 )
 
-const thumbs = computed(() => props.project.images.map((file) => projectImageSet(props.project.name, file)))
+const viewerImages = computed<ViewerImage[]>(() =>
+  props.project.images.map((file, index) => ({
+    key: file,
+    // Full resolution here on purpose: this is the one place it is warranted.
+    url: projectImage(props.project.name, file),
+    caption: `${props.project.title}: ${caption(file)}`,
+    // The same 16px preview the grid uses, so the frame is never empty while
+    // the original decodes.
+    placeholder: thumbs.value[index]?.lqip,
+  })),
+)
 
 const wide = useMediaQuery('(min-width: 1024px)')
 const medium = useMediaQuery('(min-width: 640px)')
@@ -50,48 +52,42 @@ const columnCount = computed(() => (wide.value ? 3 : medium.value ? 2 : 1))
  * already gives us. No measuring, no layout thrash, no shift on load.
  */
 const columns = computed(() => {
-  const buckets: { index: number; item: LightboxItem }[][] = Array.from(
-    { length: columnCount.value },
-    () => [],
-  )
+  const buckets: number[][] = Array.from({ length: columnCount.value }, () => [])
   const heights = new Array(columnCount.value).fill(0)
 
-  items.value.forEach((item, index) => {
+  thumbs.value.forEach((image, index) => {
     let shortest = 0
     for (let i = 1; i < heights.length; i++) {
       if (heights[i]! < heights[shortest]!) shortest = i
     }
-    buckets[shortest]!.push({ index, item })
-    heights[shortest] += item.height / item.width
+    buckets[shortest]!.push(index)
+    heights[shortest] += image.height / image.width
   })
 
   return buckets
 })
-
-const { open } = useLightbox(gallery, items)
 </script>
 
 <template>
-  <div ref="gallery" class="flex items-start gap-4">
+  <div class="flex items-start gap-4">
     <div v-for="(column, columnIndex) in columns" :key="columnIndex" class="flex-1 space-y-4">
       <Motion
-        v-for="{ index, item } in column"
-        :key="item.src"
+        v-for="index in column"
+        :key="project.images[index]"
         as="button"
         type="button"
-        :data-pswp-index="index"
         :initial="{ opacity: 0, y: 14, filter: 'blur(4px)' }"
         :while-in-view="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
         :in-view-options="inView"
         :transition="{ duration: duration.base, ease, delay: step(columnIndex) }"
-        :aria-label="`Open ${item.alt}`"
+        :aria-label="`Open ${caption(project.images[index]!)}`"
         class="group relative block w-full overflow-hidden rounded-xl ring-1 ring-rule transition-shadow duration-300 ease-out-quint hover:shadow-e3"
         :style="{ backgroundColor: project.color }"
-        @click="open(index)"
+        @click="opened = index"
       >
         <ProgressiveImage
           :image="thumbs[index]!"
-          :alt="item.alt"
+          :alt="`${project.title}: ${caption(project.images[index]!)}`"
           ratio
           sizes="(min-width: 1024px) 22rem, (min-width: 640px) 45vw, 92vw"
           class="w-full transition-transform duration-500 ease-out-quint group-hover:scale-[1.015]"
@@ -109,5 +105,13 @@ const { open } = useLightbox(gallery, items)
         </span>
       </Motion>
     </div>
+
+    <ImageViewer
+      :images="viewerImages"
+      :index="opened"
+      :label="`${project.title} screenshot`"
+      @close="opened = null"
+      @seek="opened = $event"
+    />
   </div>
 </template>

@@ -20,7 +20,7 @@ import { log } from '../util.js'
 
 /** While a track is playing, never wait longer than this between checks, so a
  *  skip or a pause shows up reasonably soon rather than at the end of the song. */
-const ACTIVE_MAX = 30_000
+const ACTIVE_MAX = 10_000
 const ACTIVE_MIN = 5_000
 /** Nothing playing changes slowly. */
 const IDLE = 60_000
@@ -45,8 +45,9 @@ let errorDelay = ERROR_MIN
  *
  * A playing track is the one thing here that is wrong the moment it is stored:
  * the poll captured a position, and the song has been going ever since. Serving
- * that verbatim means anyone arriving between polls gets a progress bar up to
- * half a minute behind, and a listened-time that disagrees with their own ears.
+ * that verbatim means anyone arriving between polls gets a progress bar behind
+ * by however long ago the last poll was, and a listened-time that disagrees
+ * with their own ears.
  *
  * Caching is still the right call, since it is what lets one Spotify call serve
  * everybody. It just has to account for its own age. A paused or finished track

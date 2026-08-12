@@ -3,11 +3,12 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { Motion } from 'motion-v'
 import { ChevronLeft, ChevronRight } from '@lucide/vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import ImageViewer from '@/components/ui/ImageViewer.vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
-import InstagramViewer from './InstagramViewer.vue'
 import { useLiveStore } from '@/stores/live'
 import { links } from '@/data/site'
 import { duration, ease, step } from '@/lib/motion'
+import type { InstagramImage } from '@/data/types'
 
 const live = useLiveStore()
 
@@ -136,12 +137,26 @@ const first = computed(() => page.value * PER_PAGE)
       </div>
     </template>
 
-    <InstagramViewer
+    <ImageViewer
       :images="images"
       :index="opened"
+      label="Instagram photo"
       @close="opened = null"
       @seek="opened = $event"
       @end="live.loadMoreInstagram()"
-    />
+    >
+      <template #action="{ image }">
+        <a
+          v-if="image"
+          :href="(image as InstagramImage).permalink"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-1.5 text-xs text-ink-3 transition-colors hover:text-accent"
+        >
+          <InlineIcon name="instagram" :size="14" />
+          Open on Instagram
+        </a>
+      </template>
+    </ImageViewer>
   </div>
 </template>
