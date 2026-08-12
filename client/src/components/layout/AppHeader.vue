@@ -101,11 +101,11 @@ function togglePlayback() {
         <button
           v-if="playing && track"
           type="button"
-          class="group flex h-9 shrink-0 items-center overflow-hidden text-left transition-[width,padding,gap,border-color,background-color,box-shadow] duration-300 ease-out-quint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          class="group flex h-9 items-center overflow-hidden text-left transition-[width,padding,gap,border-color,background-color,box-shadow] duration-300 ease-out-quint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           :class="
             live.spotifyAudioPlaying
               ? 'w-44 gap-2 rounded-lg border border-rule bg-paper-sunk/60 py-1 pl-1 pr-2 shadow-sm hover:border-accent sm:w-56'
-              : 'w-9 justify-center rounded-lg border border-rule bg-paper-sunk/60 p-0 shadow-sm hover:border-accent sm:rounded-none sm:border-transparent sm:bg-transparent sm:shadow-none sm:hover:border-transparent'
+              : 'w-9 justify-center rounded-lg border border-rule bg-paper-sunk/60 p-0 shadow-sm hover:border-accent'
           "
           :aria-label="live.spotifyAudioPlaying ? `Mute ${track.name}` : `Unmute ${track.name}`"
           :aria-pressed="live.spotifyAudioPlaying"
@@ -129,11 +129,11 @@ function togglePlayback() {
             <span v-else class="block size-7 rounded-[4px] bg-paper" />
           </span>
           <span
-            class="hidden min-w-0 flex-1 transition-[opacity,transform] duration-200 ease-out-quint sm:block"
+            class="hidden min-w-0 transition-[width,opacity,transform] duration-200 ease-out-quint sm:block"
             :class="
               live.spotifyAudioPlaying
-                ? 'translate-x-0 opacity-100 delay-100'
-                : 'pointer-events-none translate-x-1 opacity-0'
+                ? 'flex-1 translate-x-0 opacity-100 delay-100'
+                : 'pointer-events-none w-0 flex-none translate-x-1 opacity-0'
             "
           >
             <span class="block truncate text-xs font-medium">{{ track.name }}</span>
