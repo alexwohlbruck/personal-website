@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   VisuallyHidden,
 } from 'reka-ui'
-import { Menu, Volume2, VolumeX, X } from '@lucide/vue'
+import { LoaderCircle, Menu, Volume2, VolumeX, X } from '@lucide/vue'
 import ThemeToggle from './ThemeToggle.vue'
 import { ease } from '@/lib/motion'
 import { site } from '@/data/site'
@@ -107,7 +107,14 @@ function togglePlayback() {
               ? 'w-9 justify-center rounded-md border border-transparent bg-transparent p-0 shadow-none sm:w-56 sm:justify-start sm:gap-2 sm:rounded-lg sm:border-rule sm:bg-paper-sunk/60 sm:py-1 sm:pl-1 sm:pr-2 sm:shadow-sm sm:hover:border-accent'
               : 'w-9 justify-center rounded-lg border border-rule bg-paper-sunk/60 p-0 shadow-sm hover:border-accent'
           "
-          :aria-label="live.spotifyAudioPlaying ? `Mute ${track.name}` : `Unmute ${track.name}`"
+          :disabled="live.spotifyAudioStatus === 'loading'"
+          :aria-label="
+            live.spotifyAudioStatus === 'loading'
+              ? `Loading ${track.name}`
+              : live.spotifyAudioPlaying
+                ? `Mute ${track.name}`
+                : `Unmute ${track.name}`
+          "
           :aria-pressed="live.spotifyAudioPlaying"
           @click="togglePlayback"
         >
@@ -140,8 +147,13 @@ function togglePlayback() {
             <span class="block truncate text-[0.65rem] text-ink-3">{{ track.artists[0]?.name }}</span>
           </span>
           <Transition name="playback-icon" mode="out-in">
+            <LoaderCircle
+              v-if="live.spotifyAudioStatus === 'loading'"
+              key="loading"
+              class="absolute inset-0 z-10 m-auto size-3.5 shrink-0 animate-spin text-ink-3 sm:static sm:m-0"
+            />
             <Volume2
-              v-if="live.spotifyAudioPlaying"
+              v-else-if="live.spotifyAudioPlaying"
               key="unmuted"
               class="absolute inset-0 z-10 m-auto size-3.5 shrink-0 text-paper drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)] sm:static sm:m-0 sm:text-accent sm:drop-shadow-none"
             />
