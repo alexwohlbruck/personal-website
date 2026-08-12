@@ -65,9 +65,9 @@ const enter = (delay: number) => ({
 
     <!-- Masthead ------------------------------------------------------------>
     <header class="border-b border-rule pb-10 pt-8 md:pb-14">
-      <!-- Centred, so the tile reads as set against the title rather than hung
-           off its first line when a long name wraps. -->
-      <Motion v-bind="enter(0)" class="flex items-center gap-5 md:gap-6">
+      <!-- Keep the tile aligned to the title's first line rather than the
+           full masthead when a project name wraps. -->
+      <Motion v-bind="enter(0)" class="flex items-start gap-5 md:gap-6">
         <ProjectTile :project="project" :size="64" class="md:!size-[76px]" />
         <div class="min-w-0 flex-1">
           <h1 class="title text-4xl md:text-6xl">{{ project.title }}</h1>
