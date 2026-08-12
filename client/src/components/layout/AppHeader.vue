@@ -119,7 +119,7 @@ function togglePlayback() {
           @click="togglePlayback"
         >
           <span
-            class="playback-artwork shrink-0 overflow-hidden transition-[opacity,filter] duration-[5000ms] ease-out-quint md:transition-[width,opacity,transform,filter] md:duration-[2000ms]"
+            class="playback-artwork shrink-0 overflow-hidden transition-[opacity,filter] duration-500 ease-out-quint md:transition-[width,opacity,transform,filter] md:duration-200"
             :class="
               live.spotifyAudioPlaying
                 ? 'w-9 opacity-100 blur-0 md:w-7 md:translate-x-0'
@@ -136,7 +136,7 @@ function togglePlayback() {
             <span v-else class="block size-9 bg-paper sm:size-7 sm:rounded-[4px]" />
           </span>
           <span
-            class="playback-labels hidden min-w-0 transition-[width,opacity,transform,filter] duration-[2000ms] ease-out-quint sm:block"
+            class="playback-labels hidden min-w-0 transition-[width,opacity,transform,filter] duration-200 ease-out-quint sm:block"
             :class="
               live.spotifyAudioPlaying
                 ? 'flex-1 translate-x-0 opacity-100 blur-0 delay-100'
