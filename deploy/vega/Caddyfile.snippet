@@ -1,0 +1,5 @@
+# Add this block to /opt/caddy/Caddyfile on vega6, then run:
+# docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+alex.wohlbruck.com {
+	reverse_proxy personal-site:3000
+}

@@ -1,46 +1,47 @@
-const router = require('express').Router()
-const { mailer } = require('../apis')
-const { log } = require('../util')
+import { Router } from 'express'
+import { sendContactMessage } from '../apis/mailer.js'
+import { ApiError, log } from '../util.js'
 
-router.post('/contact', async(req, res) => {
+const router = Router()
 
-  const { name, email, message } = req.body
+const LIMIT = { windowMs: 10 * 60_000, max: 5 }
+const hits = new Map()
 
-  try {
-    const info = await mailer.sendMail({
-      from: `"${name}" <${email}>`,
-      to: process.env.MAIL_USER,
-      subject: `🤖 📬 ✉️ ${name} (${email}) sent you a message from your website.`,
-      text: message,
-      replyTo: email,
-    })
+/** Enough to stop a bored script filling an inbox. Anything more determined is
+ *  the mail provider's problem, not this endpoint's. */
+function rateLimit(req) {
+  const key = req.ip ?? 'unknown'
+  const now = Date.now()
+  const recent = (hits.get(key) ?? []).filter((at) => now - at < LIMIT.windowMs)
 
-    log(`Message sent: ${info.messageId}`, 'FgGreen')
-  
-    res.status(200).json({
-      message: `Message sent successfully.`,
-    })
+  if (recent.length >= LIMIT.max) throw new ApiError('Too many messages, try again later.', 429)
+
+  recent.push(now)
+  hits.set(key, recent)
+
+  // The map only ever holds addresses seen this window.
+  if (hits.size > 500) {
+    for (const [addr, times] of hits) {
+      if (!times.some((at) => now - at < LIMIT.windowMs)) hits.delete(addr)
+    }
   }
+}
 
-  catch (err) {
-    log(err, 'FgRed')
-    res.status(500).json({
-      message: err.message || 'Something went wrong.',
-      ...err
-    })
-  }
+router.post('/contact', async (req, res) => {
+  rateLimit(req)
+
+  const name = String(req.body?.name ?? '').trim()
+  const email = String(req.body?.email ?? '').trim()
+  const message = String(req.body?.message ?? '').trim()
+
+  if (!name || !email || !message) throw new ApiError('Name, email and message are required.', 400)
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new ApiError('That email looks wrong.', 400)
+  if (message.length > 5000) throw new ApiError('That message is too long.', 400)
+
+  const info = await sendContactMessage({ name, email, message })
+  log(`Message sent: ${info.messageId}`, 'FgGreen')
+
+  res.json({ message: 'Message sent successfully.' })
 })
 
-
-router.get('/grid', async (req, res) => {
-  try {
-    const { data } = await ig.retrieveUserMedia(process.env.IG_ACCESS_TOKEN)
-    res.status(200).json(data)
-  }
-  catch (err) {
-    console.log(err)
-    res.status(err.status || 500).json(err)
-  } 
-})
-
-module.exports = router
+export default router

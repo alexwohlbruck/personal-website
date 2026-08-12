@@ -1,0 +1,646 @@
+@import 'tailwindcss';
+
+/* Theme is driven by a data attribute so the toggle can override the OS. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/**
+ * Exposure, the same display face Parchment and Barrelman use. It has no
+ * weight axis. Thickness comes from EXPO, where -100 is thickest, 0 default
+ * and 100 thinnest, so every display size sets its own value below.
+ */
+@font-face {
+  font-family: 'Exposure';
+  src: url('@/assets/fonts/Exposure-Variable.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------------
+   Palette
+
+   Parchment and iron gall ink. The light theme is a sheet of warm rag paper;
+   the dark theme is the same ink pooled thick, a red-black rather than a grey
+   one. Nothing here is neutral: every grey carries some red or ochre in it.
+
+   Two colours do the talking. Rust is the interactive signal. Marine is the
+   map colour, borrowed from the water on an old chart, and it only appears
+   where something is being plotted rather than clicked.
+--------------------------------------------------------------------------- */
+
+:root {
+  --paper: oklch(96.4% 0.015 84);
+  --paper-sunk: oklch(93.4% 0.021 80);
+  --surface: oklch(98.4% 0.009 85);
+  --surface-2: oklch(95.6% 0.015 83);
+
+  --ink: oklch(26% 0.036 38);
+  --ink-2: oklch(45% 0.034 40);
+  --ink-3: oklch(57% 0.028 45);
+
+  --rule: oklch(26% 0.036 38 / 0.16);
+  --rule-strong: oklch(26% 0.036 38 / 0.3);
+  --topo-ink: oklch(26% 0.036 38 / 0.2);
+
+  --accent: oklch(47% 0.135 32);
+  --accent-hover: oklch(41% 0.14 30);
+  --accent-wash: oklch(47% 0.135 32 / 0.1);
+
+  /* A filled button is its own thing. `--accent` has to stay legible as text
+     on paper, which is a different job from carrying white text as a fill. */
+  --accent-solid: oklch(47% 0.135 32);
+  --accent-solid-hover: oklch(41% 0.14 30);
+  --accent-ring: oklch(34% 0.11 32 / 0.55);
+  --on-accent: oklch(97% 0.012 80);
+
+  --marine: oklch(50% 0.062 218);
+  --marine-wash: oklch(50% 0.062 218 / 0.12);
+
+  /* Lighting: a hairline of light on top edges, shadow pooling below. */
+  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.75);
+  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 0.9), inset 0 -1px 0 oklch(26% 0.036 38 / 0.07);
+  --shadow-1: 0 1px 1px oklch(26% 0.036 38 / 0.06), 0 2px 6px -3px oklch(26% 0.036 38 / 0.12);
+  --shadow-2: 0 1px 2px oklch(26% 0.036 38 / 0.07), 0 6px 16px -8px oklch(26% 0.036 38 / 0.18);
+  --shadow-3: 0 2px 4px oklch(26% 0.036 38 / 0.07), 0 18px 40px -20px oklch(26% 0.036 38 / 0.3);
+  --shadow-press: inset 0 2px 4px oklch(26% 0.036 38 / 0.15);
+  /* A press that is a resting state, not a response to a click. Form fields sit
+     in it for as long as the page is open, so it stays shallow. */
+  --shadow-press-soft: inset 0 1px 3px oklch(26% 0.036 38 / 0.09);
+
+  --tile-ring: 0 0 0 1px oklch(26% 0.036 38 / 0.12);
+
+  /* Grain multiplies into the paper, so the noise reads as fibre, not fog. */
+  --grain-blend: multiply;
+  --grain: var(--grain-strong);
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --paper: oklch(18% 0.018 40);
+  --paper-sunk: oklch(14.5% 0.016 38);
+  --surface: oklch(22% 0.02 42);
+  --surface-2: oklch(19.6% 0.018 40);
+
+  --ink: oklch(92% 0.021 82);
+  --ink-2: oklch(74% 0.025 76);
+  --ink-3: oklch(58% 0.026 60);
+
+  --rule: oklch(92% 0.021 82 / 0.16);
+  --rule-strong: oklch(92% 0.021 82 / 0.3);
+  --topo-ink: oklch(92% 0.021 82 / 0.17);
+
+  /* Light enough to read as text on the dark sheet. */
+  --accent: oklch(70% 0.13 40);
+  --accent-hover: oklch(77% 0.12 44);
+  --accent-wash: oklch(70% 0.13 40 / 0.16);
+
+  /* The fill stays a deep rust in both themes, lifted just enough to sit off
+     the dark page. Filling with the text-weight accent and flipping the label
+     dark is what made the buttons read as an inverted screenshot. */
+  --accent-solid: oklch(52% 0.15 34);
+  --accent-solid-hover: oklch(57% 0.15 36);
+  --accent-ring: oklch(72% 0.13 40 / 0.35);
+  --on-accent: oklch(97% 0.012 80);
+
+  --marine: oklch(68% 0.072 210);
+  --marine-wash: oklch(68% 0.072 210 / 0.16);
+
+  --sheen: inset 0 1px 0 oklch(100% 0 0 / 0.06);
+  --sheen-strong: inset 0 1px 0 oklch(100% 0 0 / 0.09), inset 0 -1px 0 oklch(0% 0 0 / 0.3);
+  --shadow-1: 0 1px 1px oklch(0% 0 0 / 0.3), 0 2px 6px -3px oklch(0% 0 0 / 0.4);
+  --shadow-2: 0 1px 2px oklch(0% 0 0 / 0.35), 0 6px 16px -8px oklch(0% 0 0 / 0.55);
+  --shadow-3: 0 2px 4px oklch(0% 0 0 / 0.4), 0 18px 40px -20px oklch(0% 0 0 / 0.75);
+  --shadow-press: inset 0 2px 4px oklch(0% 0 0 / 0.45);
+  --shadow-press-soft: inset 0 1px 3px oklch(0% 0 0 / 0.28);
+
+  --tile-ring: 0 0 0 1px oklch(92% 0.021 82 / 0.12);
+
+  /* Screen instead, so the noise lifts out of the dark rather than muddying it.
+     Screen amplifies far more than multiply, so the dark sheet gets the
+     lighter grain or the page reads as television static. */
+  --grain-blend: screen;
+  --grain: var(--grain-soft);
+
+  color-scheme: dark;
+}
+
+/**
+ * One tiling square of fractal noise, at two strengths. It is blended into the
+ * background colour rather than laid over the content, so text stays crisp and
+ * only the paper underneath gets its tooth.
+ */
+:root {
+  --grain-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.38'/%3E%3C/svg%3E");
+  --grain-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.11'/%3E%3C/svg%3E");
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: 'Exposure', ui-serif, Iowan Old Style, Georgia, serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, monospace;
+
+  --color-paper: var(--paper);
+  --color-paper-sunk: var(--paper-sunk);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-wash: var(--accent-wash);
+  --color-marine: var(--marine);
+  --color-marine-wash: var(--marine-wash);
+
+  --shadow-e1: var(--shadow-1);
+  --shadow-e2: var(--shadow-2);
+  --shadow-e3: var(--shadow-3);
+
+  --radius-tile: 0.75rem;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Leading and tracking live on the `display` utility, not here. */
+  --text-display: clamp(2.75rem, 1.2rem + 7vw, 6.5rem);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--rule);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+    /* Keep touch panning from revealing full-bleed decoration beyond the page. */
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--paper);
+    background-image: var(--grain);
+    background-blend-mode: var(--grain-blend);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    /* Mobile browsers can pan the body independently of the root element. */
+    overflow-x: hidden;
+    overflow-wrap: break-word;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--accent-wash);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Numbers in dates, counters and meters line up in columns. */
+  time,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Type
+--------------------------------------------------------------------------- */
+
+@utility display {
+  font-family: var(--font-serif);
+  font-size: var(--text-display);
+  line-height: 0.96;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+  font-variation-settings: 'EXPO' -12;
+  font-feature-settings: 'liga' 0, 'ss01' 0, 'ss02' 0, 'ss03' 0, 'ss04' 0, 'ss05' 0, 'ss06' 0;
+}
+
+/**
+ * Display headings. Pair with a `text-*` size. Exposure runs thicker as the
+ * EXPO value drops, so the smaller sizes get a touch more weight to hold up
+ * next to Geist.
+ */
+@utility title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.16;
+  font-variation-settings: 'EXPO' -20;
+  font-feature-settings: 'liga' 0, 'ss01' 0, 'ss02' 0, 'ss03' 0, 'ss04' 0, 'ss05' 0, 'ss06' 0;
+}
+
+/** Small mono type for dates, counters and list indices. Never a heading. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility prose-body {
+  color: var(--ink-2);
+  line-height: 1.65;
+  font-size: 1rem;
+
+  @media (width >= 48rem) {
+    font-size: 1.0625rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Paper and map motifs
+
+   A dot grid, a surveyor's graticule and two sheets of elevation contours.
+   All of them sit at very low contrast. You feel them, you do not read them.
+--------------------------------------------------------------------------- */
+
+@utility dotted-grid {
+  background-image: radial-gradient(var(--rule) 1px, transparent 1px);
+  background-size: var(--dot-gap, 1.5rem) var(--dot-gap, 1.5rem);
+}
+
+/** Lat/long lines, as on the margin of a chart. */
+@utility graticule {
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--rule) 0 1px,
+      transparent 1px var(--grid-gap, 3rem)
+    ),
+    repeating-linear-gradient(to bottom, var(--rule) 0 1px, transparent 1px var(--grid-gap, 3rem));
+}
+
+/**
+ * Topographic contours, traced from a noise field by scripts/generate-topo.mjs.
+ * The file is a mask of opaque strokes on transparency, so the page paints the
+ * lines in the theme's own ink rather than shipping two coloured copies. A
+ * second gradient mask fades them out before they reach the content below.
+ */
+@utility topo {
+  background-color: var(--topo-ink);
+  mask-image: url('@/assets/topo.svg'),
+    linear-gradient(to bottom, transparent 0, #000 18%, #000 55%, transparent 96%);
+  mask-size: cover, 100% 100%;
+  mask-position: center top, center;
+  mask-repeat: no-repeat, no-repeat;
+  mask-composite: intersect;
+}
+
+/**
+ * A pool of paper floating over the terrain, to sit the hero copy on. Soft
+ * radial stops rather than a blur filter: the shape is already all gradient,
+ * and blurring a layer this size costs a compositing pass for nothing. The
+ * warm and cool tints at the edges keep it from reading as a grey smudge.
+ */
+@utility hero-wash {
+  /*
+   * Each gradient has to finish fading before it reaches the edge of the box,
+   * or the box clips a half-opaque wash and you see the rectangle. For a stop
+   * at S of radius R centred at C, that means C - S*R >= 0 and C + S*R <= 100,
+   * on both axes. The element carries a wide bleed so these can stay small in
+   * percent and still be large in pixels.
+   */
+  background:
+    radial-gradient(
+      38% 40% at 44% 50%,
+      color-mix(in oklab, var(--paper) 80%, transparent) 0,
+      color-mix(in oklab, var(--paper) 46%, transparent) 46%,
+      transparent 78%
+    ),
+    radial-gradient(
+      28% 30% at 66% 30%,
+      color-mix(in oklab, var(--accent-wash) 60%, transparent) 0,
+      transparent 72%
+    ),
+    radial-gradient(
+      28% 30% at 26% 76%,
+      color-mix(in oklab, var(--marine-wash) 60%, transparent) 0,
+      transparent 72%
+    );
+}
+
+/**
+ * The close-up sheet, for panels. Its gradient mask opens a clearing in the
+ * centre instead of fading top to bottom, so the contours frame the copy
+ * rather than run underneath it.
+ */
+@utility topo-close {
+  background-color: var(--topo-ink);
+  mask-image: url('@/assets/topo-close.svg'),
+    radial-gradient(115% 95% at 50% 50%, transparent 0, transparent 30%, #000 82%);
+  mask-size: cover, 100% 100%;
+  mask-position: center, center;
+  mask-repeat: no-repeat, no-repeat;
+  mask-composite: intersect;
+}
+
+/* ---------------------------------------------------------------------------
+   Depth
+
+   Nothing here is flat: surfaces catch a hairline of light along their top edge
+   and drop a soft shadow. Pressing a control inverts both.
+--------------------------------------------------------------------------- */
+
+@utility raised {
+  background-image: linear-gradient(to bottom, var(--surface), var(--surface-2));
+  box-shadow: var(--sheen), var(--tile-ring), var(--shadow-2);
+}
+
+@utility sunk {
+  background-color: var(--paper-sunk);
+  box-shadow: var(--shadow-press), var(--tile-ring);
+}
+
+@layer components {
+  /* Buttons ---------------------------------------------------------------- */
+  .btn {
+    --btn-bg: linear-gradient(to bottom, var(--surface), var(--surface-2));
+    --btn-fg: var(--ink);
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.625rem;
+    padding: 0.625rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    color: var(--btn-fg);
+    background-image: var(--btn-bg);
+    box-shadow: var(--sheen-strong), var(--tile-ring), var(--shadow-2);
+    transition:
+      transform 0.2s var(--ease-out-quint),
+      box-shadow 0.2s var(--ease-out-quint),
+      filter 0.2s var(--ease-out-quint);
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--sheen-strong), var(--tile-ring), var(--shadow-3);
+  }
+
+  .btn:active {
+    transform: translateY(0.5px);
+    box-shadow: var(--shadow-press), var(--tile-ring);
+  }
+
+  .btn:disabled {
+    pointer-events: none;
+    --btn-bg: none;
+    --btn-fg: var(--ink-3);
+    background-color: var(--paper-sunk);
+    box-shadow: var(--tile-ring);
+  }
+
+  .btn-accent {
+    --btn-bg: linear-gradient(to bottom, var(--accent-solid), var(--accent-solid-hover));
+    --btn-fg: var(--on-accent);
+    box-shadow:
+      inset 0 1px 0 oklch(100% 0 0 / 0.22),
+      0 0 0 1px var(--accent-ring),
+      var(--shadow-2);
+  }
+
+  .btn-accent:hover {
+    --btn-bg: linear-gradient(to bottom, var(--accent-solid-hover), var(--accent-solid));
+    box-shadow:
+      inset 0 1px 0 oklch(100% 0 0 / 0.22),
+      0 0 0 1px var(--accent-ring),
+      var(--shadow-3);
+  }
+
+  .btn-ghost {
+    --btn-bg: none;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--ink-2);
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--accent-wash);
+    color: var(--ink);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+  }
+
+  .btn-icon {
+    padding: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Cards ------------------------------------------------------------------ */
+  .card {
+    background-image: linear-gradient(to bottom, var(--surface), var(--surface-2));
+    box-shadow: var(--sheen), var(--tile-ring), var(--shadow-1);
+    border-radius: 0.875rem;
+  }
+
+  /* Fields ----------------------------------------------------------------- */
+  .field {
+    width: 100%;
+    background-color: var(--paper-sunk);
+    color: var(--ink);
+    border-radius: 0.625rem;
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9375rem;
+    box-shadow: var(--shadow-press-soft), var(--tile-ring);
+    transition:
+      box-shadow 0.2s var(--ease-out-quint),
+      background-color 0.2s var(--ease-out-quint);
+  }
+
+  .field::placeholder {
+    color: var(--ink-3);
+  }
+
+  .field:focus {
+    outline: none;
+    background-color: var(--surface);
+    box-shadow:
+      var(--shadow-press-soft),
+      0 0 0 1px var(--accent),
+      0 0 0 4px var(--accent-wash);
+  }
+
+  /* Chips ------------------------------------------------------------------ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.625rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+    background-color: var(--paper-sunk);
+    box-shadow: var(--tile-ring);
+    transition:
+      color 0.2s var(--ease-out-quint),
+      background-color 0.2s var(--ease-out-quint),
+      box-shadow 0.2s var(--ease-out-quint);
+  }
+
+  .chip-active {
+    color: var(--accent);
+    background-color: var(--accent-wash);
+    box-shadow: 0 0 0 1px var(--accent-wash);
+  }
+
+  /* Links ------------------------------------------------------------------ */
+  .link {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+    transition:
+      color 0.2s var(--ease-out-quint),
+      text-decoration-color 0.2s var(--ease-out-quint);
+  }
+
+  .link:hover {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Chevron nudge on "see all" style links (transitions.dev: learn-more-hover)
+--------------------------------------------------------------------------- */
+
+.nudge svg {
+  transition: transform 0.35s var(--ease-out-quint);
+}
+
+.nudge:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---------------------------------------------------------------------------
+   Keyframes
+--------------------------------------------------------------------------- */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Page transitions
+
+   Cross-fade with a whisper of vertical travel. The router waits for the leave
+   to finish before restoring scroll, so pages never jump mid-fade.
+--------------------------------------------------------------------------- */
+
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.28s var(--ease-out-quint),
+    transform 0.28s var(--ease-out-quint),
+    filter 0.28s var(--ease-out-quint);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(2px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+  filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active,
+  .nudge svg {
+    transition: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

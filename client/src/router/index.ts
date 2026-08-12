@@ -1,89 +1,70 @@
-import Vue from 'vue'
-import VueRouter, { RouteConfig } from 'vue-router'
-import { preloadImage } from '@/util'
+import { createRouter, createWebHistory } from 'vue-router'
+import { site } from '@/data/site'
+import { findProject } from '@/data/projects'
 
-Vue.use(VueRouter)
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: () => import('@/views/HomeView.vue'),
+      meta: { title: `${site.name} · ${site.role}` },
+    },
+    {
+      path: '/projects',
+      name: 'projects',
+      component: () => import('@/views/ProjectsView.vue'),
+      meta: { title: 'Projects' },
+    },
+    {
+      path: '/projects/:name',
+      name: 'project',
+      component: () => import('@/views/ProjectView.vue'),
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: () => import('@/views/AboutView.vue'),
+      meta: { title: 'About' },
+    },
+    {
+      path: '/social',
+      name: 'social',
+      component: () => import('@/views/SocialView.vue'),
+      meta: { title: 'Social' },
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('@/views/ContactView.vue'),
+      meta: { title: 'Contact' },
+    },
 
-enum Color {
-  Dark = 'dark',
-  Light = 'light',
-  White = 'white',
-  Primary = 'primary',
-  Accent = 'accent',
-}
+    // Paths the previous site published; keep them working.
+    { path: '/work', redirect: { name: 'projects' } },
+    { path: '/project/:name', redirect: (to) => ({ name: 'project', params: to.params }) },
 
-const routes: Array<RouteConfig> = [
-  {
-    name: 'home',
-    path: '/',
-    component: () => import('@/views/Home.vue'),
-    meta: {
-      color: Color.Dark,
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { title: 'Not found' },
     },
+  ],
+  scrollBehavior(to, _from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, behavior: 'smooth', top: 80 }
+    // Waits out the leave transition so the new page starts at the top.
+    return new Promise((resolve) => setTimeout(() => resolve({ top: 0 }), 180))
   },
-  {
-    name: 'about',
-    path: '/about',
-    component: () => import('@/views/About.vue'),
-    meta: {
-      color: Color.Primary,
-    },
-  },
-  {
-    name: 'work',
-    path: '/work',
-    component: () => import('@/views/Work.vue'),
-    meta: {
-      color: Color.Dark,
-    },
-  },
-  {
-    name: 'contact',
-    path: '/contact',
-    component: () => import('@/views/Contact.vue'),
-    meta: {
-      color: Color.Primary,
-    },
-  },
-  {
-    name: 'social',
-    path: '/social',
-    component: () => import('@/views/Social.vue'),
-    meta: {
-      color: Color.Primary,
-    },
-  },
-  {
-    name: 'project',
-    path: '/project/:name',
-    component: () => import('@/views/Project.vue'),
-    beforeEnter: (to, from, next) => {
-      const path = require('@/assets/svg/arrow-left.svg')
-      preloadImage(path)
-      next()
-    },
-    meta: {
-      secondaryNav: true,
-    },
-  },
-]
+})
 
-const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes,
-  scrollBehavior: (to, from, savedPosition) =>
-    new Promise((resolve) => {
-      router.app.$root.$once('triggerScroll', () => {
-        const position = savedPosition || { x: 0, y: 0 }
-        router.app.$nextTick(() =>
-          resolve({
-            x: position.x,
-            y: position.y,
-          }),
-        )
-      })
-    }),
+router.afterEach((to) => {
+  const project = to.name === 'project' ? findProject(String(to.params.name)) : undefined
+  const title = project?.title ?? (to.meta.title as string | undefined)
+  document.title =
+    to.name === 'home' || !title ? `${site.name} · ${site.role}` : `${title} · ${site.name}`
 })
 
 export default router
