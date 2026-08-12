@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
-import { Volume2, VolumeX } from '@lucide/vue'
+import { VolumeX } from '@lucide/vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import RecordSleeve from '@/components/social/RecordSleeve.vue'
 import { useLiveStore } from '@/stores/live'
@@ -123,12 +123,11 @@ async function toggleAudio() {
           </span>
         </RecordSleeve>
         <span
+          v-if="!live.spotifyAudioPlaying"
           class="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border border-rule bg-paper text-ink-2 shadow-sm transition-colors group-hover:border-accent group-hover:text-accent"
-          :class="live.spotifyAudioPlaying && 'border-accent bg-accent text-paper'"
           aria-hidden="true"
         >
-          <Volume2 v-if="live.spotifyAudioPlaying" class="size-3.5" />
-          <VolumeX v-else class="size-3.5" />
+          <VolumeX class="size-3.5" />
         </span>
       </button>
 
