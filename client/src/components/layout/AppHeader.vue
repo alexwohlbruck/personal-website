@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWindowScroll } from '@vueuse/core'
 import { Motion, LayoutGroup } from 'motion-v'
@@ -14,10 +14,11 @@ import {
   DialogTrigger,
   VisuallyHidden,
 } from 'reka-ui'
-import { Menu, X } from '@lucide/vue'
+import { Menu, Volume2, VolumeX, X } from '@lucide/vue'
 import ThemeToggle from './ThemeToggle.vue'
 import { ease } from '@/lib/motion'
 import { site } from '@/data/site'
+import { useLiveStore } from '@/stores/live'
 
 const nav = [
   { name: 'projects', label: 'Projects' },
@@ -29,12 +30,25 @@ const nav = [
 const route = useRoute()
 const { y } = useWindowScroll()
 const menuOpen = ref(false)
+const live = useLiveStore()
+const playing = computed(() => Boolean(live.spotify?.is_playing && live.spotify.item))
+const track = computed(() => live.spotify?.item)
+const artwork = computed(() => {
+  const images = track.value?.album.images ?? []
+  return images[images.length - 2]?.url ?? images[0]?.url
+})
+
+onMounted(() => void live.fetchSpotify())
 
 watch(() => route.fullPath, () => (menuOpen.value = false))
 
 function isActive(name: string) {
   // Detail pages keep their parent lit.
   return route.name === name || (name === 'projects' && route.name === 'project')
+}
+
+function togglePlayback() {
+  live.toggleSpotifyAudio(live.spotify?.progress_ms ?? 0)
 }
 </script>
 
@@ -83,6 +97,29 @@ function isActive(name: string) {
             </RouterLink>
           </nav>
         </LayoutGroup>
+
+        <button
+          v-if="playing && track"
+          type="button"
+          class="group flex h-9 max-w-44 items-center gap-2 rounded-lg border border-rule bg-paper-sunk/60 py-1 pl-1 pr-2 text-left shadow-sm transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:max-w-56"
+          :aria-label="live.spotifyAudioPlaying ? `Mute ${track.name}` : `Unmute ${track.name}`"
+          :aria-pressed="live.spotifyAudioPlaying"
+          @click="togglePlayback"
+        >
+          <img
+            v-if="artwork"
+            :src="artwork"
+            alt=""
+            class="size-7 shrink-0 rounded-[4px] object-cover shadow-sm"
+          />
+          <span v-else class="size-7 shrink-0 rounded-[4px] bg-paper" aria-hidden="true" />
+          <span class="hidden min-w-0 flex-1 sm:block">
+            <span class="block truncate text-xs font-medium">{{ track.name }}</span>
+            <span class="block truncate text-[0.65rem] text-ink-3">{{ track.artists[0]?.name }}</span>
+          </span>
+          <Volume2 v-if="live.spotifyAudioPlaying" class="size-3.5 shrink-0 text-accent" />
+          <VolumeX v-else class="size-3.5 shrink-0 text-ink-3 group-hover:text-accent" />
+        </button>
 
         <ThemeToggle />
 

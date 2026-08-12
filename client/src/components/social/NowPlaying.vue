@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { LoaderCircle, VolumeX } from '@lucide/vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
@@ -24,7 +24,6 @@ watch(
 )
 
 onMounted(() => void live.fetchSpotify())
-onBeforeUnmount(() => live.stopSpotifyPolling())
 
 const track = computed(() => live.spotify?.item)
 const playing = computed(() => Boolean(live.spotify?.is_playing))

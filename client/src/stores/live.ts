@@ -218,6 +218,17 @@ export const useLiveStore = defineStore('live', () => {
     discardPreloadedSpotifyAudio()
   }
 
+  /** Mute preserves the warmed stream and its buffer; unmute is immediate. */
+  function toggleSpotifyAudio(progressMs: number) {
+    if (spotifyAudioPlaying.value && spotifyAudio) {
+      spotifyAudio.muted = true
+      spotifyAudioPlaying.value = false
+      spotifyAudioStatus.value = 'idle'
+      return
+    }
+    return startSpotifyAudio(progressMs)
+  }
+
   watch(
     () => spotify.value?.item.id,
     (id, previous) => {
@@ -246,7 +257,7 @@ export const useLiveStore = defineStore('live', () => {
   watch(
     () => spotify.value?.is_playing,
     (isPlaying) => {
-      if (spotifyAudioPlaying.value && !isPlaying) stopSpotifyAudio()
+      if (spotifyAudio && !isPlaying) stopSpotifyAudio()
     },
   )
 
@@ -278,6 +289,9 @@ export const useLiveStore = defineStore('live', () => {
    */
   function fetchSpotify() {
     if (!BACKEND_URL) return
+    // The persistent header owns the connection; cards can safely ask for it
+    // too without multiplying SSE sockets or visibility listeners.
+    if (stream || polling) return
     if (typeof EventSource === 'undefined') return void pollSpotify()
 
     openStream()
@@ -476,6 +490,7 @@ export const useLiveStore = defineStore('live', () => {
     spotifyAudioPlaying,
     startSpotifyAudio,
     stopSpotifyAudio,
+    toggleSpotifyAudio,
     listening,
     listeningStatus,
     fetchListening,
