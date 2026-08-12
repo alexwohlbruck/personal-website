@@ -116,11 +116,13 @@ export async function getPlaybackState() {
     playback?.item && playback.currently_playing_type !== 'episode' && playback.timestamp
 
   if (playingTrack) {
+    const nextItem = await getQueuedTrack()
     return {
       is_playing: Boolean(playback.is_playing),
       timestamp: playback.timestamp,
       progress_ms: playback.progress_ms ?? 0,
       item: shapeTrack(playback.item),
+      next_item: nextItem,
     }
   }
 
@@ -133,6 +135,20 @@ export async function getPlaybackState() {
     timestamp: last.played_at,
     progress_ms: last.track.duration_ms,
     item: shapeTrack(last.track),
+  }
+}
+
+/** The first queued track is a prediction, not a promise: shuffle, manual
+ * skips, and radio can change it. It is enough to warm the next Jukebox stream
+ * while the present one plays. A queue that is unavailable must never break
+ * now-playing, so it stays an optional part of the state. */
+async function getQueuedTrack() {
+  try {
+    const queue = await call('/me/player/queue')
+    const next = queue?.queue?.find((item) => item?.type !== 'episode')
+    return shapeTrack(next)
+  } catch {
+    return null
   }
 }
 

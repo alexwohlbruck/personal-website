@@ -40,6 +40,10 @@ globalThis.fetch = async (url, init) => {
     return json({ items: [{ played_at: '2026-08-11T00:00:00Z', track: makeTrack(track) }] })
   }
 
+  if (href.includes('/me/player/queue')) {
+    return json({ queue: [makeTrack('Next Song', '2up3OPMp9Tb4dAKM2erWXQ')] })
+  }
+
   if (href.includes('/me/player')) {
     playbackCalls += 1
     if (!playing) return new Response(null, { status: 204 })
@@ -59,9 +63,9 @@ globalThis.fetch = async (url, init) => {
  *  its 30s ceiling, so these tests take seconds instead of half a minute. */
 const DURATION = 4_000
 
-function makeTrack(name) {
+function makeTrack(name, id = '4uLU6hMCjMI75M1A2tKUQC') {
   return {
-    id: '4uLU6hMCjMI75M1A2tKUQC',
+    id,
     name,
     duration_ms: DURATION,
     // Fields Spotify has since removed, to prove they do not reach the client.
@@ -126,8 +130,9 @@ describe('now playing', () => {
 
     assert.equal(state.item.name, 'First Song')
     assert.equal(state.item.id, '4uLU6hMCjMI75M1A2tKUQC')
+    assert.equal(state.next_item.name, 'Next Song')
     assert.equal(state.is_playing, true)
-    assert.deepEqual(Object.keys(state).sort(), ['is_playing', 'item', 'progress_ms', 'timestamp'])
+    assert.deepEqual(Object.keys(state).sort(), ['is_playing', 'item', 'next_item', 'progress_ms', 'timestamp'])
     assert.equal(state.item.popularity, undefined)
     assert.equal(state.item.available_markets, undefined)
   })
