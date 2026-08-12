@@ -181,10 +181,9 @@
   html {
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
-    /* Full-bleed elements (e.g. TopoField's w-screen breakout) run past the
-       visible viewport by a scrollbar's width; clip it here rather than in
-       every element that needs to escape the centred layout. */
+    /* Keep touch panning from revealing full-bleed decoration beyond the page. */
     overflow-x: hidden;
+    overscroll-behavior-x: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -203,6 +202,8 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: 'cv11', 'ss01';
+    /* Mobile browsers can pan the body independently of the root element. */
+    overflow-x: hidden;
     overflow-wrap: break-word;
   }
 
