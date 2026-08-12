@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
-import { VolumeX } from '@lucide/vue'
+import { LoaderCircle, VolumeX } from '@lucide/vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import RecordSleeve from '@/components/social/RecordSleeve.vue'
 import { useLiveStore } from '@/stores/live'
@@ -97,8 +97,14 @@ async function toggleAudio() {
       <button
         type="button"
         class="group relative shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent disabled:cursor-default"
-        :disabled="!streamUrl || live.spotifyAudioPlaying"
-        :aria-label="live.spotifyAudioPlaying ? 'Live playback is unmuted' : 'Unmute live playback'"
+        :disabled="!streamUrl || live.spotifyAudioPlaying || live.spotifyAudioStatus === 'loading'"
+        :aria-label="
+          live.spotifyAudioPlaying
+            ? 'Live playback is unmuted'
+            : live.spotifyAudioStatus === 'loading'
+              ? 'Loading live playback'
+              : 'Unmute live playback'
+        "
         :aria-pressed="live.spotifyAudioPlaying"
         @click="toggleAudio"
       >
@@ -127,7 +133,8 @@ async function toggleAudio() {
           class="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border border-rule bg-paper text-ink-2 shadow-sm transition-colors group-hover:border-accent group-hover:text-accent"
           aria-hidden="true"
         >
-          <VolumeX class="size-3.5" />
+          <LoaderCircle v-if="live.spotifyAudioStatus === 'loading'" class="size-3.5 animate-spin" />
+          <VolumeX v-else class="size-3.5" />
         </span>
       </button>
 
