@@ -47,15 +47,25 @@ const note = computed(() => RANGES.find((option) => option.key === range.value)?
       note="Straight off the account, and about as curated as a browser history."
     />
 
-    <div class="mt-10 grid gap-6 lg:grid-cols-2 lg:items-stretch">
-      <!-- The left column makes the player and taste data read as one state. -->
-      <div class="card flex h-full flex-col p-6">
+    <div class="mt-10 grid items-start gap-6 lg:grid-cols-2">
+      <div class="card p-6">
         <NowPlaying />
+      </div>
 
-        <template v-if="top && (top.genres.length || top.artists.length)">
-          <div class="my-7 border-t border-rule" />
+      <div class="card h-full p-6">
+        <h3 class="label mb-2 text-ink-3">Freshly liked</h3>
+        <TrackList v-if="liked.length" :tracks="liked" />
+      </div>
 
-          <div v-if="available.length > 1" class="mb-7 flex flex-wrap items-center gap-2">
+      <div v-if="top?.genres.length" class="card p-6">
+        <h3 class="label mb-5 text-ink-3">Genres</h3>
+        <GenreBars :genres="top.genres" />
+      </div>
+
+      <div v-if="top?.artists.length" class="card p-6">
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <h3 class="label text-ink-3">Artists</h3>
+          <div v-if="available.length > 1" class="flex flex-wrap justify-end gap-2">
             <button
               v-for="option in available"
               :key="option.key"
@@ -67,26 +77,10 @@ const note = computed(() => RANGES.find((option) => option.key === range.value)?
             >
               {{ option.label }}
             </button>
-            <span class="text-xs text-ink-3">{{ note }}</span>
           </div>
-
-          <div class="space-y-8">
-            <div v-if="top.genres.length">
-              <h3 class="label mb-5 text-ink-3">Genres</h3>
-              <GenreBars :genres="top.genres" />
-            </div>
-
-            <div v-if="top.artists.length">
-              <h3 class="label mb-5 text-ink-3">Artists</h3>
-              <ArtistRow :artists="top.artists" />
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <div class="card h-full p-6">
-        <h3 class="label mb-2 text-ink-3">Freshly liked</h3>
-        <TrackList v-if="liked.length" :tracks="liked" />
+        </div>
+        <p v-if="available.length > 1" class="mb-6 text-xs text-ink-3">{{ note }}</p>
+        <ArtistRow :artists="top.artists" />
       </div>
     </div>
   </section>
