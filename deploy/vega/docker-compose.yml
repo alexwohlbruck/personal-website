@@ -1,0 +1,23 @@
+# Copy this directory to /opt/personal-site on vega6. The .env file is local
+# only; it carries API credentials and must never be committed or baked in.
+services:
+  personal-site:
+    container_name: personal-site
+    image: ghcr.io/alexwohlbruck/personal-website:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      TOKENS_FILE: /app/data/tokens.json
+    volumes:
+      - ./data:/app/data
+    networks:
+      - caddy
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+
+networks:
+  caddy:
+    external: true
+    name: opt_caddy
