@@ -94,6 +94,7 @@ async function toggleAudio() {
       ]"
     >
       <button
+        v-if="playing"
         type="button"
         class="group relative shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent disabled:cursor-default"
         :disabled="!streamUrl || live.spotifyAudioPlaying || live.spotifyAudioStatus === 'loading'"
@@ -136,6 +137,14 @@ async function toggleAudio() {
           <VolumeX v-else class="size-3.5" />
         </span>
       </button>
+      <RecordSleeve
+        v-else
+        :artwork="artwork"
+        :alt="`${track.name} album art`"
+        :size="compact ? 40 : 76"
+        :playing="false"
+        class="shrink-0"
+      />
 
       <div class="min-w-0 flex-1" :class="compact && 'text-right'">
         <a
