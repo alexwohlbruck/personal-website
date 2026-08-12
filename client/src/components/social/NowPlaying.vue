@@ -2,6 +2,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
+import RecordSleeve from '@/components/social/RecordSleeve.vue'
 import { useLiveStore } from '@/stores/live'
 import { links } from '@/data/site'
 import { formatDuration, relativeTime } from '@/lib/format'
@@ -81,19 +82,28 @@ const status = computed(() => {
         :href="track.external_urls.spotify"
         target="_blank"
         rel="noopener noreferrer"
-        class="relative shrink-0 overflow-hidden rounded-md"
-        :class="compact ? 'size-10' : 'size-16'"
-        style="box-shadow: var(--sheen), var(--tile-ring), var(--shadow-2)"
+        class="shrink-0"
       >
-        <img :src="artwork" :alt="`${track.name} album art`" class="h-full w-full object-cover" />
-        <span
-          v-if="playing"
-          class="absolute inset-x-0 bottom-0 flex items-end justify-center gap-[2px] p-1"
-          style="background: linear-gradient(to top, oklch(0% 0 0 / 0.6), transparent)"
-          aria-hidden="true"
+        <RecordSleeve
+          :artwork="artwork"
+          :alt="`${track.name} album art`"
+          :size="compact ? 40 : 76"
+          :playing="playing"
         >
-          <i v-for="bar in 3" :key="bar" class="eq-bar" :style="{ animationDelay: `${bar * 0.18}s` }" />
-        </span>
+          <span
+            v-if="playing"
+            class="absolute inset-x-0 bottom-0 flex items-end justify-center gap-[2px] p-1"
+            style="background: linear-gradient(to top, oklch(0% 0 0 / 0.6), transparent)"
+            aria-hidden="true"
+          >
+            <i
+              v-for="bar in 3"
+              :key="bar"
+              class="eq-bar"
+              :style="{ animationDelay: `${bar * 0.18}s` }"
+            />
+          </span>
+        </RecordSleeve>
       </a>
 
       <div class="min-w-0 flex-1">
