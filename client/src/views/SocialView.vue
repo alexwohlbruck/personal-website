@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PageHeader from '@/components/layout/PageHeader.vue'
 import SectionHeading from '@/components/ui/SectionHeading.vue'
 import SocialList from '@/components/social/SocialList.vue'
 import ListeningPanel from '@/components/social/ListeningPanel.vue'
