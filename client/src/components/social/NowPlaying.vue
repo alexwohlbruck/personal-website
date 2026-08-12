@@ -54,12 +54,23 @@ const streamUrl = computed(() => {
   return url.href
 })
 
+function syncedStreamUrl() {
+  if (!streamUrl.value) return null
+  const url = new URL(streamUrl.value)
+  // Jukebox starts its live transcode at this offset. Clamp just below the end
+  // so a timestamp collected as the song finishes does not request past it.
+  const offset = Math.min(Math.max(0, progress.value), Math.max(0, (track.value?.duration_ms ?? 1) - 1))
+  url.searchParams.set('startMs', String(Math.round(offset)))
+  return url.href
+}
+
 async function startAudio() {
-  if (!audio.value || !streamUrl.value) return
+  const url = syncedStreamUrl()
+  if (!audio.value || !url) return
 
   audioError.value = false
   audible.value = true
-  audio.value.src = streamUrl.value
+  audio.value.src = url
   audio.value.load()
 
   try {
