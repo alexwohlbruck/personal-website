@@ -17,26 +17,58 @@ const CLIENT_HEADER = 'X-Guestbook-Client'
 
 // Enough for a real drawing session, low enough that a single address cannot
 // fill the board with a tight request loop. Deploy restarts naturally clear it.
-const writes = new Map()
-const WRITE_LIMIT = 80
+const WRITE_LIMIT = 100
 const WINDOW_MS = 60 * 60 * 1000
 
-function rateLimit(req, res, next) {
-  const key = req.ip
-  const now = Date.now()
-  const recent = (writes.get(key) ?? []).filter((time) => now - time < WINDOW_MS)
-  if (recent.length >= WRITE_LIMIT) {
-    return res.status(429).json({ message: 'That is enough marks for now. Try again later.' })
+export function createWriteLimiter({ limit = WRITE_LIMIT, windowMs = WINDOW_MS, now = Date.now } = {}) {
+  const writes = new Map()
+
+  function removeReservation(key, reservation) {
+    const remaining = (writes.get(key) ?? []).filter((entry) => entry !== reservation)
+    if (remaining.length) writes.set(key, remaining)
+    else writes.delete(key)
   }
-  recent.push(now)
-  writes.set(key, recent)
-  if (writes.size > 1_000) {
-    for (const [address, times] of writes) {
-      if (!times.some((time) => now - time < WINDOW_MS)) writes.delete(address)
+
+  function guard(req, res, next) {
+    const key = req.ip
+    const timestamp = now()
+    const recent = (writes.get(key) ?? []).filter((entry) => timestamp - entry.time < windowMs)
+    if (recent.length >= limit) {
+      const retryAfter = Math.max(1, Math.ceil((recent[0].time + windowMs - timestamp) / 1000))
+      res.set('Retry-After', String(retryAfter))
+      return res.status(429).json({
+        message: 'You have reached the guestbook limit. Give it a little time, then try again.',
+        retryAfter,
+      })
+    }
+
+    const reservation = { id: req.body?.id, time: timestamp }
+    recent.push(reservation)
+    writes.set(key, recent)
+    res.once('finish', () => {
+      if (res.statusCode >= 400) removeReservation(key, reservation)
+    })
+
+    if (writes.size > 1_000) {
+      for (const [address, entries] of writes) {
+        if (!entries.some((entry) => timestamp - entry.time < windowMs)) writes.delete(address)
+      }
+    }
+    next()
+  }
+
+  function release(id) {
+    for (const [key, entries] of writes) {
+      const remaining = entries.filter((entry) => entry.id !== id)
+      if (remaining.length) writes.set(key, remaining)
+      else writes.delete(key)
     }
   }
-  next()
+
+  return { guard, release }
 }
+
+const writeLimiter = createWriteLimiter()
 
 const finite = (value, limit = 1_000_000) =>
   typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= limit
@@ -188,7 +220,7 @@ router.get('/stream', (req, res) => {
   close(subscribeToGuestbook((change) => send('guestbook', change)))
 })
 
-router.post('/', rateLimit, async (req, res) => {
+router.post('/', writeLimiter.guard, async (req, res) => {
   const clientId = guestbookClientId(req)
   const item = sanitizeGuestbookItem(req.body)
   item.location = await resolveIpLocation(req.ip)
@@ -243,6 +275,7 @@ router.delete('/:id', async (req, res) => {
     [req.params.id, clientId],
   )
   if (!result.rowCount) return res.status(404).json({ message: 'That mark cannot be removed from this session.' })
+  writeLimiter.release(req.params.id)
   publishGuestbook({ action: 'delete', id: req.params.id })
   res.status(204).end()
 })

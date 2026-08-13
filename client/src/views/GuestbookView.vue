@@ -85,6 +85,11 @@ interface ImageItem extends BaseItem {
 }
 
 type GuestbookItem = DrawingItem | TextItem | StickyItem | EmojiItem | ImageItem
+class ApiError extends Error {
+  constructor(message: string, readonly status: number, readonly retryAfter?: number) {
+    super(message)
+  }
+}
 type Command =
   | { type: 'create'; item: GuestbookItem }
   | { type: 'update'; before: GuestbookItem; after: GuestbookItem }
@@ -128,6 +133,7 @@ const items = ref<GuestbookItem[]>([])
 const loading = ref(true)
 const saving = ref(false)
 const message = ref('')
+const rateLimitWarning = ref('')
 const tool = ref<Tool>('pan')
 const selectedId = ref<string>()
 const emojiPickerOpen = ref(false)
@@ -556,8 +562,12 @@ async function api<T = void>(path = '', init?: RequestInit): Promise<T> {
     headers: { ...requestHeaders(Boolean(init?.body)), ...init?.headers },
   })
   if (!response.ok) {
-    const body = await response.json().catch(() => ({}))
-    throw new Error(body.message || `Request failed (${response.status})`)
+    const body = await response.json().catch(() => ({})) as { message?: string; retryAfter?: number }
+    throw new ApiError(
+      body.message || `Request failed (${response.status})`,
+      response.status,
+      body.retryAfter,
+    )
   }
   return response.status === 204 ? (undefined as T) : ((await response.json()) as T)
 }
@@ -1274,6 +1284,13 @@ function flushPendingDraft() {
 }
 
 function showError(error: unknown) {
+  if (error instanceof ApiError && error.status === 429) {
+    const minutes = error.retryAfter ? Math.max(1, Math.ceil(error.retryAfter / 60)) : undefined
+    rateLimitWarning.value = minutes
+      ? `You've reached the guestbook limit. Try again in about ${minutes} min.`
+      : "You've reached the guestbook limit. Give it a little time, then try again."
+    return
+  }
   showMessage(error instanceof Error && error.message ? error.message : 'The guestbook could not save that change.')
 }
 
@@ -1609,6 +1626,15 @@ onBeforeUnmount(() => {
 
       <input ref="imageInput" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" @change="prepareImage" />
 
+      <Transition name="options-reveal">
+        <div v-if="rateLimitWarning" class="rate-limit-warning" role="alert">
+          <span>{{ rateLimitWarning }}</span>
+          <button type="button" aria-label="Dismiss limit warning" @click="rateLimitWarning = ''">
+            <X class="size-4" />
+          </button>
+        </div>
+      </Transition>
+
       <p class="sr-only" role="status" aria-live="polite">{{ message }}</p>
     </section>
 
@@ -1656,6 +1682,9 @@ onBeforeUnmount(() => {
 .rotate-handle { cursor: grab; }
 .rotate-handle:active { cursor: grabbing; }
 .doodle-inspect { cursor: pointer; pointer-events: stroke; }
+.rate-limit-warning { position: absolute; z-index: 20; right: 1rem; bottom: 1rem; left: 1rem; display: flex; max-width: 30rem; align-items: center; justify-content: space-between; gap: 0.75rem; margin-inline: auto; border: 1px solid color-mix(in oklab, var(--accent) 45%, var(--rule-strong)); border-radius: 0.85rem; padding: 0.7rem 0.75rem 0.7rem 0.9rem; color: var(--ink); background: color-mix(in oklab, var(--surface) 96%, transparent); box-shadow: var(--shadow-2); backdrop-filter: blur(16px); font-size: 0.78rem; font-weight: 650; line-height: 1.35; }
+.rate-limit-warning button { display: grid; width: 1.8rem; height: 1.8rem; flex: none; place-items: center; border-radius: 0.5rem; color: var(--ink-2); transition: color 150ms ease, background-color 150ms ease; }
+.rate-limit-warning button:hover { color: var(--ink); background: var(--accent-wash); }
 .canvas-tooltip { transform-box: fill-box; transform-origin: center bottom; animation: tooltip-pop 220ms cubic-bezier(0.22, 1, 0.36, 1); }
 @keyframes tooltip-pop {
   from { opacity: 0; transform: translateY(5px) scale(0.94); }

@@ -1,12 +1,29 @@
 import assert from 'node:assert/strict'
+import { EventEmitter } from 'node:events'
 import { describe, it } from 'node:test'
-import { guestbookClientId, sanitizeGuestbookItem } from '../src/routes/guestbook.js'
+import { createWriteLimiter, guestbookClientId, sanitizeGuestbookItem } from '../src/routes/guestbook.js'
 
 const base = {
   id: '12af58b8-6ddc-4fe1-b07a-9d14f60b49dd',
   x: 12,
   y: -34,
   rotation: 0,
+}
+
+function limiterResponse() {
+  const response = new EventEmitter()
+  response.statusCode = 200
+  response.headers = {}
+  response.set = (name, value) => { response.headers[name] = value }
+  response.status = (statusCode) => {
+    response.statusCode = statusCode
+    return response
+  }
+  response.json = (body) => {
+    response.body = body
+    return response
+  }
+  return response
 }
 
 describe('guestbook validation', () => {
@@ -128,5 +145,33 @@ describe('guestbook validation', () => {
         }),
       /Invalid or oversized image/,
     )
+  })
+})
+
+describe('guestbook write limiting', () => {
+  it('restores a write when its item is deleted or its request fails', () => {
+    const limiter = createWriteLimiter({ limit: 2, windowMs: 60_000, now: () => 1_000 })
+    const attempt = (id) => {
+      const response = limiterResponse()
+      let allowed = false
+      limiter.guard({ ip: '127.0.0.1', body: { id } }, response, () => { allowed = true })
+      return { allowed, response }
+    }
+
+    const first = attempt('first')
+    first.response.statusCode = 201
+    first.response.emit('finish')
+    const second = attempt('second')
+    second.response.statusCode = 201
+    second.response.emit('finish')
+    assert.equal(attempt('blocked').response.statusCode, 429)
+
+    limiter.release('first')
+    const replacement = attempt('replacement')
+    assert.equal(replacement.allowed, true)
+
+    replacement.response.statusCode = 400
+    replacement.response.emit('finish')
+    assert.equal(attempt('after-failure').allowed, true)
   })
 })
