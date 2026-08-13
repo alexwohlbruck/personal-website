@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import type { CSSProperties } from 'vue'
 import { ArrowRight, PenLine } from '@lucide/vue'
 import { BACKEND_URL } from '@/data/site'
 import { useLiveStore } from '@/stores/live'
@@ -25,6 +26,48 @@ const guestbookItems = ref<PreviewItem[]>([])
 
 const photos = computed(() => live.instagramImages.slice(0, 7).reverse())
 const pileTiles = computed(() => Array.from({ length: 7 }, (_, index) => photos.value[index]))
+
+const pileAnchors = [
+  { left: 0, top: 24, rotation: -10 },
+  { left: 20, top: 3, rotation: 7 },
+  { left: 10, top: 14, rotation: -4 },
+  { left: 46, top: 22, rotation: 10 },
+  { left: 35, top: 1, rotation: -7 },
+  { left: 64, top: 9, rotation: 5 },
+  { left: 76, top: 26, rotation: -8 },
+]
+
+const layers = pileAnchors.map((_, index) => index + 1)
+for (let index = layers.length - 1; index > 0; index -= 1) {
+  const swap = Math.floor(Math.random() * (index + 1))
+  const layer = layers[index]
+  layers[index] = layers[swap]
+  layers[swap] = layer
+}
+
+const pileLayout = pileAnchors.map((anchor, index) => {
+  const jitter = (amount: number) => (Math.random() * 2 - 1) * amount
+  return {
+    left: Math.min(78, Math.max(0, anchor.left + jitter(3.5))),
+    top: Math.min(28, Math.max(0, anchor.top + jitter(4))),
+    rotation: anchor.rotation + jitter(3),
+    layer: layers[index],
+    hoverX: jitter(5),
+    hoverY: -3 - Math.random() * 4,
+  }
+})
+
+function pileStyle(index: number): CSSProperties {
+  const layout = pileLayout[index]
+  return {
+    left: `${layout.left}%`,
+    top: `${layout.top}%`,
+    zIndex: layout.layer,
+    '--pile-rotation': `${layout.rotation}deg`,
+    '--pile-hover-x': `${layout.hoverX}px`,
+    '--pile-hover-y': `${layout.hoverY}px`,
+  } as CSSProperties
+}
 
 const stickyColors: Record<string, string> = {
   yellow: '#f4dd83',
@@ -64,7 +107,9 @@ const guestbookFrame = computed(() => {
   const ratio = 1.55
   if (width / height > ratio) height = width / ratio
   else width = height * ratio
-  return { x: centerX - width / 2, y: centerY - height / 2, width, height }
+  // The invitation occupies the left side of the card, so place the marks in
+  // the visual center of the uncovered paper rather than underneath it.
+  return { x: centerX - width * 0.72, y: centerY - height / 2, width, height }
 })
 const guestbookViewBox = computed(() => {
   const frame = guestbookFrame.value
@@ -115,6 +160,7 @@ onMounted(() => {
           v-for="(photo, index) in pileTiles"
           :key="photo?.key ?? `photo-placeholder-${index}`"
           class="pile-photo absolute aspect-square overflow-hidden rounded-lg bg-paper-sunk ring-1 ring-rule"
+          :style="pileStyle(index)"
         >
           <img
             v-if="photo"
@@ -210,19 +256,13 @@ onMounted(() => {
   transition: border-color 240ms ease, box-shadow 300ms ease, transform 400ms var(--ease-out-quint);
 }
 
-.photo-pile { min-height: 15rem; }
+.photo-pile { min-height: 16rem; }
 .pile-photo {
-  width: min(22%, 6.5rem);
+  width: min(26%, 7.5rem);
   box-shadow: var(--shadow-2);
+  transform: rotate(var(--pile-rotation));
   transition: transform 500ms var(--ease-out-quint), box-shadow 300ms ease;
 }
-.pile-photo:nth-child(1) { z-index: 1; left: 9%; top: 24%; transform: rotate(-10deg); }
-.pile-photo:nth-child(2) { z-index: 5; left: 29%; top: 3%; transform: rotate(7deg); }
-.pile-photo:nth-child(3) { z-index: 3; left: 19%; top: 14%; transform: rotate(-4deg); }
-.pile-photo:nth-child(4) { z-index: 7; left: 45%; top: 22%; transform: rotate(10deg); }
-.pile-photo:nth-child(5) { z-index: 4; left: 38%; top: 1%; transform: rotate(-7deg); }
-.pile-photo:nth-child(6) { z-index: 6; left: 57%; top: 9%; transform: rotate(5deg); }
-.pile-photo:nth-child(7) { z-index: 2; left: 66%; top: 26%; transform: rotate(-8deg); }
 .pile-hint { transition: color 200ms ease; }
 
 .guestbook-card { min-height: 15rem; }
@@ -242,14 +282,10 @@ onMounted(() => {
     box-shadow: var(--sheen), var(--tile-ring), var(--shadow-3);
     transform: translateY(-3px);
   }
-  .photo-pile:hover .pile-photo { box-shadow: var(--shadow-3); }
-  .photo-pile:hover .pile-photo:nth-child(1) { transform: translate(-5px, 4px) rotate(-11deg); }
-  .photo-pile:hover .pile-photo:nth-child(2) { transform: translate(-2px, -5px) rotate(7deg); }
-  .photo-pile:hover .pile-photo:nth-child(3) { transform: translateY(-6px) rotate(-1deg); }
-  .photo-pile:hover .pile-photo:nth-child(4) { transform: translate(3px, -4px) rotate(12deg); }
-  .photo-pile:hover .pile-photo:nth-child(5) { transform: translate(5px, 4px) rotate(-8deg); }
-  .photo-pile:hover .pile-photo:nth-child(6) { transform: translate(3px, -5px) rotate(12deg); }
-  .photo-pile:hover .pile-photo:nth-child(7) { transform: translate(6px, 3px) rotate(-9deg); }
+  .photo-pile:hover .pile-photo {
+    box-shadow: var(--shadow-3);
+    transform: translate(var(--pile-hover-x), var(--pile-hover-y)) rotate(var(--pile-rotation)) scale(1.035);
+  }
   .photo-pile:hover .pile-hint { color: var(--accent); }
   .preview-card:hover .guestbook-mini { transform: scale(1.025); }
   .preview-card:hover .invite-note { box-shadow: 0 18px 38px rgb(67 45 32 / 0.25); transform: rotate(0deg) translateY(-4px); }
