@@ -220,6 +220,23 @@ router.get('/stream', (req, res) => {
   close(subscribeToGuestbook((change) => send('guestbook', change)))
 })
 
+router.post('/visit', async (req, res) => {
+  const clientId = guestbookClientId(req)
+  await ensureGuestbookSchema()
+  const inserted = await database().query(
+    `INSERT INTO guestbook_visitors (client_id)
+     VALUES ($1)
+     ON CONFLICT (client_id) DO NOTHING
+     RETURNING client_id`,
+    [clientId],
+  )
+  const result = await database().query('SELECT count(*)::integer AS count FROM guestbook_visitors')
+  const count = result.rows[0].count
+  if (inserted.rowCount) publishGuestbook({ action: 'visitors', count })
+  res.set('Cache-Control', 'no-store')
+  res.json({ count })
+})
+
 router.post('/', writeLimiter.guard, async (req, res) => {
   const clientId = guestbookClientId(req)
   const item = sanitizeGuestbookItem(req.body)

@@ -134,6 +134,7 @@ const loading = ref(true)
 const saving = ref(false)
 const message = ref('')
 const rateLimitWarning = ref('')
+const visitorCount = ref<number>()
 const tool = ref<Tool>('pan')
 const selectedId = ref<string>()
 const emojiPickerOpen = ref(false)
@@ -155,6 +156,7 @@ let shakePermissionRequested = false
 let lastShake = 0
 let preserveEditorBlur = false
 const touchPointers = new Map<number, Point>()
+const visitorNumber = new Intl.NumberFormat()
 
 const tools: { id: Tool; label: string; icon: typeof Hand }[] = [
   { id: 'pan', label: 'Drag', icon: Hand },
@@ -222,6 +224,10 @@ const viewBoxString = computed(
   () => `${viewBox.value.x} ${viewBox.value.y} ${viewBox.value.width} ${viewBox.value.height}`,
 )
 const selectedItem = computed(() => items.value.find((item) => item.id === selectedId.value))
+const visitorLabel = computed(() => {
+  if (visitorCount.value === undefined) return 'Visitors'
+  return `${visitorNumber.format(visitorCount.value)} ${visitorCount.value === 1 ? 'visitor' : 'visitors'}`
+})
 const selectedBounds = computed(() => (selectedItem.value ? itemBounds(selectedItem.value) : undefined))
 const canEditSelected = computed(() => Boolean(selectedItem.value?.owned || selectedItem.value?.draft))
 const canTransformSelected = computed(
@@ -1278,6 +1284,15 @@ async function loadItems(center = false) {
   }
 }
 
+async function registerVisit() {
+  try {
+    const result = await api<{ count: number }>('/visit', { method: 'POST' })
+    visitorCount.value = result.count
+  } catch {
+    // The canvas remains usable if the optional counter cannot be reached.
+  }
+}
+
 function connectRealtime() {
   liveStream?.close()
   liveStream = new EventSource(`${endpoint}/stream`)
@@ -1286,6 +1301,11 @@ function connectRealtime() {
     const change = JSON.parse((event as MessageEvent<string>).data) as
       | { action: 'upsert'; item: GuestbookItem }
       | { action: 'delete'; id: string }
+      | { action: 'visitors'; count: number }
+    if (change.action === 'visitors') {
+      visitorCount.value = change.count
+      return
+    }
     if (change.action === 'delete') {
       items.value = items.value.filter((item) => item.id !== change.id)
       if (selectedId.value === change.id) selectedId.value = undefined
@@ -1399,6 +1419,7 @@ onMounted(async () => {
   picker.setAttribute('aria-label', 'Search and choose an emoji')
   styleEmojiPicker(picker)
   picker.addEventListener('emoji-click', chooseEmoji)
+  void registerVisit()
   await loadItems(true)
   connectRealtime()
 })
@@ -1418,7 +1439,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="pt-24 pb-8">
     <header class="mb-7 max-w-3xl">
-      <p class="eyebrow mb-3">Guestbook</p>
+      <p class="eyebrow mb-3" aria-live="polite">{{ visitorLabel }}</p>
       <h1 class="display">Leave your mark.</h1>
       <p class="mt-5 max-w-2xl text-base leading-relaxed text-ink-2 md:text-lg">
         Draw, type, paste a note, or add a tiny piece of yourself. This page belongs to everyone,
