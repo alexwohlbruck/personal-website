@@ -73,8 +73,7 @@ const pileLayout = pileAnchors.map((anchor, index) => {
     top: Math.min(28, Math.max(0, anchor.top + jitter(4))),
     rotation: anchor.rotation + jitter(3),
     layer: layers[index],
-    hoverX: jitter(5),
-    hoverY: -3 - Math.random() * 4,
+    depth: 4 + layers[index] * 1.6,
   }
 })
 
@@ -85,9 +84,30 @@ function pileStyle(index: number): CSSProperties {
     top: `${layout.top}%`,
     zIndex: layout.layer,
     '--pile-rotation': `${layout.rotation}deg`,
-    '--pile-hover-x': `${layout.hoverX}px`,
-    '--pile-hover-y': `${layout.hoverY}px`,
+    '--pile-shift-x': '0px',
+    '--pile-shift-y': '0px',
   } as CSSProperties
+}
+
+function movePile(event: PointerEvent) {
+  if (event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const host = event.currentTarget as HTMLElement
+  const rect = host.getBoundingClientRect()
+  const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2
+  const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2
+  host.querySelectorAll<HTMLElement>('.pile-photo').forEach((tile, index) => {
+    const depth = pileLayout[index].depth
+    tile.style.setProperty('--pile-shift-x', `${x * depth}px`)
+    tile.style.setProperty('--pile-shift-y', `${y * depth * 0.65}px`)
+  })
+}
+
+function resetPile(event: PointerEvent) {
+  const host = event.currentTarget as HTMLElement
+  host.querySelectorAll<HTMLElement>('.pile-photo').forEach((tile) => {
+    tile.style.setProperty('--pile-shift-x', '0px')
+    tile.style.setProperty('--pile-shift-y', '0px')
+  })
 }
 
 const stickyColors: Record<string, string> = {
@@ -177,6 +197,8 @@ onMounted(() => {
         :to="{ name: 'social' }"
         class="photo-pile group relative block"
         aria-label="See recent photos on the social page"
+        @pointermove="movePile"
+        @pointerleave="resetPile"
       >
         <div
           v-for="(tile, index) in pileTiles"
@@ -190,7 +212,7 @@ onMounted(() => {
             :alt="tile.alt"
             loading="lazy"
             decoding="async"
-            class="size-full object-cover transition-transform duration-500 ease-out-quint group-hover:scale-105"
+            class="size-full object-cover"
           />
         </div>
         <span class="pile-hint absolute bottom-5 right-3 inline-flex items-center gap-2 text-sm text-ink-3">
@@ -282,8 +304,8 @@ onMounted(() => {
 .pile-photo {
   width: min(26%, 7.5rem);
   box-shadow: var(--shadow-2);
-  transform: rotate(var(--pile-rotation));
-  transition: transform 500ms var(--ease-out-quint), box-shadow 300ms ease;
+  transform: translate(var(--pile-shift-x), var(--pile-shift-y)) rotate(var(--pile-rotation));
+  transition: transform 160ms ease-out, box-shadow 300ms ease;
 }
 .pile-hint { transition: color 200ms ease; }
 
@@ -306,7 +328,6 @@ onMounted(() => {
   }
   .photo-pile:hover .pile-photo {
     box-shadow: var(--shadow-3);
-    transform: translate(var(--pile-hover-x), var(--pile-hover-y)) rotate(var(--pile-rotation)) scale(1.035);
   }
   .photo-pile:hover .pile-hint { color: var(--accent); }
   .preview-card:hover .guestbook-mini { transform: scale(1.025); }
