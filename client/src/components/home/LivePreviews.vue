@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { CSSProperties } from 'vue'
+import { Motion } from 'motion-v'
 import { ArrowRight, PenLine } from '@lucide/vue'
 import { BACKEND_URL } from '@/data/site'
 import { useLiveStore } from '@/stores/live'
+import { duration, ease, step } from '@/lib/motion'
 
 type Point = [number, number]
 type PreviewItem = {
@@ -294,14 +296,23 @@ onMounted(() => {
           :data-pile-index="index"
           :style="pileStyle(index)"
         >
-          <img
+          <Motion
             v-if="tile"
-            :src="tile.url"
-            :alt="tile.alt"
-            loading="lazy"
-            decoding="async"
-            class="size-full object-cover"
-          />
+            as="div"
+            :initial="{ opacity: 0, scale: 0.94, filter: 'blur(4px)' }"
+            :animate="{ opacity: 1, scale: 1, filter: 'blur(0px)' }"
+            :transition="{ duration: duration.base, ease, delay: step(index) }"
+            class="size-full"
+          >
+            <img
+              :src="tile.url"
+              :alt="tile.alt"
+              loading="lazy"
+              decoding="async"
+              class="size-full object-cover"
+            />
+          </Motion>
+          <span v-else class="block size-full animate-pulse bg-paper-sunk" />
         </div>
         <span class="pile-hint absolute bottom-5 right-3 inline-flex items-center gap-2 text-sm text-ink-3">
           See what I’ve been up to
