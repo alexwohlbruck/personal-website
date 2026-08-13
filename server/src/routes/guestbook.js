@@ -10,7 +10,7 @@ const HEX = /^#[0-9a-f]{6}$/i
 const IMAGE = /^data:image\/(png|jpeg|webp);base64,/i
 const KINDS = new Set(['drawing', 'text', 'sticky', 'emoji', 'image'])
 const FONTS = new Set([
-  'system', 'humanist', 'rounded', 'serif', 'book', 'mono', 'cursive', 'casual', 'handwritten', 'display',
+  'system', 'geist', 'exposure', 'humanist', 'rounded', 'serif', 'book', 'mono', 'cursive', 'casual', 'handwritten', 'display',
 ])
 const STICKY_COLORS = new Set(['yellow', 'pink', 'blue', 'green', 'orange', 'lavender'])
 const CLIENT_HEADER = 'X-Guestbook-Client'

@@ -66,6 +66,22 @@ describe('guestbook validation', () => {
     )
   })
 
+  it('accepts the bundled Geist and Exposure canvas fonts', () => {
+    for (const font of ['geist', 'exposure']) {
+      const item = sanitizeGuestbookItem({
+        ...base,
+        kind: 'text',
+        text: 'Bundled font',
+        font,
+        color: '#9a3412',
+        size: 36,
+        width: 240,
+        height: 80,
+      })
+      assert.equal(item.font, font)
+    }
+  })
+
   it('keeps supported sticky-note text styles', () => {
     assert.deepEqual(
       sanitizeGuestbookItem({

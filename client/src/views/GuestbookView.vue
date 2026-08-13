@@ -23,7 +23,7 @@ import { BACKEND_URL } from '@/data/site'
 
 type Point = [number, number]
 type Tool = 'pan' | 'select' | 'erase' | 'pen' | 'text' | 'sticky' | 'emoji' | 'image'
-type Font = 'system' | 'humanist' | 'rounded' | 'serif' | 'book' | 'mono' | 'cursive' | 'casual' | 'handwritten' | 'display'
+type Font = 'system' | 'geist' | 'exposure' | 'humanist' | 'rounded' | 'serif' | 'book' | 'mono' | 'cursive' | 'casual' | 'handwritten' | 'display'
 type StickyColor = 'yellow' | 'pink' | 'blue' | 'green' | 'orange' | 'lavender'
 
 interface BaseItem {
@@ -178,6 +178,8 @@ const stickyFill: Record<StickyColor, string> = {
 
 const fontOptions: { value: Font; label: string; family: string }[] = [
   { value: 'system', label: 'Sans', family: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" },
+  { value: 'geist', label: 'Geist', family: "'Geist Variable', ui-sans-serif, system-ui, sans-serif" },
+  { value: 'exposure', label: 'Exposure', family: "'Exposure', ui-serif, Georgia, serif" },
   { value: 'humanist', label: 'Humanist', family: "'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', Arial, sans-serif" },
   { value: 'rounded', label: 'Rounded', family: "ui-rounded, 'Arial Rounded MT Bold', 'Trebuchet MS', sans-serif" },
   { value: 'serif', label: 'Serif', family: "Georgia, 'Times New Roman', Times, serif" },
