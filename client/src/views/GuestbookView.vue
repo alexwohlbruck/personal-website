@@ -226,7 +226,11 @@ const viewBoxString = computed(
 const selectedItem = computed(() => items.value.find((item) => item.id === selectedId.value))
 const visitorLabel = computed(() => {
   if (visitorCount.value === undefined) return 'Visitors'
-  return `${visitorNumber.format(visitorCount.value)} ${visitorCount.value === 1 ? 'visitor' : 'visitors'}`
+  const remainder = visitorCount.value % 100
+  const suffix = remainder >= 11 && remainder <= 13
+    ? 'th'
+    : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[visitorCount.value % 10] ?? 'th'
+  return `You're the ${visitorNumber.format(visitorCount.value)}${suffix} guest`
 })
 const selectedBounds = computed(() => (selectedItem.value ? itemBounds(selectedItem.value) : undefined))
 const canEditSelected = computed(() => Boolean(selectedItem.value?.owned || selectedItem.value?.draft))
