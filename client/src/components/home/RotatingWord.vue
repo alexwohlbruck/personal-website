@@ -11,10 +11,30 @@ const props = withDefaults(defineProps<{ words: readonly string[]; interval?: nu
 const index = ref(0)
 const reduced = usePreferredReducedMotion()
 
+const pickNextIndex = () => {
+  if (props.words.length < 2) return 0
+
+  // Earlier words stay a little more likely without making the order feel fixed.
+  const candidates = props.words
+    .map((_, candidateIndex) => ({
+      index: candidateIndex,
+      weight: candidateIndex === index.value ? 0 : 0.9 ** candidateIndex,
+    }))
+    .filter(({ weight }) => weight > 0)
+  let roll = Math.random() * candidates.reduce((total, candidate) => total + candidate.weight, 0)
+
+  for (const candidate of candidates) {
+    roll -= candidate.weight
+    if (roll <= 0) return candidate.index
+  }
+
+  return candidates.at(-1)?.index ?? 0
+}
+
 useIntervalFn(
   () => {
     if (reduced.value === 'reduce') return
-    index.value = (index.value + 1) % props.words.length
+    index.value = pickNextIndex()
   },
   () => props.interval,
 )
