@@ -68,12 +68,19 @@ export const socials: SocialLink[] = [
   { label: 'OpenStreetMap', icon: 'osm', href: links.osm, handle: 'Map edits' },
 ]
 
+const defaultBackendUrl = import.meta.env.DEV
+  ? 'http://localhost:3000'
+  : globalThis.location?.hostname === 'alex.wohlbruck.com'
+    ? 'https://api.alex.wohlbruck.dev'
+    : '/api'
+
 /**
- * Set `VITE_BACKEND_URL` when Vite runs separately from Express. Production
- * ships both in one image, where the API lives at this same origin under /api.
+ * Set `VITE_BACKEND_URL` when Vite runs separately from Express. The unified
+ * Vega image uses same-origin /api; the legacy Netlify hostname uses Vega's
+ * compatibility API hostname.
  */
 export const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:3000' : '/api')
+  import.meta.env.VITE_BACKEND_URL ?? defaultBackendUrl
 
 /**
  * Jukebox resolves the Spotify track identifier supplied by the now-playing
