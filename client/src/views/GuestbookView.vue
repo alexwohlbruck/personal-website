@@ -403,6 +403,18 @@ function itemTransform(item: GuestbookItem) {
   return `rotate(${item.rotation} ${x} ${y})`
 }
 
+function itemLocalPoint(point: Point, item: GuestbookItem): Point {
+  if (item.kind === 'drawing' || !item.rotation) return point
+  const [centerX, centerY] = itemCenter(item)
+  const angle = -item.rotation * Math.PI / 180
+  const dx = point[0] - centerX
+  const dy = point[1] - centerY
+  return [
+    centerX + dx * Math.cos(angle) - dy * Math.sin(angle),
+    centerY + dx * Math.sin(angle) + dy * Math.cos(angle),
+  ]
+}
+
 function drawingCenter(item: DrawingItem): Point {
   const bounds = itemBounds(item)
   return [bounds.x + bounds.width / 2, bounds.y + bounds.height / 2]
@@ -901,6 +913,7 @@ function startMove(event: PointerEvent, item: GuestbookItem) {
 
 function startResize(event: PointerEvent, item: GuestbookItem) {
   event.stopPropagation()
+  event.preventDefault()
   capturePointer(event)
   interaction = { mode: 'resize', pointer: event.pointerId, start: worldPoint(event), before: cloneItem(item) }
 }
@@ -908,6 +921,7 @@ function startResize(event: PointerEvent, item: GuestbookItem) {
 function startRotate(event: PointerEvent, item: GuestbookItem) {
   if (item.kind === 'drawing' || (!item.owned && !item.draft)) return
   event.stopPropagation()
+  event.preventDefault()
   capturePointer(event)
   const point = worldPoint(event)
   const [centerX, centerY] = itemCenter(item)
@@ -975,9 +989,11 @@ function onPointerMove(event: PointerEvent) {
     current.rotation = ((active.before.rotation + angle - active.startAngle + 180) % 360 + 360) % 360 - 180
     return
   }
-  const dx = point[0] - active.start[0]
-  const dy = point[1] - active.start[1]
   const before = active.before
+  const localPoint = active.mode === 'resize' ? itemLocalPoint(point, before) : point
+  const localStart = active.mode === 'resize' ? itemLocalPoint(active.start, before) : active.start
+  const dx = localPoint[0] - localStart[0]
+  const dy = localPoint[1] - localStart[1]
   if (active.mode === 'move') {
     current.x = before.x + dx
     current.y = before.y + dy
@@ -1631,27 +1647,22 @@ onBeforeUnmount(() => {
             :stroke-width="1.5 / camera.zoom"
             class="pointer-events-none"
           />
-          <circle
-            :cx="selectedBounds.x + selectedBounds.width / 2"
-            :cy="selectedBounds.y - 34 / camera.zoom"
-            :r="8 / camera.zoom"
-            fill="#fffaf0"
-            stroke="var(--accent)"
-            :stroke-width="2 / camera.zoom"
-            class="rotate-handle"
+          <g
+            class="rotate-handle transform-handle"
             aria-label="Rotate mark"
             @pointerdown.stop="startRotate($event, selectedItem)"
-          />
-          <circle
-            :cx="selectedBounds.x + selectedBounds.width + 5 / camera.zoom"
-            :cy="selectedBounds.y + selectedBounds.height + 5 / camera.zoom"
-            :r="7 / camera.zoom"
-            fill="#fffaf0"
-            stroke="var(--accent)"
-            :stroke-width="2 / camera.zoom"
-            class="resize-handle"
+          >
+            <circle :cx="selectedBounds.x + selectedBounds.width / 2" :cy="selectedBounds.y - 34 / camera.zoom" :r="22 / camera.zoom" fill="transparent" />
+            <circle :cx="selectedBounds.x + selectedBounds.width / 2" :cy="selectedBounds.y - 34 / camera.zoom" :r="8 / camera.zoom" fill="#fffaf0" stroke="var(--accent)" :stroke-width="2 / camera.zoom" class="pointer-events-none" />
+          </g>
+          <g
+            class="resize-handle transform-handle"
+            aria-label="Resize mark"
             @pointerdown.stop="startResize($event, selectedItem)"
-          />
+          >
+            <circle :cx="selectedBounds.x + selectedBounds.width + 5 / camera.zoom" :cy="selectedBounds.y + selectedBounds.height + 5 / camera.zoom" :r="22 / camera.zoom" fill="transparent" />
+            <circle :cx="selectedBounds.x + selectedBounds.width + 5 / camera.zoom" :cy="selectedBounds.y + selectedBounds.height + 5 / camera.zoom" :r="7 / camera.zoom" fill="#fffaf0" stroke="var(--accent)" :stroke-width="2 / camera.zoom" class="pointer-events-none" />
+          </g>
         </g>
       </svg>
 
@@ -1776,6 +1787,7 @@ onBeforeUnmount(() => {
 .resize-handle { cursor: nwse-resize; }
 .rotate-handle { cursor: grab; }
 .rotate-handle:active { cursor: grabbing; }
+.transform-handle { touch-action: none; -webkit-tap-highlight-color: transparent; }
 .doodle-inspect { cursor: pointer; pointer-events: stroke; }
 .rate-limit-warning { position: absolute; z-index: 20; right: 1rem; bottom: 1rem; left: 1rem; display: flex; max-width: 30rem; align-items: center; justify-content: space-between; gap: 0.75rem; margin-inline: auto; border: 1px solid color-mix(in oklab, var(--accent) 45%, var(--rule-strong)); border-radius: 0.85rem; padding: 0.7rem 0.75rem 0.7rem 0.9rem; color: var(--ink); background: color-mix(in oklab, var(--surface) 96%, transparent); box-shadow: var(--shadow-2); backdrop-filter: blur(16px); font-size: 0.78rem; font-weight: 650; line-height: 1.35; }
 .rate-limit-warning button { display: grid; width: 1.8rem; height: 1.8rem; flex: none; place-items: center; border-radius: 0.5rem; color: var(--ink-2); transition: color 150ms ease, background-color 150ms ease; }
