@@ -25,7 +25,7 @@ const live = useLiveStore()
 const guestbookItems = ref<PreviewItem[]>([])
 
 const pileTiles = computed(() => {
-  const photos = live.instagramImages.slice(0, 5).reverse().map((photo) => ({
+  const photos = live.instagramImages.slice(0, 6).reverse().map((photo) => ({
     key: photo.key,
     url: photo.url,
     alt: photo.caption?.slice(0, 80) ?? 'Recent photo',
@@ -37,10 +37,13 @@ const pileTiles = computed(() => {
       seenArtwork.add(track.artwork)
       return true
     })
-    .slice(0, 2)
+    .slice(0, 3)
     .map((track) => ({ key: `album:${track.id}`, url: track.artwork!, alt: `${track.album} album art` }))
-  const mixed = [photos[0], albums[0], photos[1], photos[2], albums[1], photos[3], photos[4]]
-  return Array.from({ length: 7 }, (_, index) => mixed[index])
+  const mixed = [
+    photos[0], albums[0], photos[1], photos[2], albums[1],
+    photos[3], photos[4], albums[2], photos[5],
+  ]
+  return Array.from({ length: 9 }, (_, index) => mixed[index])
 })
 
 const pileAnchors = [
@@ -51,6 +54,8 @@ const pileAnchors = [
   { left: 35, top: 1, rotation: -7 },
   { left: 64, top: 9, rotation: 5 },
   { left: 76, top: 26, rotation: -8 },
+  { left: 27, top: 27, rotation: 5 },
+  { left: 51, top: 3, rotation: -9 },
 ]
 
 const layers = pileAnchors.map((_, index) => index + 1)
