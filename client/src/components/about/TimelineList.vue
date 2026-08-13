@@ -35,34 +35,38 @@ function closesAt(event: TimelineEvent) {
  * Anything still running when a later entry began overlaps it, so its thread
  * climbs past that entry rather than stopping.
  *
- * `reach` is the highest row an entry's thread climbs to: the first row above
- * it whose entry had already begun before this one ended. Something still
- * running has not ended at all, so it climbs past every row to the head — the
- * `HEAD_ROW` sentinel — rather than closing into the trunk at whatever started
- * most recently. Two entries are concurrent when their reaches overlap, which
- * happens exactly when one entry's reach extends up to or past the other's
- * row. That makes lane assignment a plain greedy sweep, and rows map to CSS
- * grid rows, so the threads need no measurement to draw.
+ * `join` is the row where an entry's thread rejoins the trunk: the nearest row
+ * above it whose entry began at or after this one ended. The rows strictly
+ * between `join` and the entry are the starts it overlaps, so only those rows
+ * reserve lanes. Keeping those two ideas separate matters: Appalachian State,
+ * for example, overlaps Worxstr but ends before Xenial, so its branch passes
+ * Worxstr and rejoins at Xenial rather than ending at Worxstr.
+ *
+ * Something still running has not ended at all, so it climbs past every row to
+ * the head — the `HEAD_ROW` sentinel. Lane assignment is a plain greedy sweep,
+ * and rows map to CSS grid rows, so the threads need no measurement to draw.
  */
 const HEAD_ROW = -1
 
 const rows = computed(() => {
   const events = timeline
-  const ends = events.map(closesAt)
 
-  const reach = events.map((event, i) => {
+  const joins = events.map((event, i) => {
     if (event.ongoing) return HEAD_ROW
-    for (let j = 0; j < i; j++) {
-      if (events[j]!.from.getTime() <= ends[i]!) return j
+    if (!event.to) return i
+
+    const end = closesAt(event)
+    for (let j = i - 1; j >= 0; j--) {
+      if (events[j]!.from.getTime() >= end) return j
     }
-    return i
+    return HEAD_ROW
   })
 
   const lanes: number[] = []
   events.forEach((_, i) => {
-    // Conflicts are precisely the entries this thread climbs past.
+    // The join row is only an anchor; conflicts are the rows climbed past.
     const taken = new Set<number>()
-    for (let j = Math.max(reach[i]!, 0); j < i; j++) taken.add(lanes[j]!)
+    for (let j = joins[i]! + 1; j < i; j++) taken.add(lanes[j]!)
     let lane = 0
     while (taken.has(lane)) lane++
     lanes[i] = lane
@@ -84,7 +88,7 @@ const rows = computed(() => {
     return {
       event,
       row: i,
-      reach: reach[i]!,
+      join: joins[i]!,
       lane: lanes[i]!,
       live: Boolean(event.ongoing),
       year,
@@ -165,7 +169,7 @@ function connector(lane: number) {
     -->
     <span
       aria-hidden="true"
-      class="w-px justify-self-center bg-rule-strong"
+      class="timeline-rule-bg z-[5] w-px justify-self-center"
       :style="{
         gridRow: `1 / ${rows.length + 1}`,
         gridColumn: 2,
@@ -204,13 +208,13 @@ function connector(lane: number) {
           v-if="entry.lane > 0"
           aria-hidden="true"
           class="overflow-visible"
-          :class="entry.live ? 'z-[5] text-accent' : 'text-rule-strong'"
+          :class="entry.live ? 'text-accent' : 'timeline-rule-text z-[5]'"
           :viewBox="`0 0 ${connector(entry.lane).width} ${CURVE}`"
           :width="connector(entry.lane).width"
           :height="CURVE"
           fill="none"
           :style="{
-            gridRow: entry.reach + HEAD,
+            gridRow: entry.join + HEAD,
             gridColumn: `2 / ${entry.lane + 3}`,
             marginTop: 'var(--dot)',
             marginLeft: 'calc(var(--lane) / 2)',
@@ -222,9 +226,9 @@ function connector(lane: number) {
         <span
           aria-hidden="true"
           class="w-px justify-self-center"
-          :class="entry.live ? 'z-[5] bg-accent' : 'bg-rule-strong'"
+          :class="entry.live ? 'bg-accent' : 'timeline-rule-bg z-[5]'"
           :style="{
-            gridRow: `${entry.reach + HEAD} / ${entry.row + HEAD}`,
+            gridRow: `${entry.join + HEAD} / ${entry.row + HEAD}`,
             gridColumn: entry.lane + 2,
             marginTop: entry.lane > 0 ? `calc(var(--dot) + ${CURVE}px)` : 'var(--dot)',
             height:
@@ -238,7 +242,7 @@ function connector(lane: number) {
           v-if="entry.lane > 0"
           aria-hidden="true"
           class="overflow-visible"
-          :class="entry.live ? 'z-[5] text-accent' : 'text-rule-strong'"
+          :class="entry.live ? 'text-accent' : 'timeline-rule-text z-[5]'"
           :viewBox="`0 0 ${connector(entry.lane).width} ${CURVE}`"
           :width="connector(entry.lane).width"
           :height="CURVE"
@@ -323,10 +327,22 @@ function connector(lane: number) {
 ol {
   /* Four digits and the gap to the trunk. Nothing wider ever lands here. */
   --date-col: 4rem;
+  /* The shared line colour is opaque but visually matches rule-strong over
+     paper. Forks overlap the trunk while their curves are tangent to it; using
+     alpha on each stroke would compound there and create bright junctions. */
+  --timeline-rule: color-mix(in oklab, var(--ink) 30%, var(--paper));
   /* Declared together: every connector length is measured against this gap,
      and a Tailwind class setting one of them silently dropped the other. */
   --row-gap: 2.25rem;
   row-gap: var(--row-gap);
+}
+
+.timeline-rule-bg {
+  background-color: var(--timeline-rule);
+}
+
+.timeline-rule-text {
+  color: var(--timeline-rule);
 }
 
 @media (width >= 40rem) {
