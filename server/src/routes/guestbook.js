@@ -215,6 +215,28 @@ router.get('/', async (req, res) => {
   })
 })
 
+router.get('/preview', async (req, res) => {
+  await ensureGuestbookSchema()
+  const result = await database().query(
+    `SELECT id, kind, x, y, payload - 'src' AS payload
+     FROM (
+       SELECT * FROM guestbook_items ORDER BY updated_at DESC LIMIT 14
+     ) recent
+     ORDER BY updated_at ASC`,
+  )
+
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
+  res.json({
+    items: result.rows.map((row) => ({
+      id: row.id,
+      kind: row.kind,
+      x: row.x,
+      y: row.y,
+      ...row.payload,
+    })),
+  })
+})
+
 router.get('/stream', (req, res) => {
   const { send, close } = openStream(req, res)
   send('ready', { connected: true })

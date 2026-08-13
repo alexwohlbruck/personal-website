@@ -24,6 +24,7 @@ answers `503` instead of taking the process down.
 | `GET /calendar`            | Busy intervals for the next seven days.         |
 | `GET /osm/stats`           | Lifetime and recent OpenStreetMap activity.      |
 | `GET /guestbook`           | Up to 750 recent marks on the shared canvas.     |
+| `GET /guestbook/preview`   | Lightweight recent marks for the homepage.       |
 | `POST /guestbook`          | Validate and persist one new canvas mark.        |
 | `PUT /guestbook/:id`       | Edit a mark created by the current session.      |
 | `DELETE /guestbook/:id`    | Remove a mark created by the current session.    |

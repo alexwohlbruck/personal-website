@@ -11,6 +11,7 @@ import ProjectCard from '@/components/project/ProjectCard.vue'
 import ProjectMini from '@/components/project/ProjectMini.vue'
 import RotatingWord from '@/components/home/RotatingWord.vue'
 import IndexCard from '@/components/home/IndexCard.vue'
+import LivePreviews from '@/components/home/LivePreviews.vue'
 import { featuredProjects, moreProjects, projects } from '@/data/projects'
 import { site } from '@/data/site'
 import { duration, ease, inView, step } from '@/lib/motion'
@@ -85,6 +86,8 @@ function leanWash(event: PointerEvent) {
         <IndexCard />
       </Motion>
     </section>
+
+    <LivePreviews />
 
     <!-- Selected work ------------------------------------------------------->
     <section class="py-16">
