@@ -212,17 +212,17 @@ onMounted(() => {
 
 .photo-pile { min-height: 15rem; }
 .pile-photo {
-  width: min(24%, 7rem);
+  width: min(22%, 6.5rem);
   box-shadow: var(--shadow-2);
   transition: transform 500ms var(--ease-out-quint), box-shadow 300ms ease;
 }
-.pile-photo:nth-child(1) { z-index: 1; left: 2%; top: 20%; transform: rotate(-7deg); }
-.pile-photo:nth-child(2) { z-index: 5; left: 14%; top: 10%; transform: rotate(4deg); }
-.pile-photo:nth-child(3) { z-index: 2; left: 28%; top: 23%; transform: rotate(-4deg); }
-.pile-photo:nth-child(4) { z-index: 7; left: 42%; top: 12%; transform: rotate(7deg); }
-.pile-photo:nth-child(5) { z-index: 4; left: 55%; top: 21%; transform: rotate(-5deg); }
-.pile-photo:nth-child(6) { z-index: 6; left: 68%; top: 9%; transform: rotate(9deg); }
-.pile-photo:nth-child(7) { z-index: 3; left: 78%; top: 24%; transform: rotate(-6deg); }
+.pile-photo:nth-child(1) { z-index: 1; left: 9%; top: 24%; transform: rotate(-10deg); }
+.pile-photo:nth-child(2) { z-index: 5; left: 29%; top: 3%; transform: rotate(7deg); }
+.pile-photo:nth-child(3) { z-index: 3; left: 19%; top: 14%; transform: rotate(-4deg); }
+.pile-photo:nth-child(4) { z-index: 7; left: 45%; top: 22%; transform: rotate(10deg); }
+.pile-photo:nth-child(5) { z-index: 4; left: 38%; top: 1%; transform: rotate(-7deg); }
+.pile-photo:nth-child(6) { z-index: 6; left: 57%; top: 9%; transform: rotate(5deg); }
+.pile-photo:nth-child(7) { z-index: 2; left: 66%; top: 26%; transform: rotate(-8deg); }
 .pile-hint { transition: color 200ms ease; }
 
 .guestbook-card { min-height: 15rem; }
