@@ -25,7 +25,7 @@ const live = useLiveStore()
 const guestbookItems = ref<PreviewItem[]>([])
 
 const pileTiles = computed(() => {
-  const photos = live.instagramImages.slice(0, 6).reverse().map((photo) => ({
+  const photos = live.instagramImages.slice(0, 5).reverse().map((photo) => ({
     key: photo.key,
     url: photo.url,
     alt: photo.caption?.slice(0, 80) ?? 'Recent photo',
@@ -41,21 +41,20 @@ const pileTiles = computed(() => {
     .map((track) => ({ key: `album:${track.id}`, url: track.artwork!, alt: `${track.album} album art` }))
   const mixed = [
     photos[0], albums[0], photos[1], photos[2], albums[1],
-    photos[3], photos[4], albums[2], photos[5],
+    photos[3], photos[4], albums[2],
   ]
-  return Array.from({ length: 9 }, (_, index) => mixed[index])
+  return Array.from({ length: 8 }, (_, index) => mixed[index])
 })
 
 const pileAnchors = [
-  { left: 0, top: 24, rotation: -10 },
-  { left: 20, top: 3, rotation: 7 },
-  { left: 10, top: 14, rotation: -4 },
-  { left: 46, top: 22, rotation: 10 },
-  { left: 35, top: 1, rotation: -7 },
-  { left: 64, top: 9, rotation: 5 },
-  { left: 76, top: 26, rotation: -8 },
-  { left: 27, top: 27, rotation: 5 },
-  { left: 51, top: 3, rotation: -9 },
+  { left: -4, top: 29, rotation: -10 },
+  { left: 18, top: -4, rotation: 7 },
+  { left: 7, top: 10, rotation: -4 },
+  { left: 47, top: 31, rotation: 10 },
+  { left: 35, top: -3, rotation: -7 },
+  { left: 64, top: 8, rotation: 5 },
+  { left: 80, top: 28, rotation: -8 },
+  { left: 25, top: 32, rotation: 5 },
 ]
 
 const layers = pileAnchors.map((_, index) => index + 1)
@@ -69,8 +68,8 @@ for (let index = layers.length - 1; index > 0; index -= 1) {
 const pileLayout = pileAnchors.map((anchor, index) => {
   const jitter = (amount: number) => (Math.random() * 2 - 1) * amount
   return {
-    left: Math.min(78, Math.max(0, anchor.left + jitter(3.5))),
-    top: Math.min(28, Math.max(0, anchor.top + jitter(4))),
+    left: Math.min(82, Math.max(-5, anchor.left + jitter(3.5))),
+    top: Math.min(34, Math.max(-5, anchor.top + jitter(4))),
     rotation: anchor.rotation + jitter(3),
     layer: layers[index],
   }
