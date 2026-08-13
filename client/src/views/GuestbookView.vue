@@ -1224,7 +1224,8 @@ function zoomBy(factor: number) {
 
 function focusRecent() {
   const latest = items.value.findLast((item) => !item.draft)
-  camera.value = latest ? { x: latest.x, y: latest.y, zoom: 1 } : { x: 0, y: 0, zoom: 1 }
+  const [x, y] = latest ? itemCenter(latest) : [0, 0]
+  camera.value = { x, y, zoom: 1 }
 }
 
 async function loadItems(center = false) {
