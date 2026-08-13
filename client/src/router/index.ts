@@ -40,6 +40,12 @@ const router = createRouter({
       component: () => import('@/views/ContactView.vue'),
       meta: { title: 'Contact' },
     },
+    {
+      path: '/guestbook',
+      name: 'guestbook',
+      component: () => import('@/views/GuestbookView.vue'),
+      meta: { title: 'Guestbook' },
+    },
 
     // Paths the previous site published; keep them working.
     { path: '/work', redirect: { name: 'projects' } },

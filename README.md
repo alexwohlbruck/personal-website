@@ -3,7 +3,7 @@
 [alex.wohlbruck.com](https://alex.wohlbruck.com). Portfolio, projects, and a few live odds and ends.
 
 Two pieces: a Vue 3 client and a small Express server that proxies the Spotify,
-Instagram, Google Calendar and mail integrations.
+Instagram, Google Calendar and mail integrations and persists the guestbook.
 
 ## Stack
 
@@ -40,6 +40,7 @@ cd ../client && npm install
 | Name                  | Type   | Recommended value         |  Description |
 |-----------------------|--------|---------------------------|-----------------------------------------------|
 | PORT                  | number | 3000                      | Port to run the server on                     |
+| DATABASE_URL          | string | Neon pooled connection    | Postgres connection for the shared guestbook  |
 | GOOGLE_API_KEY        | string |                           | API key from Google Developers Console        |
 | GOOGLE_CALENDAR_ID    | string | Your gmail                | Your calendar ID, usually your gmail address  |
 | IG_ACCESS_TOKEN       | string |                           | Access token from Instagram Developer Console |

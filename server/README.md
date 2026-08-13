@@ -23,6 +23,11 @@ answers `503` instead of taking the process down.
 | `GET /instagram/grid`      | A page of posts, each with all its photos.      |
 | `GET /calendar`            | Busy intervals for the next seven days.         |
 | `GET /osm/stats`           | Lifetime and recent OpenStreetMap activity.      |
+| `GET /guestbook`           | Up to 750 recent marks on the shared canvas.     |
+| `POST /guestbook`          | Validate and persist one new canvas mark.        |
+| `PUT /guestbook/:id`       | Edit a mark created by the current session.      |
+| `DELETE /guestbook/:id`    | Remove a mark created by the current session.    |
+| `GET /guestbook/stream`    | SSE stream of live canvas mutations.             |
 | `POST /mailer/contact`     | Contact form. Rate limited to 5 per 10 minutes. |
 | `GET /health`              | Which integrations are configured.              |
 
@@ -61,6 +66,23 @@ to end, capped at 30 seconds so a skip shows up reasonably soon; when nothing is
 playing, once a minute; on failure, backing off from one minute to fifteen.
 
 ## Credentials
+
+### Guestbook database
+
+Set `DATABASE_URL` to a pooled Postgres connection string. On its first request,
+the guestbook creates or upgrades the `guestbook_items` table and its indexes.
+The browser creates a temporary UUID in `sessionStorage` and sends it as
+`X-Guestbook-Client`; mutation queries require the stored UUID to match, while
+the public response exposes only an `owned` boolean. This ownership lasts for
+that browser session and powers editing plus undo/redo without user accounts.
+The integration stays optional: without a database, the rest of the server
+boots as usual and only `/guestbook` responds with `503`.
+
+Guestbook writes are broadcast through the same SSE helper used by now playing,
+so every open canvas receives inserts, edits, undo/redo changes, and deletions
+without polling. New canvas items are enriched server-side with an approximate
+city and country from [Country](https://country.is/); only that estimate is
+stored, never the IP.
 
 ### Spotify
 

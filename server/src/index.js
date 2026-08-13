@@ -13,6 +13,9 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const clientDist = path.resolve(here, '../../public')
 
 app.disable('x-powered-by')
+// Production is only reachable through the single Caddy hop in deploy/vega.
+// This keeps per-address write limits per visitor instead of per reverse proxy.
+app.set('trust proxy', production ? 1 : false)
 app.use(cors({ origin: allowOrigin }))
 
 /**
@@ -30,7 +33,9 @@ function allowOrigin(origin, callback) {
   const local = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin)
   callback(null, local && process.env.NODE_ENV !== 'production')
 }
-app.use(express.json({ limit: '32kb' }))
+// Guestbook images are resized in the browser before upload and capped again
+// by its route. The parser needs enough headroom for that encoded image.
+app.use(express.json({ limit: '768kb' }))
 app.use(express.urlencoded({ extended: true, limit: '32kb' }))
 
 if (production) {
@@ -74,6 +79,7 @@ app.listen(config.port, () => {
     instagram: config.instagram.configured,
     calendar: config.calendar.configured,
     mailer: config.mail.configured,
+    database: config.database.configured,
   })
 
   for (const [name, ready] of configured) {

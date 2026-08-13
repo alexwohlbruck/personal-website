@@ -11,12 +11,16 @@
     "images": "node scripts/generate-image-manifest.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/caveat": "^5.3.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@lucide/vue": "^1.31.0",
     "@vueuse/core": "^14.4.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.21",
+    "emoji-picker-element": "^1.29.1",
+    "emoji-picker-element-data": "^1.8.0",
     "motion-v": "^2.3.0",
     "pinia": "^4.0.2",
     "reka-ui": "^2.10.3",

@@ -24,6 +24,7 @@ const nav = [
   { name: 'projects', label: 'Projects' },
   { name: 'about', label: 'About' },
   { name: 'social', label: 'Social' },
+  { name: 'guestbook', label: 'Guestbook' },
   { name: 'contact', label: 'Contact' },
 ]
 

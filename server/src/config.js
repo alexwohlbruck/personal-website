@@ -15,6 +15,13 @@ export const config = {
       .map((value) => value.trim())
       .filter(Boolean) ?? [],
 
+  database: {
+    url: env('DATABASE_URL'),
+    get configured() {
+      return has('DATABASE_URL')
+    },
+  },
+
   spotify: {
     clientId: env('SPOTIFY_CLIENT_ID'),
     clientSecret: env('SPOTIFY_CLIENT_SECRET'),
