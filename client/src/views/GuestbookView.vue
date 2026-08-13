@@ -107,6 +107,7 @@ type CanvasTooltip = {
 }
 type Interaction =
   | { mode: 'pan'; pointer: number; startX: number; startY: number; cameraX: number; cameraY: number }
+  | { mode: 'pinch'; pointers: [number, number]; startDistance: number; startZoom: number; focal: Point }
   | { mode: 'draw'; pointer: number }
   | { mode: 'erase'; pointer: number; removed: GuestbookItem[] }
   | { mode: 'move'; pointer: number; start: Point; before: GuestbookItem }
@@ -147,6 +148,7 @@ let shakeEnabled = false
 let shakePermissionRequested = false
 let lastShake = 0
 let preserveEditorBlur = false
+const touchPointers = new Map<number, Point>()
 
 const tools: { id: Tool; label: string; icon: typeof Hand }[] = [
   { id: 'pan', label: 'Drag', icon: Hand },
@@ -307,6 +309,54 @@ function capturePointer(event: PointerEvent) {
   } catch {
     // A synthetic click or interrupted mobile gesture can outlive its pointer.
     // The interaction still works; it just cannot retain capture off-canvas.
+  }
+}
+
+function clientMidpoint(first: Point, second: Point): Point {
+  return [(first[0] + second[0]) / 2, (first[1] + second[1]) / 2]
+}
+
+function clientDistance(first: Point, second: Point) {
+  return Math.hypot(second[0] - first[0], second[1] - first[1])
+}
+
+function beginPinch() {
+  const entries = [...touchPointers.entries()].slice(0, 2)
+  if (entries.length < 2 || !canvas.value) return
+
+  // A second finger turns the current gesture into navigation. Roll back a
+  // partial transform and discard an unfinished stroke so pinching never
+  // accidentally edits the canvas beneath it.
+  if (interaction?.mode === 'move' || interaction?.mode === 'resize' || interaction?.mode === 'rotate') {
+    replaceItem(interaction.before)
+  } else if (interaction?.mode === 'erase' && interaction.removed.length) {
+    void persistErasure(interaction.removed)
+  }
+  activePoints.value = []
+
+  const first = entries[0][1]
+  const second = entries[1][1]
+  const midpoint = clientMidpoint(first, second)
+  const rect = canvas.value.getBoundingClientRect()
+  interaction = {
+    mode: 'pinch',
+    pointers: [entries[0][0], entries[1][0]],
+    startDistance: Math.max(1, clientDistance(first, second)),
+    startZoom: camera.value.zoom,
+    focal: [
+      camera.value.x + (midpoint[0] - rect.left - rect.width / 2) / camera.value.zoom,
+      camera.value.y + (midpoint[1] - rect.top - rect.height / 2) / camera.value.zoom,
+    ],
+  }
+}
+
+function trackTouchPointer(event: PointerEvent) {
+  if (event.pointerType !== 'touch') return
+  touchPointers.set(event.pointerId, [event.clientX, event.clientY])
+  capturePointer(event)
+  if (touchPointers.size >= 2) {
+    beginPinch()
+    event.stopPropagation()
   }
 }
 
@@ -675,6 +725,7 @@ function keepDrawingToolNearMarks() {
 function onCanvasPointerDown(event: PointerEvent) {
   void enableShakeUndo()
   if (event.button !== 0 && event.button !== 1) return
+  if (event.pointerType === 'touch' && touchPointers.size >= 2) return
   capturePointer(event)
   if (tool.value === 'pan' || event.button === 1) {
     interaction = {
@@ -784,7 +835,29 @@ function startRotate(event: PointerEvent, item: GuestbookItem) {
 }
 
 function onPointerMove(event: PointerEvent) {
-  if (!interaction || interaction.pointer !== event.pointerId) return
+  if (event.pointerType === 'touch' && touchPointers.has(event.pointerId)) {
+    touchPointers.set(event.pointerId, [event.clientX, event.clientY])
+  }
+  if (!interaction) return
+  if (interaction.mode === 'pinch') {
+    if (!interaction.pointers.includes(event.pointerId) || !canvas.value) return
+    const first = touchPointers.get(interaction.pointers[0])
+    const second = touchPointers.get(interaction.pointers[1])
+    if (!first || !second) return
+    const midpoint = clientMidpoint(first, second)
+    const nextZoom = Math.min(4, Math.max(
+      0.25,
+      interaction.startZoom * clientDistance(first, second) / interaction.startDistance,
+    ))
+    const rect = canvas.value.getBoundingClientRect()
+    camera.value = {
+      x: interaction.focal[0] - (midpoint[0] - rect.left - rect.width / 2) / nextZoom,
+      y: interaction.focal[1] - (midpoint[1] - rect.top - rect.height / 2) / nextZoom,
+      zoom: nextZoom,
+    }
+    return
+  }
+  if (interaction.pointer !== event.pointerId) return
   if (interaction.mode === 'pan') {
     camera.value = {
       ...camera.value,
@@ -846,6 +919,23 @@ function resizeItem(current: GuestbookItem, before: GuestbookItem, dx: number, d
 }
 
 function onPointerUp(event: PointerEvent) {
+  if (event.pointerType === 'touch') touchPointers.delete(event.pointerId)
+  if (interaction?.mode === 'pinch') {
+    if (!interaction.pointers.includes(event.pointerId)) return
+    const remaining = [...touchPointers.entries()][0]
+    interaction = remaining
+      ? {
+          mode: 'pan',
+          pointer: remaining[0],
+          startX: remaining[1][0],
+          startY: remaining[1][1],
+          cameraX: camera.value.x,
+          cameraY: camera.value.y,
+        }
+      : undefined
+    activePoints.value = []
+    return
+  }
   if (!interaction || interaction.pointer !== event.pointerId) return
   const finished = interaction
   interaction = undefined
@@ -1252,6 +1342,7 @@ onBeforeUnmount(() => {
         :viewBox="viewBoxString"
         role="application"
         aria-label="Infinite guestbook. Choose a tool, then draw or place an editable object."
+        @pointerdown.capture="trackTouchPointer"
         @pointerdown="onCanvasPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
