@@ -1284,9 +1284,9 @@ async function loadItems(center = false) {
   }
 }
 
-async function registerVisit() {
+async function loadVisitorCount() {
   try {
-    const result = await api<{ count: number }>('/visit', { method: 'POST' })
+    const result = await api<{ count: number }>('/visitors')
     visitorCount.value = result.count
   } catch {
     // The canvas remains usable if the optional counter cannot be reached.
@@ -1301,11 +1301,6 @@ function connectRealtime() {
     const change = JSON.parse((event as MessageEvent<string>).data) as
       | { action: 'upsert'; item: GuestbookItem }
       | { action: 'delete'; id: string }
-      | { action: 'visitors'; count: number }
-    if (change.action === 'visitors') {
-      visitorCount.value = change.count
-      return
-    }
     if (change.action === 'delete') {
       items.value = items.value.filter((item) => item.id !== change.id)
       if (selectedId.value === change.id) selectedId.value = undefined
@@ -1419,7 +1414,7 @@ onMounted(async () => {
   picker.setAttribute('aria-label', 'Search and choose an emoji')
   styleEmojiPicker(picker)
   picker.addEventListener('emoji-click', chooseEmoji)
-  void registerVisit()
+  void loadVisitorCount()
   await loadItems(true)
   connectRealtime()
 })

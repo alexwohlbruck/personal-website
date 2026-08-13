@@ -56,11 +56,6 @@ export function ensureGuestbookSchema() {
 
       CREATE INDEX IF NOT EXISTS guestbook_items_client_id_idx
         ON guestbook_items (client_id);
-
-      CREATE TABLE IF NOT EXISTS guestbook_visitors (
-        client_id uuid PRIMARY KEY,
-        first_seen_at timestamptz NOT NULL DEFAULT now()
-      );
     `)
     .catch((error) => {
       // Let a later request retry after a transient Neon wake-up or network

@@ -78,6 +78,7 @@ app.listen(config.port, () => {
     spotify: config.spotify.configured,
     instagram: config.instagram.configured,
     calendar: config.calendar.configured,
+    analytics: config.analytics.configured,
     mailer: config.mail.configured,
     database: config.database.configured,
   })

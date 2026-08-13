@@ -54,6 +54,18 @@ export const config = {
     },
   },
 
+  analytics: {
+    // This site has one GA4 property. Keep an environment override for local
+    // experiments, but make the deployed counter work without duplicating a
+    // non-secret property id in container configuration.
+    propertyId: env('GOOGLE_ANALYTICS_PROPERTY_ID') ?? '284914213',
+    clientEmail: env('GOOGLE_CLIENT_EMAIL'),
+    privateKey: env('GOOGLE_PRIVATE_KEY')?.replace(/\\n/g, '\n'),
+    get configured() {
+      return has('GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY') && Boolean(this.propertyId)
+    },
+  },
+
   mail: {
     host: env('MAIL_HOST'),
     port: Number(env('MAIL_PORT') ?? 465),

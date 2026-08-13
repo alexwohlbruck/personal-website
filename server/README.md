@@ -28,6 +28,7 @@ answers `503` instead of taking the process down.
 | `PUT /guestbook/:id`       | Edit a mark created by the current session.      |
 | `DELETE /guestbook/:id`    | Remove a mark created by the current session.    |
 | `GET /guestbook/stream`    | SSE stream of live canvas mutations.             |
+| `GET /guestbook/visitors`  | Cached GA4 unique visitors across the site.       |
 | `POST /mailer/contact`     | Contact form. Rate limited to 5 per 10 minutes. |
 | `GET /health`              | Which integrations are configured.              |
 
@@ -242,6 +243,17 @@ Step 6 is the one that gets missed. A service account is a separate identity, so
 creating it grants nothing by itself, and an unshared calendar answers
 `notFound` rather than a permission error — which reads like a wrong calendar
 ID and sends you back to step 5. If you see `notFound`, check the sharing first.
+
+### Google Analytics
+
+The guestbook heading uses GA4's site-wide historical `totalUsers` metric. It is
+read-only and cached for ten minutes; loading the page does not write a second
+visitor record to the guestbook database.
+
+Enable **Google Analytics Data API** in the service account's Cloud project,
+add that service account as a Viewer in the GA4 property's access management,
+and set `GOOGLE_ANALYTICS_PROPERTY_ID`. The service account credentials are the
+same `GOOGLE_CLIENT_EMAIL` and `GOOGLE_PRIVATE_KEY` used by Calendar.
 
 The calendar stays private throughout. The service account can see that you're
 busy and nothing more.
