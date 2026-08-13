@@ -73,9 +73,14 @@ const pileLayout = pileAnchors.map((anchor, index) => {
     top: Math.min(28, Math.max(0, anchor.top + jitter(4))),
     rotation: anchor.rotation + jitter(3),
     layer: layers[index],
-    depth: 4 + layers[index] * 1.6,
   }
 })
+const pileShuffle = pileLayout.map(() => ({ x: 0, y: 0, rotation: 0 }))
+const pileMotion = pileLayout.map(() => ({
+  mobility: 0.78 + Math.random() * 0.44,
+  sway: (Math.random() * 2 - 1) * 0.24,
+  duration: 280 + Math.round(Math.random() * 140),
+}))
 
 function pileStyle(index: number): CSSProperties {
   const layout = pileLayout[index]
@@ -86,6 +91,8 @@ function pileStyle(index: number): CSSProperties {
     '--pile-rotation': `${layout.rotation}deg`,
     '--pile-shift-x': '0px',
     '--pile-shift-y': '0px',
+    '--pile-wobble': '0deg',
+    '--pile-duration': `${pileMotion[index].duration}ms`,
   } as CSSProperties
 }
 
@@ -93,20 +100,101 @@ function movePile(event: PointerEvent) {
   if (event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const host = event.currentTarget as HTMLElement
   const rect = host.getBoundingClientRect()
-  const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2
-  const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2
-  host.querySelectorAll<HTMLElement>('.pile-photo').forEach((tile, index) => {
-    const depth = pileLayout[index].depth
-    tile.style.setProperty('--pile-shift-x', `${x * depth}px`)
-    tile.style.setProperty('--pile-shift-y', `${y * depth * 0.65}px`)
+  if (event.clientY > rect.bottom - 44) return clearPileFocus(event)
+
+  const tiles = [...host.querySelectorAll<HTMLElement>('.pile-photo')]
+  const positions = tiles.map((tile) => {
+    const shuffle = pileShuffle[Number(tile.dataset.pileIndex)]
+    const x = rect.left + tile.offsetLeft + tile.offsetWidth / 2 + shuffle.x
+    const y = rect.top + tile.offsetTop + tile.offsetHeight / 2 + shuffle.y
+    return { x, y, dx: x - event.clientX, dy: y - event.clientY }
+  })
+  const nearest = positions.reduce(
+    (best, position, index) => {
+      const distance = Math.hypot(position.dx, position.dy)
+      return distance < best.distance ? { index, distance } : best
+    },
+    { index: 0, distance: Number.POSITIVE_INFINITY },
+  ).index
+
+  const focused = positions[nearest]
+  const previous = pileShuffle.map((item) => ({ ...item }))
+  const affected = new Set<number>([nearest])
+  tiles.forEach((tile, index) => {
+    const position = positions[index]
+    const pileIndex = Number(tile.dataset.pileIndex)
+    const shuffle = pileShuffle[pileIndex]
+    const motion = pileMotion[pileIndex]
+    if (index === nearest) {
+      const distance = Math.max(1, Math.hypot(position.dx, position.dy))
+      const follow = Math.min(2.4, distance * 0.025) * motion.mobility
+      shuffle.x -= position.dx / distance * follow
+      shuffle.y -= position.dy / distance * follow
+      tile.dataset.nearest = 'true'
+    } else {
+      const dx = position.x - focused.x
+      const dy = position.y - focused.y
+      const distance = Math.max(1, Math.hypot(dx, dy))
+      const pressure = Math.max(0, 1 - distance / 150)
+      const push = pressure * 3.2 * motion.mobility
+      if (push > 0) {
+        const radialX = dx / distance
+        const radialY = dy / distance
+        shuffle.x += (radialX - radialY * motion.sway) * push
+        shuffle.y += (radialY + radialX * motion.sway) * push
+        affected.add(pileIndex)
+      }
+      delete tile.dataset.nearest
+    }
+  })
+
+  // Balance only the local cluster that moved. Distant photos remain still,
+  // while the shuffled arrangement is free to persist after hover.
+  const localDeltaX = [...affected].reduce((sum, index) => sum + pileShuffle[index].x - previous[index].x, 0) / affected.size
+  const localDeltaY = [...affected].reduce((sum, index) => sum + pileShuffle[index].y - previous[index].y, 0) / affected.size
+  affected.forEach((index) => {
+    pileShuffle[index].x -= localDeltaX
+    pileShuffle[index].y -= localDeltaY
+  })
+
+  tiles.forEach((tile) => {
+    const pileIndex = Number(tile.dataset.pileIndex)
+    if (!affected.has(pileIndex)) return
+    const shuffle = pileShuffle[pileIndex]
+    const motion = pileMotion[pileIndex]
+
+    const photoCenterX = tile.offsetLeft + tile.offsetWidth / 2 + shuffle.x
+    const photoCenterY = tile.offsetTop + tile.offsetHeight / 2 + shuffle.y
+    const towardCenterX = rect.width / 2 - photoCenterX
+    const towardCenterY = (rect.height - 44) / 2 - photoCenterY
+    const centerDistance = Math.max(1, Math.hypot(towardCenterX, towardCenterY))
+    const centerPull = 3_200 / (centerDistance * centerDistance + 6_400)
+    shuffle.x += towardCenterX / centerDistance * centerPull
+    shuffle.y += towardCenterY / centerDistance * centerPull
+
+    const bleed = Math.min(26, tile.offsetWidth * 0.2)
+    const minX = -bleed - tile.offsetLeft
+    const maxX = rect.width + bleed - tile.offsetLeft - tile.offsetWidth
+    const minY = -bleed - tile.offsetTop
+    const maxY = rect.height + bleed - tile.offsetTop - tile.offsetHeight - 44
+    shuffle.x = Math.max(minX, Math.min(maxX, shuffle.x))
+    shuffle.y = Math.max(minY, Math.min(maxY, shuffle.y))
+    tile.style.setProperty('--pile-shift-x', `${shuffle.x}px`)
+    tile.style.setProperty('--pile-shift-y', `${shuffle.y}px`)
+    const movementX = shuffle.x - previous[pileIndex].x
+    const movementY = shuffle.y - previous[pileIndex].y
+    shuffle.rotation = Math.max(
+      -6,
+      Math.min(6, shuffle.rotation + movementX * 0.11 - movementY * 0.07 + motion.sway * 0.08),
+    )
+    tile.style.setProperty('--pile-wobble', `${shuffle.rotation}deg`)
   })
 }
 
-function resetPile(event: PointerEvent) {
+function clearPileFocus(event: PointerEvent) {
   const host = event.currentTarget as HTMLElement
   host.querySelectorAll<HTMLElement>('.pile-photo').forEach((tile) => {
-    tile.style.setProperty('--pile-shift-x', '0px')
-    tile.style.setProperty('--pile-shift-y', '0px')
+    delete tile.dataset.nearest
   })
 }
 
@@ -198,12 +286,13 @@ onMounted(() => {
         class="photo-pile group relative block"
         aria-label="See recent photos on the social page"
         @pointermove="movePile"
-        @pointerleave="resetPile"
+        @pointerleave="clearPileFocus"
       >
         <div
           v-for="(tile, index) in pileTiles"
           :key="tile?.key ?? `photo-placeholder-${index}`"
           class="pile-photo absolute aspect-square overflow-hidden rounded-lg bg-paper-sunk ring-1 ring-rule"
+          :data-pile-index="index"
           :style="pileStyle(index)"
         >
           <img
@@ -304,8 +393,9 @@ onMounted(() => {
 .pile-photo {
   width: min(26%, 7.5rem);
   box-shadow: var(--shadow-2);
-  transform: translate(var(--pile-shift-x), var(--pile-shift-y)) rotate(var(--pile-rotation));
-  transition: transform 160ms ease-out, box-shadow 300ms ease;
+  transform: translate(var(--pile-shift-x), var(--pile-shift-y)) rotate(calc(var(--pile-rotation) + var(--pile-wobble)));
+  transition: transform var(--pile-duration) cubic-bezier(0.2, 0.9, 0.25, 1.12), box-shadow 220ms ease;
+  will-change: transform;
 }
 .pile-hint { transition: color 200ms ease; }
 
@@ -326,9 +416,7 @@ onMounted(() => {
     box-shadow: var(--sheen), var(--tile-ring), var(--shadow-3);
     transform: translateY(-3px);
   }
-  .photo-pile:hover .pile-photo {
-    box-shadow: var(--shadow-3);
-  }
+  .pile-photo[data-nearest='true'] { box-shadow: var(--shadow-3); }
   .photo-pile:hover .pile-hint { color: var(--accent); }
   .preview-card:hover .guestbook-mini { transform: scale(1.025); }
   .preview-card:hover .invite-note { box-shadow: 0 18px 38px rgb(67 45 32 / 0.25); transform: rotate(0deg) translateY(-4px); }
