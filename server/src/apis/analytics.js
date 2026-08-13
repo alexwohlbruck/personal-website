@@ -24,9 +24,9 @@ export function parseVisitorCount(report) {
   return Number.isSafeInteger(value) && value >= 0 ? value : 0
 }
 
-/** Historical unique visitors across the site. */
+/** Historical sessions across the site. */
 export async function getGuestbookVisitorCount() {
-  return cached(`analytics:guestbook-visitors:${config.analytics.propertyId}`, TTL, async () => {
+  return cached(`analytics:guestbook-sessions:${config.analytics.propertyId}`, TTL, async () => {
     const { token } = await auth().getAccessToken()
     const report = await fetchJson(
       `${DATA_API}/properties/${config.analytics.propertyId}:runReport`,
@@ -38,7 +38,7 @@ export async function getGuestbookVisitorCount() {
         },
         body: JSON.stringify({
           dateRanges: [{ startDate: '2020-01-01', endDate: 'today' }],
-          metrics: [{ name: 'totalUsers' }],
+          metrics: [{ name: 'sessions' }],
         }),
       },
     )

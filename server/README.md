@@ -29,7 +29,7 @@ answers `503` instead of taking the process down.
 | `PUT /guestbook/:id`       | Edit a mark created by the current session.      |
 | `DELETE /guestbook/:id`    | Remove a mark created by the current session.    |
 | `GET /guestbook/stream`    | SSE stream of live canvas mutations.             |
-| `GET /guestbook/visitors`  | Cached GA4 unique visitors across the site.       |
+| `GET /guestbook/visitors`  | Cached GA4 sessions across the site.              |
 | `POST /mailer/contact`     | Contact form. Rate limited to 5 per 10 minutes. |
 | `GET /health`              | Which integrations are configured.              |
 
@@ -247,7 +247,7 @@ ID and sends you back to step 5. If you see `notFound`, check the sharing first.
 
 ### Google Analytics
 
-The guestbook heading uses GA4's site-wide historical `totalUsers` metric. It is
+The guestbook heading uses GA4's site-wide historical `sessions` metric. It is
 read-only and cached for ten minutes; loading the page does not write a second
 visitor record to the guestbook database.
 
