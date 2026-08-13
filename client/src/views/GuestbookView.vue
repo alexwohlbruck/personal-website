@@ -398,27 +398,49 @@ function drawingCenter(item: DrawingItem): Point {
   return [bounds.x + bounds.width / 2, bounds.y + bounds.height / 2]
 }
 
-function constrainDrawing(points: Point[]) {
-  const drawings = items.value.filter((item): item is DrawingItem => item.kind === 'drawing')
-  if (!drawings.length) return points
+function contentBounds() {
+  const persisted = items.value.filter((item) => !item.draft)
+  if (!persisted.length) return undefined
+  const bounds = persisted.map(itemBounds)
+  const left = Math.min(...bounds.map((item) => item.x))
+  const top = Math.min(...bounds.map((item) => item.y))
+  const right = Math.max(...bounds.map((item) => item.x + item.width))
+  const bottom = Math.max(...bounds.map((item) => item.y + item.height))
+  return { x: left, y: top, width: right - left, height: bottom - top }
+}
 
-  const xs = points.map((point) => point[0])
-  const ys = points.map((point) => point[1])
-  const center: Point = [
-    (Math.min(...xs) + Math.max(...xs)) / 2,
-    (Math.min(...ys) + Math.max(...ys)) / 2,
-  ]
-  const closest = drawings
-    .map((drawing) => drawingCenter(drawing))
-    .sort((a, b) => Math.hypot(a[0] - center[0], a[1] - center[1]) - Math.hypot(b[0] - center[0], b[1] - center[1]))[0]
-  const maxX = viewport.value.width * 0.75
-  const maxY = viewport.value.height * 0.75
-  const allowed: Point = [
-    closest[0] + Math.max(-maxX, Math.min(maxX, center[0] - closest[0])),
-    closest[1] + Math.max(-maxY, Math.min(maxY, center[1] - closest[1])),
-  ]
-  const offset: Point = [allowed[0] - center[0], allowed[1] - center[1]]
-  return points.map(([x, y]): Point => [x + offset[0], y + offset[1]])
+function canvasRange() {
+  const bounds = contentBounds()
+  if (!bounds) return undefined
+  const marginX = viewport.value.width * 0.75
+  const marginY = viewport.value.height * 0.75
+  return {
+    left: bounds.x - marginX,
+    right: bounds.x + bounds.width + marginX,
+    top: bounds.y - marginY,
+    bottom: bounds.y + bounds.height + marginY,
+  }
+}
+
+function constrainCamera(next: { x: number; y: number; zoom: number }) {
+  const range = canvasRange()
+  if (!range) return next
+  const halfWidth = viewport.value.width / next.zoom / 2
+  const halfHeight = viewport.value.height / next.zoom / 2
+  const minX = range.left + halfWidth
+  const maxX = range.right - halfWidth
+  const minY = range.top + halfHeight
+  const maxY = range.bottom - halfHeight
+  return {
+    ...next,
+    x: minX <= maxX ? Math.max(minX, Math.min(maxX, next.x)) : (range.left + range.right) / 2,
+    y: minY <= maxY ? Math.max(minY, Math.min(maxY, next.y)) : (range.top + range.bottom) / 2,
+  }
+}
+
+function pointWithinCanvasRange([x, y]: Point) {
+  const range = canvasRange()
+  return !range || (x >= range.left && x <= range.right && y >= range.top && y <= range.bottom)
 }
 
 function distanceToSegment(point: Point, start: Point, end: Point) {
@@ -805,6 +827,7 @@ function onCanvasPointerDown(event: PointerEvent) {
 
   const [x, y] = worldPoint(event)
   if (tool.value === 'pen') {
+    if (!pointWithinCanvasRange([x, y])) return
     activePoints.value = [[x, y]]
     interaction = { mode: 'draw', pointer: event.pointerId }
     return
@@ -902,24 +925,25 @@ function onPointerMove(event: PointerEvent) {
       interaction.startZoom * clientDistance(first, second) / interaction.startDistance,
     ))
     const rect = canvas.value.getBoundingClientRect()
-    camera.value = {
+    camera.value = constrainCamera({
       x: interaction.focal[0] - (midpoint[0] - rect.left - rect.width / 2) / nextZoom,
       y: interaction.focal[1] - (midpoint[1] - rect.top - rect.height / 2) / nextZoom,
       zoom: nextZoom,
-    }
+    })
     return
   }
   if (interaction.pointer !== event.pointerId) return
   if (interaction.mode === 'pan') {
-    camera.value = {
+    camera.value = constrainCamera({
       ...camera.value,
       x: interaction.cameraX - (event.clientX - interaction.startX) / camera.value.zoom,
       y: interaction.cameraY - (event.clientY - interaction.startY) / camera.value.zoom,
-    }
+    })
     return
   }
   if (interaction.mode === 'draw') {
     const point = worldPoint(event)
+    if (!pointWithinCanvasRange(point)) return
     const previous = activePoints.value[activePoints.value.length - 1]
     if (Math.hypot(point[0] - previous[0], point[1] - previous[1]) >= 1.5 / camera.value.zoom) {
       activePoints.value.push(point)
@@ -992,7 +1016,7 @@ function onPointerUp(event: PointerEvent) {
   const finished = interaction
   interaction = undefined
   if (finished.mode === 'draw' && activePoints.value.length > 1) {
-    const points = constrainDrawing(activePoints.value.slice(0, 1200))
+    const points = activePoints.value.slice(0, 1200)
     const item: DrawingItem = {
       id: crypto.randomUUID(), kind: 'drawing', x: points[0][0], y: points[0][1], rotation: 0,
       points, color: penColor.value, width: penWidth.value, owned: true,
@@ -1215,11 +1239,18 @@ function onWheel(event: WheelEvent) {
   const rect = canvas.value!.getBoundingClientRect()
   const offsetX = event.clientX - rect.left - rect.width / 2
   const offsetY = event.clientY - rect.top - rect.height / 2
-  camera.value = { x: before[0] - offsetX / nextZoom, y: before[1] - offsetY / nextZoom, zoom: nextZoom }
+  camera.value = constrainCamera({
+    x: before[0] - offsetX / nextZoom,
+    y: before[1] - offsetY / nextZoom,
+    zoom: nextZoom,
+  })
 }
 
 function zoomBy(factor: number) {
-  camera.value.zoom = Math.min(4, Math.max(0.25, camera.value.zoom * factor))
+  camera.value = constrainCamera({
+    ...camera.value,
+    zoom: Math.min(4, Math.max(0.25, camera.value.zoom * factor)),
+  })
 }
 
 function focusRecent() {
@@ -1361,6 +1392,7 @@ onMounted(async () => {
   }
   resizeObserver = new ResizeObserver(([entry]) => {
     viewport.value = { width: entry.contentRect.width, height: entry.contentRect.height }
+    camera.value = constrainCamera(camera.value)
   })
   if (shell.value) resizeObserver.observe(shell.value)
   picker = new Picker({ dataSource: emojiDataUrl })
