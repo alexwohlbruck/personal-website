@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { site } from '@/data/site'
 import { findProject } from '@/data/projects'
+import { trackPageView } from '@/lib/analytics'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +72,10 @@ router.afterEach((to) => {
   const title = project?.title ?? (to.meta.title as string | undefined)
   document.title =
     to.name === 'home' || !title ? `${site.name} · ${site.role}` : `${title} · ${site.name}`
+
+  // Fires on the initial navigation too, which is why gtag's own page view is
+  // switched off in initAnalytics.
+  trackPageView(document.title)
 })
 
 export default router

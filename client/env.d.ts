@@ -2,6 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_BACKEND_URL?: string
+  readonly VITE_JUKEBOX_URL?: string
+  readonly VITE_GA_MEASUREMENT_ID?: string
 }
 
 interface ImportMeta {

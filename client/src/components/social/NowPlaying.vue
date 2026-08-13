@@ -53,9 +53,6 @@ async function toggleAudio() {
 <template>
   <div>
     <div class="flex items-center justify-between gap-4">
-      <span class="text-sm text-ink-3" :class="playing && '!text-accent'">
-        {{ compact ? status : 'On repeat' }}
-      </span>
       <a
         v-if="!compact"
         :href="links.spotify"
