@@ -24,8 +24,24 @@ type PreviewItem = {
 const live = useLiveStore()
 const guestbookItems = ref<PreviewItem[]>([])
 
-const photos = computed(() => live.instagramImages.slice(0, 7).reverse())
-const pileTiles = computed(() => Array.from({ length: 7 }, (_, index) => photos.value[index]))
+const pileTiles = computed(() => {
+  const photos = live.instagramImages.slice(0, 5).reverse().map((photo) => ({
+    key: photo.key,
+    url: photo.url,
+    alt: photo.caption?.slice(0, 80) ?? 'Recent photo',
+  }))
+  const seenArtwork = new Set<string>()
+  const albums = (live.listening?.liked ?? [])
+    .filter((track) => {
+      if (!track.artwork || seenArtwork.has(track.artwork)) return false
+      seenArtwork.add(track.artwork)
+      return true
+    })
+    .slice(0, 2)
+    .map((track) => ({ key: `album:${track.id}`, url: track.artwork!, alt: `${track.album} album art` }))
+  const mixed = [photos[0], albums[0], photos[1], photos[2], albums[1], photos[3], photos[4]]
+  return Array.from({ length: 7 }, (_, index) => mixed[index])
+})
 
 const pileAnchors = [
   { left: 0, top: 24, rotation: -10 },
@@ -144,6 +160,7 @@ async function loadGuestbookPreview() {
 
 onMounted(() => {
   if (!live.instagramImages.length) void live.fetchInstagram()
+  if (!live.listening) void live.fetchListening()
   void loadGuestbookPreview()
 })
 </script>
@@ -157,15 +174,15 @@ onMounted(() => {
         aria-label="See recent photos on the social page"
       >
         <div
-          v-for="(photo, index) in pileTiles"
-          :key="photo?.key ?? `photo-placeholder-${index}`"
+          v-for="(tile, index) in pileTiles"
+          :key="tile?.key ?? `photo-placeholder-${index}`"
           class="pile-photo absolute aspect-square overflow-hidden rounded-lg bg-paper-sunk ring-1 ring-rule"
           :style="pileStyle(index)"
         >
           <img
-            v-if="photo"
-            :src="photo.url"
-            :alt="photo.caption?.slice(0, 80) ?? 'Recent Instagram photo'"
+            v-if="tile"
+            :src="tile.url"
+            :alt="tile.alt"
             loading="lazy"
             decoding="async"
             class="size-full object-cover transition-transform duration-500 ease-out-quint group-hover:scale-105"
