@@ -44,6 +44,19 @@ export const config = {
     },
   },
 
+  github: {
+    login: env('GITHUB_LOGIN') ?? 'alexwohlbruck',
+    // Optional. Everything the panel shows is public, and without a token the
+    // server reads it from public endpoints instead. A token buys the
+    // contribution calendar from the GraphQL API in one request rather than
+    // parsing the fragment the profile page renders, and lifts the anonymous
+    // rate limit from 60 requests an hour to 5,000.
+    token: env('GITHUB_TOKEN'),
+    get configured() {
+      return has('GITHUB_TOKEN')
+    },
+  },
+
   calendar: {
     calendarId: env('GOOGLE_CALENDAR_ID'),
     clientEmail: env('GOOGLE_CLIENT_EMAIL'),

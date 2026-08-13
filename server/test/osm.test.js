@@ -65,6 +65,30 @@ describe('OpenStreetMap stats', () => {
     })
   })
 
+  it('counts the trailing year of changesets into a calendar', () => {
+    const result = shapeStats(
+      { account_created: '2020-12-22T02:11:44Z', changesets: { count: 4034 } },
+      [
+        changeset({ id: 1, created_at: '2026-08-13T09:00:00Z' }),
+        changeset({ id: 2, created_at: '2026-08-13T17:00:00Z' }),
+        changeset({ id: 3, created_at: '2026-08-11T12:00:00Z' }),
+        // Older than the window the graph covers.
+        changeset({ id: 4, created_at: '2021-03-02T12:00:00Z' }),
+      ],
+      [],
+      new Date('2026-08-13T20:00:00Z'),
+    )
+
+    assert.equal(result.calendar.total, 3)
+    assert.equal(result.calendar.to, '2026-08-13')
+    assert.equal(result.calendar.activeDays, 2)
+    assert.equal(result.calendar.busiestDay.count, 2)
+    assert.equal(result.calendar.weeks.length, 53)
+    // A lifetime archive still only draws a year, and the totals above it are
+    // the lifetime ones.
+    assert.equal(result.changesets, 4034)
+  })
+
   it('overlays live changesets on the lifetime archive without duplicates', () => {
     const archived = [
       changeset({ id: 1, created_at: '2026-08-10T12:00:00Z' }),

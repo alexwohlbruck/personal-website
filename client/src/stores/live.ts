@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { BACKEND_URL, JUKEBOX_URL } from '@/data/site'
 import type {
   CalendarEvent,
+  GitHubStats,
   InstagramImage,
   InstagramPost,
   OpenStreetMapStats,
@@ -63,6 +64,9 @@ export const useLiveStore = defineStore('live', () => {
 
   const osm = ref<OpenStreetMapStats | null>(null)
   const osmStatus = ref<Status>('idle')
+
+  const github = ref<GitHubStats | null>(null)
+  const githubStatus = ref<Status>('idle')
 
   const calendar = ref<CalendarEvent[]>([])
   const calendarStatus = ref<Status>('idle')
@@ -478,6 +482,17 @@ export const useLiveStore = defineStore('live', () => {
     }
   }
 
+  async function fetchGithub() {
+    if (github.value || githubStatus.value === 'loading') return
+    githubStatus.value = 'loading'
+    try {
+      github.value = await api<GitHubStats>('github/stats')
+      githubStatus.value = 'ready'
+    } catch {
+      githubStatus.value = 'error'
+    }
+  }
+
   async function fetchCalendar() {
     if (calendar.value.length) return
     calendarStatus.value = 'loading'
@@ -522,6 +537,9 @@ export const useLiveStore = defineStore('live', () => {
     osm,
     osmStatus,
     fetchOsm,
+    github,
+    githubStatus,
+    fetchGithub,
     calendar,
     calendarStatus,
     fetchCalendar,

@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { ArrowUpRight, MapPin } from '@lucide/vue'
 import SectionHeading from '@/components/ui/SectionHeading.vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
+import ContributionCard from '@/components/social/ContributionCard.vue'
 import { useLiveStore } from '@/stores/live'
 import { links } from '@/data/site'
 import { relativeTime } from '@/lib/format'
@@ -28,16 +29,29 @@ const memberYear = computed(() =>
       note="Where I've spent time filling in the details."
     />
 
-    <div v-if="loading" class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-      <div class="card h-80 animate-pulse bg-paper-sunk" />
-      <div class="card h-80 animate-pulse bg-paper-sunk" />
+    <div v-if="loading" class="space-y-6">
+      <div class="card h-72 animate-pulse bg-paper-sunk" />
+      <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <div class="card h-80 animate-pulse bg-paper-sunk" />
+        <div class="card h-80 animate-pulse bg-paper-sunk" />
+      </div>
     </div>
 
-    <div v-else-if="stats" class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-      <div class="card relative overflow-hidden p-6 sm:p-7">
-        <div class="topo-close pointer-events-none absolute inset-0 opacity-45" aria-hidden="true" />
+    <div v-else-if="stats" class="space-y-6">
+      <!-- Marine rather than the rust next door: this is the map colour, and
+           the squares are a year of the map being drawn. -->
+      <ContributionCard
+        :calendar="stats.calendar"
+        label="Editing calendar"
+        :note="`Mapping since ${memberYear}`"
+        unit="changesets in the last year"
+        noun="changeset"
+        tint="marine"
+        pattern="topo"
+      />
 
-        <div class="relative">
+      <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <div class="card p-6 sm:p-7">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="label text-ink-3">OpenStreetMap history</p>
@@ -93,64 +107,64 @@ const memberYear = computed(() =>
             </ol>
           </div>
         </div>
-      </div>
 
-      <div class="card flex flex-col p-6 sm:p-7">
-        <div>
-          <p class="label text-ink-3">Themes</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <span v-for="theme in stats.themes" :key="theme.name" class="chip">
-              {{ theme.name }}
-              <span class="tabular text-ink-3">{{ number.format(theme.count) }}</span>
-            </span>
-          </div>
-        </div>
-
-        <div class="mt-7">
-          <div class="mb-2 flex items-baseline justify-between gap-4">
-            <p class="label text-ink-3">Recent changesets</p>
-            <a
-              :href="links.osm"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-accent"
-            >
-              Full history
-              <ArrowUpRight class="size-3.5" aria-hidden="true" />
-            </a>
+        <div class="card flex flex-col p-6 sm:p-7">
+          <div>
+            <p class="label text-ink-3">Themes</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span v-for="theme in stats.themes" :key="theme.name" class="chip">
+                {{ theme.name }}
+                <span class="tabular text-ink-3">{{ number.format(theme.count) }}</span>
+              </span>
+            </div>
           </div>
 
-          <ul>
-            <li v-for="edit in stats.recent" :key="edit.id" class="border-b border-rule last:border-0">
+          <div class="mt-7">
+            <div class="mb-2 flex items-baseline justify-between gap-4">
+              <p class="label text-ink-3">Recent changesets</p>
               <a
-                :href="edit.url"
+                :href="links.osm"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="group grid grid-cols-[1fr_auto] gap-4 py-3"
+                class="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-accent"
               >
-                <span class="min-w-0">
-                  <span class="block truncate text-sm font-medium transition-colors group-hover:text-accent">
-                    {{ edit.comment }}
-                  </span>
-                  <span class="mt-1 block text-xs text-ink-3">{{ relativeTime(edit.createdAt) }}</span>
-                </span>
-                <span class="tabular self-center text-xs text-ink-3">
-                  {{ number.format(edit.changes) }} change{{ edit.changes === 1 ? '' : 's' }}
-                </span>
+                Full history
+                <ArrowUpRight class="size-3.5" aria-hidden="true" />
               </a>
-            </li>
-          </ul>
-        </div>
+            </div>
 
-        <p class="mt-auto pt-5 text-xs text-ink-3">
-          Map data and place names ©
-          <a
-            href="https://www.openstreetmap.org/copyright"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="link"
-          >OpenStreetMap contributors</a>.
-        </p>
+            <ul>
+              <li v-for="edit in stats.recent" :key="edit.id" class="border-b border-rule last:border-0">
+                <a
+                  :href="edit.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group grid grid-cols-[1fr_auto] gap-4 py-3"
+                >
+                  <span class="min-w-0">
+                    <span class="block truncate text-sm font-medium transition-colors group-hover:text-accent">
+                      {{ edit.comment }}
+                    </span>
+                    <span class="mt-1 block text-xs text-ink-3">{{ relativeTime(edit.createdAt) }}</span>
+                  </span>
+                  <span class="tabular self-center text-xs text-ink-3">
+                    {{ number.format(edit.changes) }} change{{ edit.changes === 1 ? '' : 's' }}
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <p class="mt-auto pt-5 text-xs text-ink-3">
+            Map data and place names ©
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link"
+            >OpenStreetMap contributors</a>.
+          </p>
+        </div>
       </div>
     </div>
 

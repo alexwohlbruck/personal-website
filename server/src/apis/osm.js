@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { cached } from '../lib/cache.js'
+import { shapeCalendar, tallyDays } from '../lib/calendar.js'
 import { ApiError, fetchJson } from '../util.js'
 
 const API = 'https://api.openstreetmap.org/api/0.6'
@@ -134,9 +135,18 @@ async function nameCluster(cluster, index) {
   }
 }
 
-export function shapeStats(profile, changesets, places = []) {
+export function shapeStats(profile, changesets, places = [], today = new Date()) {
   const totalChangesets = profile.changesets?.count ?? changesets.length
   return {
+    // Changesets rather than objects changed: a single import can touch tens of
+    // thousands of nodes, and a square that dark says nothing about the year
+    // around it. One changeset is one sitting down to edit the map.
+    calendar: shapeCalendar(
+      tallyDays(
+        changesets.map((changeset) => changeset.created_at),
+        today,
+      ),
+    ),
     profile: PROFILE,
     changesets: totalChangesets,
     memberSince: profile.account_created,

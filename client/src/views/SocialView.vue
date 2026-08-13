@@ -4,6 +4,7 @@ import SocialList from '@/components/social/SocialList.vue'
 import ListeningPanel from '@/components/social/ListeningPanel.vue'
 import InstagramGrid from '@/components/social/InstagramGrid.vue'
 import OpenStreetMapPanel from '@/components/social/OpenStreetMapPanel.vue'
+import GithubPanel from '@/components/social/GithubPanel.vue'
 </script>
 
 <template>
@@ -16,6 +17,8 @@ import OpenStreetMapPanel from '@/components/social/OpenStreetMapPanel.vue'
     <ListeningPanel />
 
     <OpenStreetMapPanel />
+
+    <GithubPanel />
 
     <section class="py-10">
       <SectionHeading

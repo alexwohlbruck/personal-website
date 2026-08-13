@@ -177,6 +177,8 @@ export interface OpenStreetMapStats {
   /** Whether the archive count matches the current profile count. */
   isLifetime: boolean
   lastEdit: string | null
+  /** The trailing year of editing, one changeset per count. */
+  calendar: ContributionCalendar
   places: OpenStreetMapPlace[]
   /** Broad topics inferred from changeset comments. */
   themes: { name: string; count: number }[]
@@ -186,6 +188,58 @@ export interface OpenStreetMapStats {
     changes: number
     createdAt: string
     url: string
+  }[]
+}
+
+export interface CalendarDay {
+  /** `YYYY-MM-DD`, in UTC. A square belongs to a date, not to a moment. */
+  date: string
+  count: number
+  /** 0–4 intensity. GitHub's own buckets; quartiles for everything else. */
+  level: number
+}
+
+/**
+ * A year of squares. Shared by every panel that draws one, so the graph itself
+ * never has to know whether it is counting commits or changesets.
+ */
+export interface ContributionCalendar {
+  total: number
+  /** First and last day of the window, `YYYY-MM-DD`. */
+  from: string | null
+  to: string | null
+  /** Days with at least one of whatever is being counted. */
+  activeDays: number
+  /**
+   * Columns, oldest first. Each holds seven slots, Sunday first, with `null`
+   * where the window starts or ends mid-week.
+   */
+  weeks: (CalendarDay | null)[][]
+  currentStreak: number
+  longestStreak: number
+  busiestDay: CalendarDay | null
+}
+
+export interface GitHubStats {
+  profile: string
+  login: string
+  memberSince: string | null
+  followers: number
+  /** Public, non-forked repositories. */
+  repos: number
+  stars: number
+  calendar: ContributionCalendar
+  /** Most-used languages, counted in repositories. */
+  languages: { name: string; count: number }[]
+  recent: {
+    id: string
+    /** Repository name without its owner. */
+    repo: string
+    url: string
+    message: string
+    /** Only set when GitHub said how many commits the push carried. */
+    commits: number | null
+    createdAt: string
   }[]
 }
 

@@ -22,7 +22,8 @@ answers `503` instead of taking the process down.
 | `GET /spotify/listening`   | Liked songs, top artists and genres.            |
 | `GET /instagram/grid`      | A page of posts, each with all its photos.      |
 | `GET /calendar`            | Busy intervals for the next seven days.         |
-| `GET /osm/stats`           | Lifetime and recent OpenStreetMap activity.      |
+| `GET /osm/stats`           | Lifetime, recent and last-year OpenStreetMap activity. |
+| `GET /github/stats`        | A year of contributions, languages, and pushes.  |
 | `GET /guestbook`           | Up to 750 recent marks on the shared canvas.     |
 | `GET /guestbook/preview`   | Lightweight recent marks for the homepage.       |
 | `POST /guestbook`          | Validate and persist one new canvas mark.        |
@@ -51,6 +52,39 @@ npm run stats:osm
 The generator follows the same incremental approach. A missing archive is
 rebuilt sequentially, and every run verifies its total against the profile
 before writing only the fields used by the site.
+
+Having every changeset in memory is also what makes the editing calendar free:
+`src/lib/calendar.js` counts the trailing year of `created_at` timestamps into a
+square a day, with no further requests. The same module shapes the GitHub
+calendar, so both graphs agree on what a week, a streak and an intensity are.
+The one thing it decides for itself is intensity, which is bucketed by quartile
+rather than as a fraction of the maximum — a single 300-changeset import day
+would otherwise wash a year of ordinary editing out to the palest shade.
+
+## GitHub contributions without a token
+
+The contribution calendar is the one number GitHub does not publish through its
+REST API, and the GraphQL field that has it (`contributionsCollection`) rejects
+anonymous callers. So this reads it two ways:
+
+- **With `GITHUB_TOKEN`**, one GraphQL request returns the calendar, the profile
+  and up to a hundred repositories together.
+- **Without one**, it parses `github.com/users/<login>/contributions` — the same
+  fragment the profile page itself fetches — alongside two public REST calls for
+  the profile and repositories. Each square carries its date and quartile as
+  attributes; the exact count comes from the tooltip that points at it.
+
+Both paths produce the same payload, so the site does not know or care which ran.
+The fallback exists because the panel should not go blank on a deployment that
+was never given a token, and because none of what it shows is private.
+
+Recent pushes come from the public events feed in both cases. That feed is
+thinner for anonymous callers than the documentation describes — no `commits`
+array and no `size`, only a head SHA — so the subject line is fetched per push
+and the commit count is only shown when GitHub actually stated one.
+
+Everything is cached for an hour. Cold, that is at most nine requests against an
+anonymous limit of sixty an hour.
 
 ## How now playing works
 
