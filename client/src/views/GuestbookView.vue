@@ -1439,7 +1439,7 @@ onBeforeUnmount(() => {
   <div class="pt-24 pb-8">
     <header class="mb-7 max-w-3xl">
       <p class="eyebrow mb-3" aria-live="polite">{{ visitorLabel }}</p>
-      <h1 class="display">Leave your mark.</h1>
+      <h1 class="title text-5xl md:text-7xl">Leave your mark.</h1>
       <p class="mt-5 max-w-2xl text-base leading-relaxed text-ink-2 md:text-lg">
         Draw, type, paste a note, or add a tiny piece of yourself. This page belongs to everyone,
         so be kind to the people who arrive after you.
