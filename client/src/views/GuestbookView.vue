@@ -642,12 +642,23 @@ async function persistErasure(removed: GuestbookItem[]) {
 async function undo() {
   if (saving.value || !history.value.length) return
   const command = history.value[history.value.length - 1]
+  const previousSelection = selectedId.value
   saving.value = true
+
+  if (command.type === 'create') {
+    items.value = items.value.filter((item) => item.id !== command.item.id)
+    if (selectedId.value === command.item.id) selectedId.value = undefined
+  } else if (command.type === 'delete') {
+    replaceItem(command.item)
+  } else {
+    replaceItem(command.before)
+  }
+  history.value.pop()
+  future.value.push(command)
+
   try {
     if (command.type === 'create') {
       await api(`/${command.item.id}`, { method: 'DELETE' })
-      items.value = items.value.filter((item) => item.id !== command.item.id)
-      if (selectedId.value === command.item.id) selectedId.value = undefined
     } else if (command.type === 'delete') {
       const restored = await api<GuestbookItem>('', {
         method: 'POST',
@@ -663,9 +674,18 @@ async function undo() {
       restored.owned = true
       replaceItem(restored)
     }
-    history.value.pop()
-    future.value.push(command)
   } catch (error) {
+    future.value.pop()
+    history.value.push(command)
+    if (command.type === 'create') {
+      replaceItem(command.item)
+      selectedId.value = previousSelection
+    } else if (command.type === 'delete') {
+      items.value = items.value.filter((item) => item.id !== command.item.id)
+      if (selectedId.value === command.item.id) selectedId.value = undefined
+    } else {
+      replaceItem(command.after)
+    }
     showError(error)
   } finally {
     saving.value = false
@@ -675,7 +695,20 @@ async function undo() {
 async function redo() {
   if (saving.value || !future.value.length) return
   const command = future.value[future.value.length - 1]
+  const previousSelection = selectedId.value
   saving.value = true
+
+  if (command.type === 'create') {
+    replaceItem(command.item)
+  } else if (command.type === 'delete') {
+    items.value = items.value.filter((item) => item.id !== command.item.id)
+    if (selectedId.value === command.item.id) selectedId.value = undefined
+  } else {
+    replaceItem(command.after)
+  }
+  future.value.pop()
+  history.value.push(command)
+
   try {
     if (command.type === 'create') {
       const restored = await api<GuestbookItem>('', {
@@ -686,8 +719,6 @@ async function redo() {
       replaceItem(restored)
     } else if (command.type === 'delete') {
       await api(`/${command.item.id}`, { method: 'DELETE' })
-      items.value = items.value.filter((item) => item.id !== command.item.id)
-      if (selectedId.value === command.item.id) selectedId.value = undefined
     } else {
       const applied = await api<GuestbookItem>(`/${command.after.id}`, {
         method: 'PUT',
@@ -696,9 +727,18 @@ async function redo() {
       applied.owned = true
       replaceItem(applied)
     }
-    future.value.pop()
-    history.value.push(command)
   } catch (error) {
+    history.value.pop()
+    future.value.push(command)
+    if (command.type === 'create') {
+      items.value = items.value.filter((item) => item.id !== command.item.id)
+      if (selectedId.value === command.item.id) selectedId.value = undefined
+    } else if (command.type === 'delete') {
+      replaceItem(command.item)
+      selectedId.value = previousSelection
+    } else {
+      replaceItem(command.before)
+    }
     showError(error)
   } finally {
     saving.value = false
