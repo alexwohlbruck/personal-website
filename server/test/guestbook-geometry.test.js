@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { guestbookItemBounds } from '../src/lib/guestbook-geometry.js'
-import { readRegion } from '../src/routes/guestbook.js'
+import { fitInResponse, readRegion } from '../src/routes/guestbook.js'
 
 describe('guestbook item bounds', () => {
   it('measures a note from its corner', () => {
@@ -85,5 +85,32 @@ describe('region parsing', () => {
         `accepted ${JSON.stringify(bad)}`,
       )
     }
+  })
+})
+
+describe('response budget', () => {
+  const heavy = (kb) => ({
+    id: 'x', kind: 'image', x: 0, y: 0,
+    payload: { src: 'd'.repeat(kb * 1024), width: 100, height: 100 },
+  })
+  const light = { id: 'y', kind: 'text', x: 0, y: 0, payload: { text: 'hi' } }
+
+  it('passes an ordinary window through untouched', () => {
+    const page = fitInResponse([light, light, light])
+    assert.equal(page.items.length, 3)
+    assert.equal(page.truncated, false)
+  })
+
+  it('stops before a window of photographs blows up the response', () => {
+    const page = fitInResponse(Array.from({ length: 600 }, () => heavy(500)))
+    assert.ok(page.truncated)
+    assert.ok(page.items.length < 600, `kept ${page.items.length}`)
+    const bytes = page.items.reduce((n, item) => n + item.src.length, 0)
+    assert.ok(bytes < 5_000_000, `sent ${bytes} bytes`)
+  })
+
+  it('always returns at least one mark, however big it is', () => {
+    const page = fitInResponse([heavy(690)])
+    assert.equal(page.items.length, 1)
   })
 })

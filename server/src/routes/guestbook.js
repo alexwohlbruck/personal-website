@@ -24,6 +24,11 @@ const THUMB_LIMIT = 24_000
 // How many marks one window may return. A dense corner of the board gives up
 // its most recent marks first rather than everything it holds.
 const REGION_LIMIT = 600
+// Roughly three megabytes of marks, and a rough allowance for the JSON around
+// each one. Both are ceilings, not targets: an ordinary window is a few dozen
+// kilobytes.
+const RESPONSE_BUDGET = 3_000_000
+const ROW_OVERHEAD = 512
 
 // Enough for a real drawing session, low enough that a single address cannot
 // fill the board with a tight request loop. Deploy restarts naturally clear it.
@@ -245,6 +250,29 @@ const shape = (row) => ({
 })
 
 /**
+ * As many marks as will fit in a sane response.
+ *
+ * A row limit alone does not bound anything, because an image carries its
+ * pixels inline: six hundred notes is a hundred kilobytes and six hundred
+ * photographs is a hundred megabytes. Anyone could ask for the widest possible
+ * window and pull that repeatedly. Counting bytes as they go in keeps a
+ * request expensive for the server only in proportion to what it returns,
+ * and keeps a dense corner from timing out an ordinary visitor.
+ */
+export function fitInResponse(rows) {
+  const items = []
+  let budget = RESPONSE_BUDGET
+
+  for (const row of rows) {
+    const item = shape(row)
+    budget -= (item.src?.length ?? 0) + (item.thumb?.length ?? 0) + ROW_OVERHEAD
+    if (budget < 0 && items.length) return { items, truncated: true }
+    items.push(item)
+  }
+  return { items, truncated: false }
+}
+
+/**
  * The marks in one part of the board.
  *
  * Without a region this answers with the most recent marks, which is what a
@@ -282,12 +310,13 @@ router.get('/', async (req, res) => {
         [clientId, limit],
       )
 
+  const page = fitInResponse(result.rows)
   res.set('Cache-Control', 'no-store')
   res.json({
-    items: result.rows.map(shape),
+    items: page.items,
     // The region held more than one response can carry, so the client knows
     // it is looking at the most recent slice rather than all of it.
-    truncated: result.rowCount >= limit,
+    truncated: page.truncated || result.rowCount >= limit,
   })
 })
 
