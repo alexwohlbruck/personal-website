@@ -28,6 +28,10 @@ const REGION_LIMIT = 600
 // each one. Both are ceilings, not targets: an ordinary window is a few dozen
 // kilobytes.
 const RESPONSE_BUDGET = 3_000_000
+// The card draws the whole board, so this is a ceiling rather than a choice.
+// Thumbnails instead of uploads are what make sending all of it affordable;
+// past this many marks the card shows the most recent of them and says so.
+const PREVIEW_LIMIT = 400
 const ROW_OVERHEAD = 512
 
 // Enough for a real drawing session, low enough that a single address cannot
@@ -368,18 +372,38 @@ async function readOverview() {
   }
 }
 
+/**
+ * The whole board, for the card on the home page.
+ *
+ * Everything, not the most recent handful: the card is a small view of the
+ * board and should look like the board. What recency decides is where the
+ * camera points, not what exists, so the centre of the latest activity comes
+ * along with it and the client frames on that.
+ *
+ * Uploads are dropped on the way out; the thumbnail goes instead, which is
+ * what keeps sending everything affordable.
+ */
 router.get('/preview', async (req, res) => {
-  await ensureGuestbookSchema()
+  const preview = await cached('guestbook:preview', 60_000, readPreview)
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
+  res.json(preview)
+})
+
+async function readPreview() {
+  const { center } = await readOverview()
   const result = await database().query(
     `SELECT id, kind, x, y, payload - 'src' AS payload
-     FROM (
-       SELECT * FROM guestbook_items ORDER BY updated_at DESC LIMIT 14
-     ) recent
-     ORDER BY updated_at ASC`,
+       FROM (
+         SELECT * FROM guestbook_items ORDER BY updated_at DESC LIMIT $1
+       ) board
+      ORDER BY updated_at ASC`,
+    [PREVIEW_LIMIT],
   )
 
-  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
-  res.json({
+  return {
+    center,
+    // Oldest first, so the tail of this list is the recent work the card
+    // points its camera at.
     items: result.rows.map((row) => ({
       id: row.id,
       kind: row.kind,
@@ -387,8 +411,9 @@ router.get('/preview', async (req, res) => {
       y: row.y,
       ...row.payload,
     })),
-  })
-})
+    truncated: result.rowCount >= PREVIEW_LIMIT,
+  }
+}
 
 router.get('/stream', (req, res) => {
   const { send, sendRaw, close } = openStream(req, res)

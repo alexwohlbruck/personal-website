@@ -14,14 +14,22 @@ type Frame = { x: number; y: number; width: number; height: number }
 
 /** What the card shows before it knows where anything is. */
 const RESTING_FRAME: Frame = { x: -360, y: -220, width: 720, height: 440 }
-/** As many marks as the preview endpoint sends, so the two agree. */
-const PREVIEW_LIMIT = 14
+/** A ceiling matching the endpoint's, so a long-lived tab cannot outgrow it. */
+const PREVIEW_LIMIT = 400
+/** How many of the most recent marks the camera settles over. */
+const FOCUS_ON = 12
+/** How much board the card shows, in world units, whatever is on it. */
+const WINDOW = 1900
 
 const live = useLiveStore()
 const guestbookItems = ref<GuestbookItem[]>([])
 const guestbookCanvas = ref<SVGSVGElement>()
+/** The card's own proportions, so the framing matches what it will show. */
+const cardRatio = ref(2.1)
+let cardResize: ResizeObserver | undefined
 let guestbookStream: EventSource | undefined
 let onScreen: IntersectionObserver | undefined
+let refillTimer: number | undefined
 
 /**
  * A handful of distinct picks, weighted toward the front of the list.
@@ -223,20 +231,28 @@ function clearPileFocus(event: PointerEvent) {
 
 const focus = computed(() => {
   if (!guestbookItems.value.length) return RESTING_FRAME
-  const boxes = guestbookItems.value.map(itemBounds)
-  const left = Math.min(...boxes.map((box) => box.x))
-  const right = Math.max(...boxes.map((box) => box.x + box.width))
-  const top = Math.min(...boxes.map((box) => box.y))
-  const bottom = Math.max(...boxes.map((box) => box.y + box.height))
-  const centerX = (left + right) / 2
-  const centerY = (top + bottom) / 2
-  let width = Math.max(620, right - left + 120)
-  let height = Math.max(380, bottom - top + 120)
-  const ratio = 1.55
-  if (width / height > ratio) height = width / ratio
-  else width = height * ratio
-  // The invitation occupies the left side of the card, so place the marks in
-  // the visual center of the uncovered paper rather than underneath it.
+
+  // The card draws the whole board and points its camera at the newest corner
+  // of it. The list arrives oldest first, so the tail is the recent work.
+  //
+  // Their average, not their bounding box. Recent marks are often scattered —
+  // one person drawing across the board leaves a dozen of them three thousand
+  // units apart — and framing to hold all of them zooms out until the card is
+  // specks on paper. Focusing is a camera move, so the scale stays put and
+  // only the position follows.
+  const recent = guestbookItems.value.slice(-FOCUS_ON).map(itemBounds)
+  const centerX = recent.reduce((sum, box) => sum + box.x + box.width / 2, 0) / recent.length
+  const centerY = recent.reduce((sum, box) => sum + box.y + box.height / 2, 0) / recent.length
+
+  // Shaped like the card, because it crops with preserveAspectRatio="slice"
+  // and would otherwise lose whatever does not fit. Measured rather than
+  // assumed: it was taken to be 1.55 and is nearer 2.1, which quietly cut a
+  // quarter of the height off every framing.
+  const width = WINDOW
+  const height = WINDOW / cardRatio.value
+
+  // The invitation covers the left of the card, so put the marks in the middle
+  // of the paper that is actually showing.
   return { x: centerX - width * 0.72, y: centerY - height / 2, width, height }
 })
 
@@ -325,6 +341,10 @@ function applyGuestbookChange(event: Event) {
 
   if (change.action === 'delete') {
     guestbookItems.value = guestbookItems.value.filter((item) => item.id !== change.id)
+    // The card holds a patch of the board, so a removal leaves a hole rather
+    // than revealing what was behind it. Ask again for what is there now.
+    window.clearTimeout(refillTimer)
+    refillTimer = window.setTimeout(() => void loadGuestbookPreview(true), 1_500)
     return
   }
 
@@ -361,6 +381,14 @@ onMounted(() => {
   if (!live.listening) void live.fetchListening()
   void loadGuestbookPreview()
 
+  if (guestbookCanvas.value) {
+    cardResize = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      if (width > 0 && height > 0) cardRatio.value = width / height
+    })
+    cardResize.observe(guestbookCanvas.value)
+  }
+
   onScreen = new IntersectionObserver(
     ([entry]) => (entry.isIntersecting ? watchGuestbook() : stopWatchingGuestbook()),
     { rootMargin: '200px' },
@@ -369,6 +397,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  window.clearTimeout(refillTimer)
+  cardResize?.disconnect()
   onScreen?.disconnect()
   stopWatchingGuestbook()
   if (cameraMove) cancelAnimationFrame(cameraMove)
