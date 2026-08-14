@@ -1585,7 +1585,10 @@ function connectRealtime() {
 
 function onKeydown(event: KeyboardEvent) {
   // Single letters are tools now, so anything aimed at a field is off limits.
-  const target = event.target as HTMLElement | null
+  // composedPath, not target: the emoji picker's search box lives in a shadow
+  // root, and a window listener sees a keydown from inside one retargeted to
+  // the shadow host, not the input actually being typed into.
+  const target = event.composedPath()[0] as HTMLElement | null
   if (target?.matches?.('input, textarea, select, [contenteditable="true"]')) return
   const key = event.key.toLowerCase()
   if (event.metaKey || event.ctrlKey) {
