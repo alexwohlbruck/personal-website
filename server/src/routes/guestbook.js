@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { getGuestbookVisitorCount } from '../apis/analytics.js'
 import { readAdminSession } from '../lib/admin-auth.js'
 import { database, ensureGuestbookSchema } from '../lib/database.js'
+import { guestbookItemBounds } from '../lib/guestbook-geometry.js'
 import { publishGuestbook, subscribeToGuestbook } from '../lib/guestbook-live.js'
 import { resolveIpLocation } from '../lib/ip-location.js'
 import { openStream } from '../lib/sse.js'
@@ -16,6 +17,12 @@ const FONTS = new Set([
 ])
 const STICKY_COLORS = new Set(['yellow', 'pink', 'blue', 'green', 'orange', 'lavender'])
 const CLIENT_HEADER = 'X-Guestbook-Client'
+// Roughly a 96px webp. Big enough to recognise, small enough that fourteen of
+// them together are still a fraction of one full sized upload.
+const THUMB_LIMIT = 24_000
+// How many marks one window may return. A dense corner of the board gives up
+// its most recent marks first rather than everything it holds.
+const REGION_LIMIT = 600
 
 // Enough for a real drawing session, low enough that a single address cannot
 // fill the board with a tight request loop. Deploy restarts naturally clear it.
@@ -183,40 +190,143 @@ export function sanitizeGuestbookItem(input) {
   if (!numberBetween(input.width, 40, 640) || !numberBetween(input.height, 40, 640)) {
     reject('Invalid image size.')
   }
-  return {
+  const image = {
     ...base,
     src: input.src,
     width: input.width,
     height: input.height,
     alt: String(input.alt ?? '').trim().slice(0, 120),
   }
+
+  // A postage stamp of the same picture, for the home page card and anywhere
+  // else that wants to show the board without carrying a megabyte of base64.
+  // Optional, because marks made before this existed do not have one.
+  if (input.thumb !== undefined && input.thumb !== null) {
+    if (!IMAGE.test(input.thumb) || input.thumb.length > THUMB_LIMIT) reject('Invalid image preview.')
+    image.thumb = input.thumb
+  }
+  return image
 }
 
+const CORNERS = ['left', 'top', 'right', 'bottom']
+
+/** The window being asked for, or null for "whatever is most recent". */
+export function readRegion(query) {
+  const given = CORNERS.filter((name) => query[name] !== undefined)
+  if (!given.length) return null
+  if (given.length !== CORNERS.length) reject('A region needs left, top, right and bottom.')
+
+  const values = CORNERS.map((name) => Number(query[name]))
+  if (!values.every((value) => Number.isFinite(value) && Math.abs(value) <= 1e9)) {
+    reject('A region needs four finite numbers.')
+  }
+
+  // Accept the corners in either order rather than returning nothing for a
+  // window that was described from the bottom right.
+  const [left, top, right, bottom] = values
+  return {
+    left: Math.min(left, right),
+    top: Math.min(top, bottom),
+    right: Math.max(left, right),
+    bottom: Math.max(top, bottom),
+  }
+}
+
+const shape = (row) => ({
+  id: row.id,
+  kind: row.kind,
+  x: row.x,
+  y: row.y,
+  ...row.payload,
+  createdAt: row.createdAt,
+  updatedAt: row.updatedAt,
+  owned: row.owned,
+})
+
+/**
+ * The marks in one part of the board.
+ *
+ * Without a region this answers with the most recent marks, which is what a
+ * client that has not been told about regions expects. With one it reads
+ * through the spatial index, so a board with a hundred thousand marks costs
+ * the same to open as a board with a hundred.
+ */
 router.get('/', async (req, res) => {
   const clientId = guestbookClientId(req, false)
+  const region = readRegion(req.query)
+  const limit = Math.min(1_000, Math.max(1, Number(req.query.limit) || REGION_LIMIT))
   await ensureGuestbookSchema()
-  const result = await database().query(
-    `SELECT id, kind, x, y, payload, created_at AS "createdAt", updated_at AS "updatedAt",
-            client_id = $1::uuid AS owned
-     FROM (
-       SELECT * FROM guestbook_items ORDER BY updated_at DESC LIMIT 750
-     ) recent
-     ORDER BY updated_at ASC`,
-    [clientId],
-  )
+
+  const result = region
+    ? await database().query(
+        `SELECT id, kind, x, y, payload, created_at AS "createdAt", updated_at AS "updatedAt",
+                client_id = $1::uuid AS owned
+           FROM (
+             SELECT * FROM guestbook_items
+              WHERE box(point(min_x, min_y), point(max_x, max_y))
+                 && box(point($2, $3), point($4, $5))
+              ORDER BY updated_at DESC
+              LIMIT $6
+           ) window_
+          ORDER BY updated_at ASC`,
+        [clientId, region.left, region.top, region.right, region.bottom, limit],
+      )
+    : await database().query(
+        `SELECT id, kind, x, y, payload, created_at AS "createdAt", updated_at AS "updatedAt",
+                client_id = $1::uuid AS owned
+           FROM (
+             SELECT * FROM guestbook_items ORDER BY updated_at DESC LIMIT $2
+           ) recent
+          ORDER BY updated_at ASC`,
+        [clientId, limit],
+      )
 
   res.set('Cache-Control', 'no-store')
   res.json({
-    items: result.rows.map((row) => ({
-      id: row.id,
-      kind: row.kind,
-      x: row.x,
-      y: row.y,
-      ...row.payload,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      owned: row.owned,
-    })),
+    items: result.rows.map(shape),
+    // The region held more than one response can carry, so the client knows
+    // it is looking at the most recent slice rather than all of it.
+    truncated: result.rowCount >= limit,
+  })
+})
+
+/**
+ * Where the board is and where to open it.
+ *
+ * The canvas is unbounded, so a first time visitor has to be put somewhere
+ * that has something on it. The middle of the twenty most recent marks lands
+ * wherever people have been drawing lately, which beats both the origin and
+ * the single newest mark: one is usually empty, the other is wherever one
+ * person happened to wander off to.
+ */
+router.get('/overview', async (req, res) => {
+  await ensureGuestbookSchema()
+  const result = await database().query(
+    `WITH recent AS (
+       SELECT min_x, min_y, max_x, max_y
+         FROM guestbook_items
+        WHERE min_x IS NOT NULL
+        ORDER BY updated_at DESC
+        LIMIT 20
+     )
+     SELECT
+       (SELECT count(*) FROM guestbook_items) AS count,
+       (SELECT avg((min_x + max_x) / 2) FROM recent) AS "centerX",
+       (SELECT avg((min_y + max_y) / 2) FROM recent) AS "centerY",
+       min(min_x) AS left, min(min_y) AS top,
+       max(max_x) AS right, max(max_y) AS bottom
+     FROM guestbook_items`,
+  )
+
+  const row = result.rows[0] ?? {}
+  const bounded = row.left !== null && row.left !== undefined
+  res.set('Cache-Control', 'no-store')
+  res.json({
+    count: Number(row.count ?? 0),
+    center: { x: Number(row.centerX ?? 0), y: Number(row.centerY ?? 0) },
+    bounds: bounded
+      ? { left: Number(row.left), top: Number(row.top), right: Number(row.right), bottom: Number(row.bottom) }
+      : null,
   })
 })
 
@@ -259,13 +369,14 @@ router.post('/', writeLimiter.guard, async (req, res) => {
   const item = sanitizeGuestbookItem(req.body)
   item.location = await resolveIpLocation(req.ip)
   const { id, kind, x, y, ...payload } = item
+  const box = guestbookItemBounds(item)
   await ensureGuestbookSchema()
   const result = await database().query(
-    `INSERT INTO guestbook_items (id, kind, x, y, payload, client_id)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO guestbook_items (id, kind, x, y, payload, client_id, min_x, min_y, max_x, max_y)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      ON CONFLICT (id) DO NOTHING
      RETURNING created_at AS "createdAt", updated_at AS "updatedAt"`,
-    [id, kind, x, y, payload, clientId],
+    [id, kind, x, y, payload, clientId, box.minX, box.minY, box.maxX, box.maxY],
   )
   if (!result.rowCount) return res.status(409).json({ message: 'That mark is already on the board.' })
   const saved = { ...item, ...result.rows[0] }
@@ -279,6 +390,7 @@ router.put('/:id', async (req, res) => {
   const item = sanitizeGuestbookItem(req.body)
   if (item.id !== req.params.id) reject('The item id cannot be changed.')
   const { id, kind, x, y, ...payload } = item
+  const box = guestbookItemBounds(item)
   await ensureGuestbookSchema()
   const result = await database().query(
     `UPDATE guestbook_items
@@ -289,11 +401,12 @@ router.put('/:id', async (req, res) => {
               WHEN payload ? 'location' THEN jsonb_build_object('location', payload->'location')
               ELSE '{}'::jsonb
             END,
+            min_x = $7, min_y = $8, max_x = $9, max_y = $10,
             updated_at = now()
       WHERE id = $1 AND ($6::uuid IS NULL OR client_id = $6)
       RETURNING payload, client_id AS "clientId", created_at AS "createdAt", updated_at AS "updatedAt"`,
     // A null here means "any owner", which only an admin session can ask for.
-    [id, kind, x, y, payload, admin ? null : clientId],
+    [id, kind, x, y, payload, admin ? null : clientId, box.minX, box.minY, box.maxX, box.maxY],
   )
   if (!result.rowCount) return res.status(404).json({ message: 'That mark cannot be edited from this session.' })
   const { payload: stored, clientId: owner, ...timestamps } = result.rows[0]

@@ -81,6 +81,8 @@ interface EmojiItem extends BaseItem {
 interface ImageItem extends BaseItem {
   kind: 'image'
   src: string
+  /** A postage stamp of the same picture, for previews that cannot carry src. */
+  thumb?: string
   width: number
   height: number
   alt: string
@@ -104,6 +106,11 @@ type Command =
   | { type: 'delete'; items: GuestbookItem[] }
 
 type Bounds = { x: number; y: number; width: number; height: number }
+type Overview = {
+  count: number
+  center: { x: number; y: number }
+  bounds: { left: number; top: number; right: number; bottom: number } | null
+}
 type CanvasTooltip = {
   x: number
   y: number
@@ -129,6 +136,14 @@ type Interaction =
   | { mode: 'rotate'; pointer: number; startAngle: number; before: GuestbookItem }
 
 const endpoint = `${BACKEND_URL}/guestbook`
+/**
+ * The board is loaded a window at a time rather than all at once, so that it
+ * costs the same to open whether it holds a hundred marks or a hundred
+ * thousand. The world is divided into squares this wide purely to remember
+ * where the client has already been.
+ */
+const TILE = 1024
+const OPENING_ZOOM = 0.55
 /**
  * Signed in as the site owner, every mark on the board is editable, not just
  * the ones this browser session made. The server enforces the same rule; this
@@ -156,7 +171,13 @@ const selectedIds = ref<string[]>([])
 const marquee = ref<Bounds>()
 const emojiPickerOpen = ref(false)
 const selectedEmoji = ref('👋')
-const camera = ref({ x: 0, y: 0, zoom: 1 })
+const camera = ref({ x: 0, y: 0, zoom: OPENING_ZOOM })
+const overview = ref<Overview>()
+/** Squares whose marks are already in hand, so panning back is free. */
+const loadedTiles = new Set<string>()
+/** One window held more marks than a response carries. */
+const truncatedRegion = ref(false)
+let regionTimer: number | undefined
 const viewport = ref({ width: 1000, height: 650 })
 const activePoints = ref<Point[]>([])
 const penColor = ref('#8f3525')
@@ -478,19 +499,32 @@ function drawingCenter(item: DrawingItem): Point {
   return [bounds.x + bounds.width / 2, bounds.y + bounds.height / 2]
 }
 
-function contentBounds() {
+/**
+ * How far the board extends, counting the parts not loaded yet.
+ *
+ * Measuring only what is on screen would shrink the world to whatever you had
+ * already seen and quietly fence you in, so the server's answer for the whole
+ * board is the starting point and locally made marks widen it straight away
+ * rather than after a round trip.
+ *
+ * A computed, not a function: panning asks for this on every frame, and for a
+ * board of strokes the answer costs a walk of every point.
+ */
+const contentBounds = computed(() => {
   const persisted = items.value.filter((item) => !item.draft)
-  if (!persisted.length) return undefined
-  const bounds = persisted.map(itemBounds)
-  const left = Math.min(...bounds.map((item) => item.x))
-  const top = Math.min(...bounds.map((item) => item.y))
-  const right = Math.max(...bounds.map((item) => item.x + item.width))
-  const bottom = Math.max(...bounds.map((item) => item.y + item.height))
-  return { x: left, y: top, width: right - left, height: bottom - top }
-}
+  const known = overview.value?.bounds
+  if (!persisted.length && !known) return undefined
 
-function canvasRange() {
-  const bounds = contentBounds()
+  const boxes = persisted.map(itemBounds)
+  const left = Math.min(...boxes.map((box) => box.x), known?.left ?? Infinity)
+  const top = Math.min(...boxes.map((box) => box.y), known?.top ?? Infinity)
+  const right = Math.max(...boxes.map((box) => box.x + box.width), known?.right ?? -Infinity)
+  const bottom = Math.max(...boxes.map((box) => box.y + box.height), known?.bottom ?? -Infinity)
+  return { x: left, y: top, width: right - left, height: bottom - top }
+})
+
+const canvasRange = computed(() => {
+  const bounds = contentBounds.value
   if (!bounds) return undefined
   const marginX = viewport.value.width * 0.75
   const marginY = viewport.value.height * 0.75
@@ -500,10 +534,10 @@ function canvasRange() {
     top: bounds.y - marginY,
     bottom: bounds.y + bounds.height + marginY,
   }
-}
+})
 
 function constrainCamera(next: { x: number; y: number; zoom: number }) {
-  const range = canvasRange()
+  const range = canvasRange.value
   if (!range) return next
   const halfWidth = viewport.value.width / next.zoom / 2
   const halfHeight = viewport.value.height / next.zoom / 2
@@ -519,7 +553,7 @@ function constrainCamera(next: { x: number; y: number; zoom: number }) {
 }
 
 function pointWithinCanvasRange([x, y]: Point) {
-  const range = canvasRange()
+  const range = canvasRange.value
   return !range || (x >= range.left && x <= range.right && y >= range.top && y <= range.bottom)
 }
 
@@ -1424,13 +1458,11 @@ async function prepareImage(event: Event) {
     const scale = Math.min(1, 480 / Math.max(image.naturalWidth, image.naturalHeight))
     const width = Math.max(40, Math.round(image.naturalWidth * scale))
     const height = Math.max(40, Math.round(image.naturalHeight * scale))
-    const bitmap = document.createElement('canvas')
-    bitmap.width = width
-    bitmap.height = height
-    bitmap.getContext('2d')!.drawImage(image, 0, 0, width, height)
     const item: ImageItem = {
       id: crypto.randomUUID(), kind: 'image', x: camera.value.x - width / 2, y: camera.value.y - height / 2, rotation: 0,
-      src: bitmap.toDataURL('image/webp', 0.8), width, height,
+      src: redraw(image, width, height).toDataURL('image/webp', 0.8),
+      thumb: redraw(image, ...fitWithin(width, height, 96)).toDataURL('image/webp', 0.5),
+      width, height,
       alt: file.name.replace(/\.[^.]+$/, '').slice(0, 120), owned: true,
     }
     items.value.push(item)
@@ -1441,6 +1473,20 @@ async function prepareImage(event: Event) {
     tool.value = 'select'
     showMessage('That image could not be read.')
   }
+}
+
+function redraw(image: HTMLImageElement, width: number, height: number) {
+  const bitmap = document.createElement('canvas')
+  bitmap.width = width
+  bitmap.height = height
+  bitmap.getContext('2d')!.drawImage(image, 0, 0, width, height)
+  return bitmap
+}
+
+/** The same shape, scaled so its longest side is at most `longest`. */
+function fitWithin(width: number, height: number, longest: number): [number, number] {
+  const scale = Math.min(1, longest / Math.max(width, height))
+  return [Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale))]
 }
 
 function readFile(file: File) {
@@ -1482,29 +1528,90 @@ function zoomBy(factor: number) {
   })
 }
 
-function focusRecent() {
-  const latest = items.value.findLast((item) => !item.draft)
-  const [x, y] = latest ? itemCenter(latest) : [0, 0]
-  camera.value = { x, y, zoom: 1 }
+/**
+ * Where to open the board, and how much of it to show.
+ *
+ * The middle of the twenty most recent marks, which is wherever people have
+ * been drawing lately. Further out than feels natural for one mark, because
+ * arriving on an empty patch of paper reads as a broken page.
+ */
+async function loadOverview() {
+  try {
+    overview.value = await api<Overview>('/overview')
+    if (overview.value.count) {
+      camera.value = { x: overview.value.center.x, y: overview.value.center.y, zoom: OPENING_ZOOM }
+    }
+  } catch {
+    // Opening at the origin is a worse guess, not a broken canvas.
+  }
 }
 
-async function loadItems(center = false) {
+/** The window to ask the server for: what you can see, plus half a screen. */
+function loadingWindow() {
+  const view = viewBox.value
+  const padX = view.width * 0.5
+  const padY = view.height * 0.5
+  return {
+    left: view.x - padX,
+    top: view.y - padY,
+    right: view.x + view.width + padX,
+    bottom: view.y + view.height + padY,
+  }
+}
+
+/**
+ * Which squares of the world a window touches.
+ *
+ * Bookkeeping only: it is one request either way. Remembering the squares is
+ * what stops a small nudge of the camera refetching the same marks, and what
+ * makes "have I already been here" a set lookup rather than a guess.
+ */
+function tilesWithin(box: { left: number; top: number; right: number; bottom: number }) {
+  const keys: string[] = []
+  for (let col = Math.floor(box.left / TILE); col <= Math.floor(box.right / TILE); col += 1) {
+    for (let row = Math.floor(box.top / TILE); row <= Math.floor(box.bottom / TILE); row += 1) {
+      keys.push(`${col}:${row}`)
+    }
+  }
+  return keys
+}
+
+async function loadRegion(force = false) {
   if (interaction) return
+  const box = loadingWindow()
+  const keys = tilesWithin(box)
+  if (!force && keys.every((key) => loadedTiles.has(key))) return
+
   try {
-    const result = await api<{ items: GuestbookItem[] }>()
-    const drafts = items.value.filter((item) => item.draft)
-    const selected = selectedItem.value
-    items.value = result.items.map((remote) => {
-      if (selected?.id === remote.id && editable(selected)) return selected
-      return normalizeItem(remote)
-    })
-    for (const draft of drafts) if (!items.value.some((item) => item.id === draft.id)) items.value.push(draft)
-    if (center) focusRecent()
+    const query = `?left=${box.left}&top=${box.top}&right=${box.right}&bottom=${box.bottom}`
+    const result = await api<{ items: GuestbookItem[]; truncated: boolean }>(query)
+    absorb(result.items)
+    // A truncated answer is only part of what is out there, so do not mark
+    // these squares as seen: zooming in should ask again.
+    if (!result.truncated) for (const key of keys) loadedTiles.add(key)
+    else if (!truncatedRegion.value) truncatedRegion.value = true
   } catch (error) {
     showError(error)
   } finally {
     loading.value = false
   }
+}
+
+/** Take in marks from the server without disturbing local work in progress. */
+function absorb(remote: GuestbookItem[]) {
+  const selected = selectedItem.value
+  for (const item of remote) {
+    if (selected?.id === item.id && editable(selected)) continue
+    if (items.value.some((candidate) => candidate.id === item.id && candidate.draft)) continue
+    replaceItem(item)
+  }
+}
+
+function scheduleRegionLoad() {
+  window.clearTimeout(regionTimer)
+  // Long enough that a pan across the board is one request at the end of it
+  // rather than one per frame along the way.
+  regionTimer = window.setTimeout(() => void loadRegion(), 200)
 }
 
 async function loadVisitorCount() {
@@ -1519,7 +1626,7 @@ async function loadVisitorCount() {
 function connectRealtime() {
   liveStream?.close()
   liveStream = new EventSource(`${endpoint}/stream`)
-  liveStream.addEventListener('ready', () => void loadItems())
+  liveStream.addEventListener('ready', () => void loadRegion(true))
   liveStream.addEventListener('guestbook', (event) => {
     const change = JSON.parse((event as MessageEvent<string>).data) as
       | { action: 'upsert'; item: GuestbookItem }
@@ -1648,6 +1755,11 @@ function showMessage(text: string) {
   }, 3400)
 }
 
+// Panning and zooming reveal parts of the board that were never fetched. Set
+// up here rather than after the awaits in onMounted, where it would no longer
+// belong to this component and would outlive it.
+watch(camera, scheduleRegionLoad)
+
 watch([emojiPickerOpen, emojiPickerHost], ([open, host]) => {
   if (open && host && picker) host.append(picker)
 }, { flush: 'post' })
@@ -1666,6 +1778,8 @@ onMounted(async () => {
   resizeObserver = new ResizeObserver(([entry]) => {
     viewport.value = { width: entry.contentRect.width, height: entry.contentRect.height }
     camera.value = constrainCamera(camera.value)
+    // A wider window shows more board than was asked for.
+    scheduleRegionLoad()
   })
   if (shell.value) resizeObserver.observe(shell.value)
   picker = new Picker({ dataSource: emojiDataUrl })
@@ -1673,11 +1787,13 @@ onMounted(async () => {
   styleEmojiPicker(picker)
   picker.addEventListener('emoji-click', chooseEmoji)
   void loadVisitorCount()
-  await loadItems(true)
+  await loadOverview()
+  await loadRegion(true)
   connectRealtime()
 })
 
 onBeforeUnmount(() => {
+  window.clearTimeout(regionTimer)
   flushPendingDraft()
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('pagehide', flushPendingDraft)
@@ -2033,7 +2149,11 @@ onBeforeUnmount(() => {
     </section>
 
     <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-      <p class="text-xs leading-relaxed text-ink-3">shake to undo</p>
+      <p class="text-xs leading-relaxed text-ink-3">
+        shake to undo
+        <!-- Better to say so than to quietly show a subset of a busy corner. -->
+        <span v-if="truncatedRegion" class="text-ink-3"> · busy here, showing the most recent marks</span>
+      </p>
       <AdminSignIn />
     </div>
   </div>

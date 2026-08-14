@@ -69,6 +69,20 @@ Leave `VITE_BACKEND_URL` unset and the live sections (now playing, photos,
 availability, contact form) fall back to a quiet offline state instead of
 erroring. The rest of the site is fully static.
 
+### How the guestbook loads
+
+The canvas is unbounded, so it is read a window at a time rather than all at
+once. Every mark stores its bounding box, indexed with a GiST index over core
+Postgres geometry (no PostGIS), and `GET /guestbook?left&top&right&bottom`
+returns only what that window touches. The client remembers which squares of
+the world it has already fetched, so panning back over old ground costs
+nothing. `GET /guestbook/overview` says how big the board is and where to open
+it: the middle of the twenty most recent marks.
+
+Marks written before the bounding box existed are measured once, on the first
+request after deploying. Older images get their preview thumbnail from
+`npm run thumbs:guestbook`, which borrows sharp from the client.
+
 ### Moderating the guestbook
 
 Anyone can draw on `/guestbook`, and by default a visitor can only touch what

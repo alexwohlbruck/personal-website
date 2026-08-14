@@ -21,6 +21,8 @@ type PreviewItem = {
   size?: number
   text?: string
   emoji?: string
+  /** Images arrive as a postage stamp; the full upload is far too heavy here. */
+  thumb?: string
 }
 
 const live = useLiveStore()
@@ -370,7 +372,17 @@ onMounted(() => {
             >{{ item.emoji }}</text>
             <g v-else-if="item.kind === 'image'">
               <rect :x="item.x - 6" :y="item.y - 6" :width="(item.width ?? 140) + 12" :height="(item.height ?? 120) + 12" rx="6" fill="#fffdf7" stroke="#d8ccbb" />
-              <rect :x="item.x" :y="item.y" :width="item.width ?? 140" :height="item.height ?? 120" rx="3" fill="#e8ded0" />
+              <image
+                v-if="item.thumb"
+                :href="item.thumb"
+                :x="item.x"
+                :y="item.y"
+                :width="item.width ?? 140"
+                :height="item.height ?? 120"
+                preserveAspectRatio="xMidYMid meet"
+              />
+              <!-- Uploaded before thumbnails existed: keep the empty frame. -->
+              <rect v-else :x="item.x" :y="item.y" :width="item.width ?? 140" :height="item.height ?? 120" rx="3" fill="#e8ded0" />
             </g>
           </g>
         </svg>
