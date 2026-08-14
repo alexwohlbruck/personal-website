@@ -38,13 +38,27 @@ const guestbookCanvas = ref<SVGSVGElement>()
 let guestbookStream: EventSource | undefined
 let onScreen: IntersectionObserver | undefined
 
-/** A handful of distinct picks, not a ranking, so the pile need not sort what it draws from. */
-function sample<T>(items: T[], count: number): T[] {
-  const pool = [...items]
+/**
+ * A handful of distinct picks, weighted toward the front of the list.
+ *
+ * `live.instagramImages` is shared store state: once something has paged
+ * through the social gallery it holds every photo fetched so far, not just
+ * the first page, so a plain random pick draws evenly from the whole
+ * archive. The decay keeps the odds concentrated on the newest posts while
+ * still leaving a long tail reachable.
+ */
+function sample<T>(items: T[], count: number, decay = 0.85): T[] {
+  const pool = items.map((item, index) => ({ item, weight: decay ** index }))
   const picked: T[] = []
   while (picked.length < count && pool.length) {
-    const index = Math.floor(Math.random() * pool.length)
-    picked.push(pool.splice(index, 1)[0])
+    const total = pool.reduce((sum, entry) => sum + entry.weight, 0)
+    let roll = Math.random() * total
+    let index = 0
+    while (index < pool.length - 1 && roll > pool[index].weight) {
+      roll -= pool[index].weight
+      index += 1
+    }
+    picked.push(pool.splice(index, 1)[0].item)
   }
   return picked
 }
