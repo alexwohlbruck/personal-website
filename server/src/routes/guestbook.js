@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { getGuestbookVisitorCount } from '../apis/analytics.js'
 import { readAdminSession } from '../lib/admin-auth.js'
+import { cached } from '../lib/cache.js'
 import { database, ensureGuestbookSchema } from '../lib/database.js'
 import { guestbookItemBounds } from '../lib/guestbook-geometry.js'
 import { publishGuestbook, subscribeToGuestbook } from '../lib/guestbook-live.js'
@@ -300,6 +301,15 @@ router.get('/', async (req, res) => {
  * person happened to wander off to.
  */
 router.get('/overview', async (req, res) => {
+  // Every visitor asks this once, and it is four aggregates and a count across
+  // the whole table, which no index can answer. Half a minute of staleness in
+  // "where has everyone been drawing" is not something anyone can perceive.
+  const overview = await cached('guestbook:overview', 30_000, readOverview)
+  res.set('Cache-Control', 'public, max-age=30')
+  res.json(overview)
+})
+
+async function readOverview() {
   await ensureGuestbookSchema()
   const result = await database().query(
     `WITH recent AS (
@@ -320,15 +330,14 @@ router.get('/overview', async (req, res) => {
 
   const row = result.rows[0] ?? {}
   const bounded = row.left !== null && row.left !== undefined
-  res.set('Cache-Control', 'no-store')
-  res.json({
+  return {
     count: Number(row.count ?? 0),
     center: { x: Number(row.centerX ?? 0), y: Number(row.centerY ?? 0) },
     bounds: bounded
       ? { left: Number(row.left), top: Number(row.top), right: Number(row.right), bottom: Number(row.bottom) }
       : null,
-  })
-})
+  }
+}
 
 router.get('/preview', async (req, res) => {
   await ensureGuestbookSchema()
@@ -367,10 +376,13 @@ router.get('/visitors', async (req, res) => {
 router.post('/', writeLimiter.guard, async (req, res) => {
   const clientId = guestbookClientId(req)
   const item = sanitizeGuestbookItem(req.body)
-  item.location = await resolveIpLocation(req.ip)
+  // Both are waits on somebody else's machine, and neither needs the other's
+  // answer. Serially they were a geolocation round trip stacked on top of a
+  // database round trip before the mark could be written.
+  const [location] = await Promise.all([resolveIpLocation(req.ip), ensureGuestbookSchema()])
+  item.location = location
   const { id, kind, x, y, ...payload } = item
   const box = guestbookItemBounds(item)
-  await ensureGuestbookSchema()
   const result = await database().query(
     `INSERT INTO guestbook_items (id, kind, x, y, payload, client_id, min_x, min_y, max_x, max_y)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)

@@ -144,6 +144,8 @@ const endpoint = `${BACKEND_URL}/guestbook`
  */
 const TILE = 1024
 const OPENING_ZOOM = 0.55
+/** How many marks to hold before letting go of the ones furthest behind. */
+const MARK_BUDGET = 1_200
 /**
  * Signed in as the site owner, every mark on the board is editable, not just
  * the ones this browser session made. The server enforces the same rule; this
@@ -588,6 +590,25 @@ function eraseAt(point: Point) {
   const ids = new Set(hits.map((item) => item.id))
   items.value = items.value.filter((item) => !ids.has(item.id))
   deselect(ids)
+}
+
+/**
+ * The same stroke, built once.
+ *
+ * Panning re-renders the whole board, and rebuilding a few hundred path
+ * strings per frame is most of what that costs. The points array is only
+ * replaced when the stroke actually changes, so its identity is the cache key
+ * and a drag recomputes only what is being dragged.
+ */
+const pathCache = new WeakMap<Point[], string>()
+
+function cachedDrawingPath(points: Point[]) {
+  let path = pathCache.get(points)
+  if (path === undefined) {
+    path = drawingPath(points)
+    pathCache.set(points, path)
+  }
+  return path
 }
 
 function drawingPath(points: Point[]) {
@@ -1605,6 +1626,47 @@ function absorb(remote: GuestbookItem[]) {
     if (items.value.some((candidate) => candidate.id === item.id && candidate.draft)) continue
     replaceItem(item)
   }
+  forgetDistantMarks()
+}
+
+/**
+ * Let go of marks far behind you.
+ *
+ * Loading by window bounds what arrives at once but not what accumulates: a
+ * long wander across a large board would otherwise keep every mark it ever
+ * passed, images and all, until the tab ran out of room. Anything dropped is
+ * still on the server, and the square it sat in is forgotten too so that
+ * coming back fetches it again.
+ */
+function forgetDistantMarks() {
+  if (items.value.length <= MARK_BUDGET) return
+
+  const view = loadingWindow()
+  const width = view.right - view.left
+  const height = view.bottom - view.top
+  const keep = {
+    left: view.left - width,
+    right: view.right + width,
+    top: view.top - height,
+    bottom: view.bottom + height,
+  }
+
+  const survivors = items.value.filter((item) => {
+    if (item.draft || selectedIds.value.includes(item.id)) return true
+    const box = itemBounds(item)
+    return (
+      box.x <= keep.right && box.x + box.width >= keep.left &&
+      box.y <= keep.bottom && box.y + box.height >= keep.top
+    )
+  })
+  if (survivors.length === items.value.length) return
+
+  items.value = survivors
+  // The tile record no longer describes what is in hand, and working out which
+  // squares lost a mark costs more than simply asking again for the ones that
+  // are still on screen.
+  loadedTiles.clear()
+  for (const key of tilesWithin(view)) loadedTiles.add(key)
 }
 
 function scheduleRegionLoad() {
@@ -1812,7 +1874,7 @@ onBeforeUnmount(() => {
       <h1 class="title text-5xl md:text-7xl">Leave your mark.</h1>
       <p class="mt-5 max-w-2xl text-base leading-relaxed text-ink-2 md:text-lg">
         Draw, type, paste a note, or add a tiny piece of yourself. This page belongs to everyone,
-        so be kind to the people who arrive after you.
+        so be kind other's creations.
       </p>
     </header>
 
@@ -1859,7 +1921,7 @@ onBeforeUnmount(() => {
             <!-- Invisible and a little fatter, so a thin line can still be grabbed. -->
             <path
               v-if="tool === 'select'"
-              :d="drawingPath(item.points)"
+              :d="cachedDrawingPath(item.points)"
               fill="none"
               stroke="transparent"
               :stroke-width="grabWidth(item)"
@@ -1869,7 +1931,7 @@ onBeforeUnmount(() => {
               @pointerdown="selectItem($event, item)"
             />
             <path
-              :d="drawingPath(item.points)"
+              :d="cachedDrawingPath(item.points)"
               fill="none"
               :stroke="item.color"
               :stroke-width="item.width"
