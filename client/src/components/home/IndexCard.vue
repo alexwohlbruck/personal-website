@@ -44,8 +44,11 @@ const tenure = computed(() => duration(site.currently.since))
         </dd>
       </div>
 
-      <div class="p-5">
-        <NowPlaying compact />
+      <div class="px-5 py-4">
+        <dt class="text-sm text-ink-3">Now playing</dt>
+        <dd class="mt-3">
+          <NowPlaying compact />
+        </dd>
       </div>
     </dl>
   </aside>

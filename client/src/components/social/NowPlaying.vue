@@ -52,9 +52,8 @@ async function toggleAudio() {
 
 <template>
   <div>
-    <div class="flex items-center justify-between gap-4">
+    <div v-if="!compact" class="flex items-center justify-between gap-4">
       <a
-        v-if="!compact"
         :href="links.spotify"
         target="_blank"
         rel="noopener noreferrer"
@@ -84,9 +83,9 @@ async function toggleAudio() {
 
     <div
       v-else
-      class="mt-3 flex items-center gap-3"
+      class="flex items-center gap-3"
       :class="[
-        !compact && 'gap-4',
+        !compact && 'mt-3 gap-4',
         compact && 'w-full',
       ]"
     >
