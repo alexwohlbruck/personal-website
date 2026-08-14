@@ -21,75 +21,34 @@ import {
 } from '@lucide/vue'
 import AdminSignIn from '@/components/guestbook/AdminSignIn.vue'
 import { useAdmin } from '@/lib/admin'
+import GuestbookMark from '@/components/guestbook/GuestbookMark.vue'
+import GuestbookPaper from '@/components/guestbook/GuestbookPaper.vue'
+import {
+  drawingPath,
+  fontFamily,
+  fontOptions,
+  itemBounds,
+  itemCenter,
+  itemTransform,
+  normalizeItem,
+  onGuestbookFontLoaded,
+  stickyFill,
+  stickyTextStyle,
+  textStyle,
+  type Bounds,
+  type DrawingItem,
+  type EmojiItem,
+  type GuestbookItem,
+  type ImageItem,
+  type Point,
+  type StickyColor,
+  type StickyItem,
+  type TextItem,
+} from '@/lib/guestbook'
 import { BACKEND_URL } from '@/data/site'
 
-type Point = [number, number]
 type Tool = 'pan' | 'select' | 'erase' | 'pen' | 'text' | 'sticky' | 'emoji' | 'image'
-type Font = 'system' | 'geist' | 'exposure' | 'humanist' | 'rounded' | 'serif' | 'book' | 'mono' | 'cursive' | 'casual' | 'handwritten' | 'display'
-type StickyColor = 'yellow' | 'pink' | 'blue' | 'green' | 'orange' | 'lavender'
 
-interface BaseItem {
-  id: string
-  x: number
-  y: number
-  rotation: number
-  location?: { country: string; city: string | null } | null
-  owned?: boolean
-  draft?: boolean
-  createdAt?: string
-  updatedAt?: string
-}
-
-interface DrawingItem extends BaseItem {
-  kind: 'drawing'
-  points: Point[]
-  color: string
-  width: number
-}
-
-interface TextItem extends BaseItem {
-  kind: 'text'
-  text: string
-  font: Font
-  color: string
-  size: number
-  bold: boolean
-  italic: boolean
-  width: number
-  height: number
-}
-
-interface StickyItem extends BaseItem {
-  kind: 'sticky'
-  text: string
-  color: StickyColor
-  textColor: string
-  font: Font
-  size: number
-  bold: boolean
-  italic: boolean
-  width: number
-  height: number
-}
-
-interface EmojiItem extends BaseItem {
-  kind: 'emoji'
-  emoji: string
-  size: number
-}
-
-interface ImageItem extends BaseItem {
-  kind: 'image'
-  /** Absent on a mark that arrived over the live stream, which omits uploads. */
-  src?: string
-  /** A postage stamp of the same picture, for previews that cannot carry src. */
-  thumb?: string
-  width: number
-  height: number
-  alt: string
-}
-
-type GuestbookItem = DrawingItem | TextItem | StickyItem | EmojiItem | ImageItem
 class ApiError extends Error {
   constructor(message: string, readonly status: number, readonly retryAfter?: number) {
     super(message)
@@ -106,7 +65,6 @@ type Command =
   | { type: 'update'; before: GuestbookItem[]; after: GuestbookItem[] }
   | { type: 'delete'; items: GuestbookItem[] }
 
-type Bounds = { x: number; y: number; width: number; height: number }
 type Overview = {
   count: number
   center: { x: number; y: number }
@@ -185,6 +143,7 @@ const loadedTiles = new Set<string>()
 /** One window held more marks than a response carries. */
 const truncatedRegion = ref(false)
 let regionTimer: number | undefined
+let stopFontWatch: (() => void) | undefined
 const viewport = ref({ width: 1000, height: 650 })
 const activePoints = ref<Point[]>([])
 const penColor = ref('#8f3525')
@@ -219,51 +178,6 @@ const tools: { id: Tool; label: string; key: string; icon: typeof Hand }[] = [
 
 function toolTitle(entry: (typeof tools)[number]) {
   return `${entry.label} (${entry.key.toUpperCase()} or ${tools.indexOf(entry) + 1})`
-}
-
-const stickyFill: Record<StickyColor, string> = {
-  yellow: '#f4dd83',
-  pink: '#efb5b7',
-  blue: '#acd8df',
-  green: '#b9d6aa',
-  orange: '#f3bd85',
-  lavender: '#cbbbe5',
-}
-
-const fontOptions: { value: Font; label: string; family: string }[] = [
-  { value: 'system', label: 'Sans', family: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" },
-  { value: 'geist', label: 'Geist', family: "'Geist Variable', ui-sans-serif, system-ui, sans-serif" },
-  { value: 'exposure', label: 'Exposure', family: "'Exposure', ui-serif, Georgia, serif" },
-  { value: 'humanist', label: 'Humanist', family: "'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', Arial, sans-serif" },
-  { value: 'rounded', label: 'Rounded', family: "ui-rounded, 'Arial Rounded MT Bold', 'Trebuchet MS', sans-serif" },
-  { value: 'serif', label: 'Serif', family: "Georgia, 'Times New Roman', Times, serif" },
-  { value: 'book', label: 'Book', family: "'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif" },
-  { value: 'mono', label: 'Mono', family: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" },
-  { value: 'cursive', label: 'Cursive', family: 'cursive' },
-  { value: 'casual', label: 'Casual', family: "'Comic Sans MS', 'Chalkboard SE', 'Comic Sans', cursive" },
-  { value: 'handwritten', label: 'Hand', family: "'Caveat Variable', cursive" },
-  { value: 'display', label: 'Display', family: "'Fraunces Variable', Georgia, serif" },
-]
-
-const fontFamilies = Object.fromEntries(fontOptions.map((font) => [font.value, font.family])) as Record<Font, string>
-const fontLoaders: Partial<Record<Font, () => Promise<unknown>>> = {
-  handwritten: () => import('@fontsource-variable/caveat/wght.css'),
-  display: () => import('@fontsource-variable/fraunces/wght.css'),
-}
-const loadingFonts = new Set<Font>()
-
-function ensureFontLoaded(font: Font) {
-  const load = fontLoaders[font]
-  if (!load || loadingFonts.has(font)) return
-  loadingFonts.add(font)
-  void load()
-    .then(() => document.fonts.ready)
-    .then(() => {
-      for (const item of items.value) {
-        if (item.kind === 'text' && item.font === font) fitTextBox(item)
-      }
-    })
-    .catch(() => loadingFonts.delete(font))
 }
 
 const viewBox = computed(() => ({
@@ -368,25 +282,6 @@ function cloneItem<T extends GuestbookItem>(item: T): T {
   return JSON.parse(JSON.stringify(item)) as T
 }
 
-function normalizeItem(item: GuestbookItem): GuestbookItem {
-  item.rotation ??= 0
-  if (item.kind === 'text') {
-    if (!(item.font in fontFamilies)) item.font = 'system'
-    item.width ??= Math.max(160, Math.min(500, item.text.length * item.size * 0.62))
-    item.height ??= Math.max(56, item.size * 1.45)
-  } else if (item.kind === 'sticky') {
-    if (!(item.font in fontFamilies)) item.font = 'system'
-    item.textColor ??= '#432d20'
-    item.size ??= 18
-    item.bold = Boolean(item.bold)
-    item.italic = Boolean(item.italic)
-    item.width ??= 180
-    item.height ??= 150
-  }
-  item.owned = Boolean(item.owned)
-  return item
-}
-
 function payload(item: GuestbookItem) {
   const copy = cloneItem(item)
   delete copy.owned
@@ -462,31 +357,6 @@ function trackTouchPointer(event: PointerEvent) {
     beginPinch()
     event.stopPropagation()
   }
-}
-
-function itemBounds(item: GuestbookItem): Bounds {
-  if (item.kind === 'drawing') {
-    const xs = item.points.map((point) => point[0])
-    const ys = item.points.map((point) => point[1])
-    const x = Math.min(...xs)
-    const y = Math.min(...ys)
-    return { x, y, width: Math.max(8, Math.max(...xs) - x), height: Math.max(8, Math.max(...ys) - y) }
-  }
-  if (item.kind === 'emoji') {
-    return { x: item.x - item.size / 2, y: item.y - item.size / 2, width: item.size, height: item.size }
-  }
-  return { x: item.x, y: item.y, width: item.width, height: item.height }
-}
-
-function itemCenter(item: GuestbookItem): Point {
-  const bounds = itemBounds(item)
-  return [bounds.x + bounds.width / 2, bounds.y + bounds.height / 2]
-}
-
-function itemTransform(item: GuestbookItem) {
-  if (item.kind === 'drawing' || !item.rotation) return undefined
-  const [x, y] = itemCenter(item)
-  return `rotate(${item.rotation} ${x} ${y})`
 }
 
 function itemLocalPoint(point: Point, item: GuestbookItem): Point {
@@ -605,27 +475,16 @@ function eraseAt(point: Point) {
  * replaced when the stroke actually changes, so its identity is the cache key
  * and a drag recomputes only what is being dragged.
  */
-const pathCache = new WeakMap<Point[], string>()
-
-function cachedDrawingPath(points: Point[]) {
-  let path = pathCache.get(points)
-  if (path === undefined) {
-    path = drawingPath(points)
-    pathCache.set(points, path)
-  }
-  return path
-}
-
-function drawingPath(points: Point[]) {
-  if (points.length < 2) return ''
-  let path = `M ${points[0][0]} ${points[0][1]}`
-  for (let index = 1; index < points.length - 1; index += 1) {
-    const point = points[index]
-    const next = points[index + 1]
-    path += ` Q ${point[0]} ${point[1]} ${(point[0] + next[0]) / 2} ${(point[1] + next[1]) / 2}`
-  }
-  const last = points[points.length - 1]
-  return `${path} L ${last[0]} ${last[1]}`
+/**
+ * What the pointer says this mark will do.
+ *
+ * A stroke is only hittable along its own line, so it carries the cursor on
+ * the shape; everything else is a solid box and carries it on the group.
+ */
+function markClass(item: GuestbookItem) {
+  if (tool.value !== 'select') return 'mark-idle'
+  if (item.kind === 'drawing') return editable(item) ? 'doodle-move' : 'doodle-inspect'
+  return editable(item) ? 'canvas-owned' : 'canvas-inspect'
 }
 
 /**
@@ -638,31 +497,6 @@ function grabWidth(item: DrawingItem) {
   return Math.max(item.width, 18 / camera.value.zoom)
 }
 
-function fontFamily(font: Font) {
-  ensureFontLoaded(font)
-  return fontFamilies[font] ?? fontFamilies.system
-}
-
-function textStyle(item: TextItem) {
-  return {
-    color: item.color,
-    fontFamily: fontFamily(item.font),
-    fontSize: `${item.size}px`,
-    fontWeight: item.bold ? '700' : '400',
-    fontStyle: item.italic ? 'italic' : 'normal',
-  }
-}
-
-function stickyTextStyle(item: StickyItem) {
-  return {
-    color: item.textColor,
-    fontFamily: fontFamily(item.font),
-    fontSize: `${item.size}px`,
-    fontWeight: item.bold ? '700' : '500',
-    fontStyle: item.italic ? 'italic' : 'normal',
-  }
-}
-
 function fitTextBox(item: TextItem) {
   const context = document.createElement('canvas').getContext('2d')
   if (!context) return
@@ -671,26 +505,6 @@ function fitTextBox(item: TextItem) {
   const measuredWidth = Math.max(...lines.map((line) => context.measureText(line || ' ').width))
   item.width = Math.min(800, Math.max(80, Math.ceil(measuredWidth + 12)))
   item.height = Math.min(500, Math.max(30, Math.ceil(lines.length * item.size * 1.12 + 8)))
-}
-
-function stickyPath(item: StickyItem) {
-  const { x, y, width: width, height: height } = item
-  return [
-    `M ${x + 8} ${y + 2}`,
-    `Q ${x + width * 0.28} ${y - 2} ${x + width * 0.52} ${y + 1}`,
-    `Q ${x + width * 0.76} ${y + 4} ${x + width - 9} ${y + 1}`,
-    `Q ${x + width + 2} ${y + 12} ${x + width - 1} ${y + height * 0.42}`,
-    `Q ${x + width + 3} ${y + height * 0.72} ${x + width - 5} ${y + height - 8}`,
-    `Q ${x + width * 0.76} ${y + height + 3} ${x + width * 0.51} ${y + height - 1}`,
-    `Q ${x + width * 0.22} ${y + height - 4} ${x + 7} ${y + height}`,
-    `Q ${x - 2} ${y + height * 0.72} ${x + 1} ${y + height * 0.45}`,
-    `Q ${x - 3} ${y + 16} ${x + 8} ${y + 2} Z`,
-  ].join(' ')
-}
-
-function stickyFoldPath(item: StickyItem) {
-  const { x, y, width } = item
-  return `M ${x + width - 38} ${y + 2} Q ${x + width - 19} ${y + 7} ${x + width - 2} ${y + 35} L ${x + width - 1} ${y + 2} Q ${x + width - 18} ${y - 1} ${x + width - 38} ${y + 2} Z`
 }
 
 function countryFlag(country: string) {
@@ -1892,6 +1706,11 @@ watch([emojiPickerOpen, emojiPickerHost], ([open, host]) => {
 }, { flush: 'post' })
 
 onMounted(async () => {
+  // A webfont arriving changes the width of text set in it, so the boxes drawn
+  // around it have to be measured again.
+  stopFontWatch = onGuestbookFontLoaded((font) => {
+    for (const item of items.value) if (item.kind === 'text' && item.font === font) fitTextBox(item)
+  })
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('pagehide', flushPendingDraft)
   if (
@@ -1920,6 +1739,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  stopFontWatch?.()
   window.clearTimeout(regionTimer)
   flushPendingDraft()
   window.removeEventListener('keydown', onKeydown)
@@ -1958,122 +1778,33 @@ onBeforeUnmount(() => {
         @pointercancel="onPointerUp"
         @wheel="onWheel"
       >
-        <defs>
-          <pattern id="guest-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 16 20 H 24 M 20 16 V 24" stroke="#cfc2ae" stroke-width="0.8" />
-          </pattern>
-          <filter id="guest-shadow" x="-20%" y="-20%" width="140%" height="150%">
-            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#32170f" flood-opacity="0.22" />
-          </filter>
-          <linearGradient id="note-fold" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#fff" stop-opacity="0.58" />
-            <stop offset="0.58" stop-color="#fff" stop-opacity="0.18" />
-            <stop offset="1" stop-color="#5c4024" stop-opacity="0.2" />
-          </linearGradient>
-        </defs>
-        <rect :x="viewBox.x" :y="viewBox.y" :width="viewBox.width" :height="viewBox.height" fill="#f6f0e5" />
-        <rect :x="viewBox.x" :y="viewBox.y" :width="viewBox.width" :height="viewBox.height" fill="url(#guest-grid)" />
+        <GuestbookPaper :frame="viewBox" />
 
-        <g
+        <GuestbookMark
           v-for="item in items"
           :key="item.id"
-          :opacity="item.draft ? 0.82 : 1"
-          :transform="itemTransform(item)"
-          :class="item.kind !== 'drawing' && tool === 'select' ? (editable(item) ? 'canvas-owned' : 'canvas-inspect') : undefined"
-          @pointerdown="item.kind !== 'drawing' && selectItem($event, item)"
+          :item="item"
+          :grab="tool === 'select' && item.kind === 'drawing' ? grabWidth(item) : 0"
+          :editing="selectedItem?.id === item.id && editable(item) && (item.kind === 'text' || item.kind === 'sticky')"
+          :class="markClass(item)"
+          @pointerdown="selectItem($event, item)"
         >
-          <template v-if="item.kind === 'drawing'">
-            <!-- Invisible and a little fatter, so a thin line can still be grabbed. -->
-            <path
-              v-if="tool === 'select'"
-              :d="cachedDrawingPath(item.points)"
-              fill="none"
-              stroke="transparent"
-              :stroke-width="grabWidth(item)"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              :class="editable(item) ? 'doodle-move' : 'doodle-inspect'"
-              @pointerdown="selectItem($event, item)"
-            />
-            <path
-              :d="cachedDrawingPath(item.points)"
-              fill="none"
-              :stroke="item.color"
-              :stroke-width="item.width"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="pointer-events-none"
-            />
-          </template>
-
-          <template v-else-if="item.kind === 'text'">
-            <foreignObject :x="item.x" :y="item.y" :width="item.width" :height="item.height">
-              <textarea
-                v-if="selectedItem?.id === item.id && editable(item)"
-                v-model="item.text"
-                :data-guestbook-editor="item.id"
-                class="canvas-editor canvas-text-editor"
-                :style="textStyle(item)"
-                maxlength="240"
-                placeholder="Type here…"
-                aria-label="Edit text on canvas"
-                @pointerdown.stop
-                @focus="beginEdit(item)"
-                @input="onTextInput(item, $event)"
-                @blur="commitEditor(item, $event)"
-              />
-              <div
-                v-else
-                class="canvas-display canvas-text-display"
-                :style="textStyle(item)"
-              >{{ item.text }}</div>
-            </foreignObject>
-          </template>
-
-          <template v-else-if="item.kind === 'sticky'">
-            <path :d="stickyPath(item)" :fill="stickyFill[item.color]" filter="url(#guest-shadow)" />
-            <path :d="stickyFoldPath(item)" fill="url(#note-fold)" />
-            <path :d="`M ${item.x + item.width - 38} ${item.y + 2} Q ${item.x + item.width - 13} ${item.y + 12} ${item.x + item.width - 2} ${item.y + 35}`" fill="none" stroke="#5c4024" stroke-opacity="0.18" stroke-width="1.5" />
-            <foreignObject :x="item.x + 14" :y="item.y + 15" :width="item.width - 28" :height="item.height - 28">
-              <textarea
-                v-if="selectedItem?.id === item.id && editable(item)"
-                v-model="item.text"
-                :data-guestbook-editor="item.id"
-                class="canvas-editor sticky-copy"
-                :style="stickyTextStyle(item)"
-                maxlength="400"
-                placeholder="Write a note…"
-                aria-label="Edit note on canvas"
-                @pointerdown.stop
-                @focus="beginEdit(item)"
-                @blur="commitEditor(item, $event)"
-              />
-              <div
-                v-else
-                class="canvas-display sticky-copy"
-                :style="stickyTextStyle(item)"
-              >{{ item.text }}</div>
-            </foreignObject>
-          </template>
-
-          <text
-            v-else-if="item.kind === 'emoji'"
-            :x="item.x"
-            :y="item.y"
-            :font-size="item.size"
-            text-anchor="middle"
-            dominant-baseline="central"
-            :class="tool === 'select' ? undefined : 'pointer-events-none'"
-          >{{ item.emoji }}</text>
-
-          <g
-            v-else-if="item.kind === 'image'"
-            :class="tool === 'select' ? undefined : 'pointer-events-none'"
-          >
-            <rect :x="item.x - 6" :y="item.y - 6" :width="item.width + 12" :height="item.height + 12" rx="5" fill="#fffdf7" filter="url(#guest-shadow)" />
-            <image :href="item.src ?? item.thumb" :x="item.x" :y="item.y" :width="item.width" :height="item.height" preserveAspectRatio="xMidYMid meet" />
-          </g>
-        </g>
+          <textarea
+            v-if="item.kind === 'text' || item.kind === 'sticky'"
+            v-model="item.text"
+            :data-guestbook-editor="item.id"
+            class="canvas-editor"
+            :class="item.kind === 'text' ? 'canvas-text-editor' : 'sticky-copy'"
+            :style="item.kind === 'text' ? textStyle(item) : stickyTextStyle(item)"
+            :maxlength="item.kind === 'text' ? 240 : 400"
+            :placeholder="item.kind === 'text' ? 'Type here…' : 'Write a note…'"
+            :aria-label="item.kind === 'text' ? 'Edit text on canvas' : 'Edit note on canvas'"
+            @pointerdown.stop
+            @focus="beginEdit(item)"
+            @input="item.kind === 'text' && onTextInput(item, $event)"
+            @blur="commitEditor(item, $event)"
+          />
+        </GuestbookMark>
 
         <path v-if="activePoints.length > 1" :d="drawingPath(activePoints)" fill="none" :stroke="penColor" :stroke-width="penWidth" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none" />
 
@@ -2314,11 +2045,14 @@ onBeforeUnmount(() => {
 .secondary-color { width: 1.45rem; height: 1.45rem; }
 .secondary-button { width: 1.6rem; min-height: 1.85rem; }
 .color-preview input { position: absolute; inset: -8px; width: calc(100% + 16px); height: calc(100% + 16px); cursor: pointer; opacity: 0; }
+/* Marks only answer the pointer while the select tool is out; drawing or
+   erasing across one must reach the canvas underneath. */
+.mark-idle { pointer-events: none; }
 .canvas-owned { cursor: move; pointer-events: auto; }
 .canvas-inspect { cursor: pointer; pointer-events: auto; }
-.canvas-editor, .canvas-display { box-sizing: border-box; width: 100%; height: 100%; margin: 0; border: 0; background: transparent; outline: 0; resize: none; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; }
+.canvas-editor { box-sizing: border-box; width: 100%; height: 100%; margin: 0; border: 0; background: transparent; outline: 0; resize: none; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; }
 .canvas-editor { padding: 3px; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 45%, transparent); }
-.canvas-text-display, .canvas-text-editor { padding: 3px; line-height: 1.12; white-space: pre; overflow-wrap: normal; }
+.canvas-text-editor { padding: 3px; line-height: 1.12; white-space: pre; overflow-wrap: normal; }
 .sticky-copy { padding: 2px; line-height: 1.35; }
 .resize-handle { cursor: nwse-resize; }
 .rotate-handle { cursor: grab; }

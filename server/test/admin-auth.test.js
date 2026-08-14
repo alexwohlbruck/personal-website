@@ -8,6 +8,10 @@ process.env.ADMIN_SESSION_SECRET = 'a-secret-only-this-test-uses'
 process.env.MAIL_HOST = 'smtp.example.com'
 process.env.MAIL_USER = 'owner@example.com'
 process.env.MAIL_PASS = 'not-a-real-password'
+// Emphatically not the real database. Without this, dotenv hands these tests
+// the deployed connection string and revokeAdminSessions rotates the live
+// session generation, signing the actual owner out every time they run.
+process.env.DATABASE_URL = ''
 
 const {
   ensureAdminSessions,
@@ -19,8 +23,8 @@ const {
   verifyAdminToken,
 } = await import('../src/lib/admin-auth.js')
 
-// No DATABASE_URL here, so sessions fall back to a generation held in memory.
-// The behaviour under test is the same either way.
+// With no database, sessions fall back to a generation held in memory. The
+// behaviour under test is the same either way.
 await ensureAdminSessions()
 
 const OWNER = 'owner@example.com'

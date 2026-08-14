@@ -6,24 +6,9 @@ import { ArrowRight, PenLine } from '@lucide/vue'
 import { BACKEND_URL } from '@/data/site'
 import { useLiveStore } from '@/stores/live'
 import { duration, ease, step } from '@/lib/motion'
-
-type Point = [number, number]
-type PreviewItem = {
-  id: string
-  kind: 'drawing' | 'text' | 'sticky' | 'emoji' | 'image'
-  x: number
-  y: number
-  rotation?: number
-  points?: Point[]
-  color?: string
-  width?: number
-  height?: number
-  size?: number
-  text?: string
-  emoji?: string
-  /** Images arrive as a postage stamp; the full upload is far too heavy here. */
-  thumb?: string
-}
+import GuestbookMark from '@/components/guestbook/GuestbookMark.vue'
+import GuestbookPaper from '@/components/guestbook/GuestbookPaper.vue'
+import { itemBounds, normalizeItem, type GuestbookItem } from '@/lib/guestbook'
 
 type Frame = { x: number; y: number; width: number; height: number }
 
@@ -33,7 +18,7 @@ const RESTING_FRAME: Frame = { x: -360, y: -220, width: 720, height: 440 }
 const PREVIEW_LIMIT = 14
 
 const live = useLiveStore()
-const guestbookItems = ref<PreviewItem[]>([])
+const guestbookItems = ref<GuestbookItem[]>([])
 const guestbookCanvas = ref<SVGSVGElement>()
 let guestbookStream: EventSource | undefined
 let onScreen: IntersectionObserver | undefined
@@ -236,40 +221,9 @@ function clearPileFocus(event: PointerEvent) {
   })
 }
 
-const stickyColors: Record<string, string> = {
-  yellow: '#f4dd83',
-  pink: '#efb5b7',
-  blue: '#acd8df',
-  green: '#b9d6aa',
-  orange: '#f3bd85',
-  lavender: '#cbbbe5',
-}
-
-function bounds(item: PreviewItem) {
-  if (item.kind === 'drawing' && item.points?.length) {
-    const xs = item.points.map(([x]) => x)
-    const ys = item.points.map(([, y]) => y)
-    const x = Math.min(...xs)
-    const y = Math.min(...ys)
-    return { x, y, width: Math.max(8, Math.max(...xs) - x), height: Math.max(8, Math.max(...ys) - y) }
-  }
-  if (item.kind === 'emoji') {
-    const size = item.size ?? 48
-    return { x: item.x - size / 2, y: item.y - size / 2, width: size, height: size }
-  }
-  return { x: item.x, y: item.y, width: item.width ?? 160, height: item.height ?? 80 }
-}
-
-/**
- * Where the card would like to be looking.
- *
- * Recomputed the moment a mark arrives, which is why the camera below follows
- * it rather than reading it directly: a live board that cut from one framing
- * to another would read as a glitch instead of as somebody drawing.
- */
 const focus = computed(() => {
   if (!guestbookItems.value.length) return RESTING_FRAME
-  const boxes = guestbookItems.value.map(bounds)
+  const boxes = guestbookItems.value.map(itemBounds)
   const left = Math.min(...boxes.map((box) => box.x))
   const right = Math.max(...boxes.map((box) => box.x + box.width))
   const top = Math.min(...boxes.map((box) => box.y))
@@ -333,45 +287,40 @@ watch(focus, (next) => {
   framedOnce = true
 })
 
-function transform(item: PreviewItem) {
-  if (!item.rotation || item.kind === 'drawing') return undefined
-  const box = bounds(item)
-  return `rotate(${item.rotation} ${box.x + box.width / 2} ${box.y + box.height / 2})`
-}
-
-function drawingPoints(item: PreviewItem) {
-  return item.points?.map((point) => point.join(',')).join(' ') ?? ''
-}
-
-function shortText(item: PreviewItem, limit = 26) {
-  const text = item.text?.trim() ?? ''
-  return text.length > limit ? `${text.slice(0, limit - 1)}…` : text
-}
-
-/**
- * The first paint is happily served from the browser cache, since this is the
- * busiest page on the site and a minute-old board looks no different. A resync
- * after the stream reconnects is the opposite: its whole purpose is to find
- * out what was missed, and a cached copy is what it was already showing.
- */
 async function loadGuestbookPreview(fresh = false) {
   try {
     const response = await fetch(`${BACKEND_URL}/guestbook/preview`, {
       cache: fresh ? 'no-store' : 'default',
     })
     if (!response.ok) return
-    const result = await response.json() as { items: PreviewItem[] }
+    const result = await response.json() as { items: GuestbookItem[] }
     // Oldest first, as the endpoint sends them, so the end of the list is
-    // always the most recent mark.
-    guestbookItems.value = result.items
+    // always the most recent mark. Normalised on the way in because the shared
+    // renderer draws what a mark says it is rather than guessing defaults.
+    guestbookItems.value = result.items.map((item) => normalizeItem(withoutUpload(item)))
   } catch {
     // The invitation and paper texture still make a complete card offline.
   }
 }
 
+/**
+ * Keep the stamp, not the photograph.
+ *
+ * The stream already leaves uploads out, so this is usually nothing. It
+ * matters for the first load, which reads an endpoint that could carry one,
+ * and it keeps a megabyte of base64 off the busiest page on the site either
+ * way. GuestbookMark falls back to the thumbnail on its own.
+ */
+function withoutUpload(item: GuestbookItem): GuestbookItem {
+  if (item.kind !== 'image' || !item.src) return item
+  const { src, ...rest } = item
+  void src
+  return rest
+}
+
 function applyGuestbookChange(event: Event) {
   const change = JSON.parse((event as MessageEvent<string>).data) as
-    | { action: 'upsert'; item: PreviewItem & { src?: string } }
+    | { action: 'upsert'; item: GuestbookItem }
     | { action: 'delete'; id: string }
 
   if (change.action === 'delete') {
@@ -379,11 +328,7 @@ function applyGuestbookChange(event: Event) {
     return
   }
 
-  // The stream leaves uploads out, so what arrives is already the small
-  // version: the card draws the thumbnail. Stripping src again costs nothing
-  // and means this holds no megabytes even if that ever changes.
-  const { src, ...item } = change.item
-  void src
+  const item = normalizeItem(withoutUpload(change.item))
   guestbookItems.value = [
     ...guestbookItems.value.filter((existing) => existing.id !== item.id),
     item,
@@ -483,58 +428,8 @@ onBeforeUnmount(() => {
           preserveAspectRatio="xMidYMid slice"
           aria-hidden="true"
         >
-          <defs>
-            <pattern id="home-guest-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 16 20 H 24 M 20 16 V 24" stroke="#cfc2ae" stroke-width="0.9" />
-            </pattern>
-          </defs>
-          <rect :x="guestbookFrame.x" :y="guestbookFrame.y" :width="guestbookFrame.width" :height="guestbookFrame.height" fill="#f6f0e5" />
-          <rect :x="guestbookFrame.x" :y="guestbookFrame.y" :width="guestbookFrame.width" :height="guestbookFrame.height" fill="url(#home-guest-grid)" />
-          <g v-for="item in guestbookItems" :key="item.id" :transform="transform(item)">
-            <polyline
-              v-if="item.kind === 'drawing'"
-              :points="drawingPoints(item)"
-              fill="none"
-              :stroke="item.color ?? '#8f3525'"
-              :stroke-width="item.width ?? 4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <g v-else-if="item.kind === 'sticky'">
-              <rect :x="item.x" :y="item.y" :width="item.width ?? 180" :height="item.height ?? 150" rx="10" :fill="stickyColors[item.color ?? 'yellow'] ?? stickyColors.yellow" />
-              <text :x="item.x + 16" :y="item.y + 33" :font-size="item.size ?? 18" fill="#432d20" font-family="var(--font-sans)">{{ shortText(item, 22) }}</text>
-            </g>
-            <text
-              v-else-if="item.kind === 'text'"
-              :x="item.x"
-              :y="item.y + (item.size ?? 28)"
-              :font-size="item.size ?? 28"
-              :fill="item.color ?? '#572d24'"
-              font-family="var(--font-serif)"
-            >{{ shortText(item) }}</text>
-            <text
-              v-else-if="item.kind === 'emoji'"
-              :x="item.x"
-              :y="item.y"
-              :font-size="item.size ?? 48"
-              text-anchor="middle"
-              dominant-baseline="central"
-            >{{ item.emoji }}</text>
-            <g v-else-if="item.kind === 'image'">
-              <rect :x="item.x - 6" :y="item.y - 6" :width="(item.width ?? 140) + 12" :height="(item.height ?? 120) + 12" rx="6" fill="#fffdf7" stroke="#d8ccbb" />
-              <image
-                v-if="item.thumb"
-                :href="item.thumb"
-                :x="item.x"
-                :y="item.y"
-                :width="item.width ?? 140"
-                :height="item.height ?? 120"
-                preserveAspectRatio="xMidYMid meet"
-              />
-              <!-- Uploaded before thumbnails existed: keep the empty frame. -->
-              <rect v-else :x="item.x" :y="item.y" :width="item.width ?? 140" :height="item.height ?? 120" rx="3" fill="#e8ded0" />
-            </g>
-          </g>
+          <GuestbookPaper :frame="guestbookFrame" />
+        <GuestbookMark v-for="item in guestbookItems" :key="item.id" :item="item" />
         </svg>
 
         <div class="invite-note absolute bottom-5 left-5 z-10 max-w-[15rem] rounded-sm px-5 py-5 text-[#432d20]">
