@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { Motion } from 'motion-v'
 import { ArrowRight, PenLine } from '@lucide/vue'
@@ -25,8 +25,18 @@ type PreviewItem = {
   thumb?: string
 }
 
+type Frame = { x: number; y: number; width: number; height: number }
+
+/** What the card shows before it knows where anything is. */
+const RESTING_FRAME: Frame = { x: -360, y: -220, width: 720, height: 440 }
+/** As many marks as the preview endpoint sends, so the two agree. */
+const PREVIEW_LIMIT = 14
+
 const live = useLiveStore()
 const guestbookItems = ref<PreviewItem[]>([])
+const guestbookCanvas = ref<SVGSVGElement>()
+let guestbookStream: EventSource | undefined
+let onScreen: IntersectionObserver | undefined
 
 const pileTiles = computed(() => {
   const photos = live.instagramImages.slice(0, 5).reverse().map((photo) => ({
@@ -225,8 +235,15 @@ function bounds(item: PreviewItem) {
   return { x: item.x, y: item.y, width: item.width ?? 160, height: item.height ?? 80 }
 }
 
-const guestbookFrame = computed(() => {
-  if (!guestbookItems.value.length) return { x: -360, y: -220, width: 720, height: 440 }
+/**
+ * Where the card would like to be looking.
+ *
+ * Recomputed the moment a mark arrives, which is why the camera below follows
+ * it rather than reading it directly: a live board that cut from one framing
+ * to another would read as a glitch instead of as somebody drawing.
+ */
+const focus = computed(() => {
+  if (!guestbookItems.value.length) return RESTING_FRAME
   const boxes = guestbookItems.value.map(bounds)
   const left = Math.min(...boxes.map((box) => box.x))
   const right = Math.max(...boxes.map((box) => box.x + box.width))
@@ -243,9 +260,52 @@ const guestbookFrame = computed(() => {
   // the visual center of the uncovered paper rather than underneath it.
   return { x: centerX - width * 0.72, y: centerY - height / 2, width, height }
 })
+
+/** Where it is actually looking, which chases `focus` rather than matching it. */
+const guestbookFrame = ref<Frame>(RESTING_FRAME)
 const guestbookViewBox = computed(() => {
   const frame = guestbookFrame.value
   return `${frame.x} ${frame.y} ${frame.width} ${frame.height}`
+})
+
+let cameraMove: number | undefined
+let framedOnce = false
+
+/** The card's own curve, the one its hover transition already uses. */
+const easeOutQuint = (t: number) => 1 - (1 - t) ** 5
+
+function moveCameraTo(next: Frame, instant = false) {
+  if (cameraMove) cancelAnimationFrame(cameraMove)
+  cameraMove = undefined
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (instant || reduced) {
+    guestbookFrame.value = { ...next }
+    return
+  }
+
+  const from = { ...guestbookFrame.value }
+  const started = performance.now()
+  const span = duration.slow * 1000
+
+  const tick = (now: number) => {
+    const progress = Math.min(1, (now - started) / span)
+    const eased = easeOutQuint(progress)
+    guestbookFrame.value = {
+      x: from.x + (next.x - from.x) * eased,
+      y: from.y + (next.y - from.y) * eased,
+      width: from.width + (next.width - from.width) * eased,
+      height: from.height + (next.height - from.height) * eased,
+    }
+    cameraMove = progress < 1 ? requestAnimationFrame(tick) : undefined
+  }
+  cameraMove = requestAnimationFrame(tick)
+}
+
+// The first framing is where the card starts, not somewhere it travels to.
+watch(focus, (next) => {
+  moveCameraTo(next, !framedOnce)
+  framedOnce = true
 })
 
 function transform(item: PreviewItem) {
@@ -263,21 +323,85 @@ function shortText(item: PreviewItem, limit = 26) {
   return text.length > limit ? `${text.slice(0, limit - 1)}…` : text
 }
 
-async function loadGuestbookPreview() {
+/**
+ * The first paint is happily served from the browser cache, since this is the
+ * busiest page on the site and a minute-old board looks no different. A resync
+ * after the stream reconnects is the opposite: its whole purpose is to find
+ * out what was missed, and a cached copy is what it was already showing.
+ */
+async function loadGuestbookPreview(fresh = false) {
   try {
-    const response = await fetch(`${BACKEND_URL}/guestbook/preview`)
+    const response = await fetch(`${BACKEND_URL}/guestbook/preview`, {
+      cache: fresh ? 'no-store' : 'default',
+    })
     if (!response.ok) return
     const result = await response.json() as { items: PreviewItem[] }
+    // Oldest first, as the endpoint sends them, so the end of the list is
+    // always the most recent mark.
     guestbookItems.value = result.items
   } catch {
     // The invitation and paper texture still make a complete card offline.
   }
 }
 
+function applyGuestbookChange(event: Event) {
+  const change = JSON.parse((event as MessageEvent<string>).data) as
+    | { action: 'upsert'; item: PreviewItem & { src?: string } }
+    | { action: 'delete'; id: string }
+
+  if (change.action === 'delete') {
+    guestbookItems.value = guestbookItems.value.filter((item) => item.id !== change.id)
+    return
+  }
+
+  // Drop the full upload. The card draws the thumbnail, and holding a megabyte
+  // of base64 on the home page to paint something the size of a stamp is a
+  // poor trade.
+  const { src, ...item } = change.item
+  void src
+  guestbookItems.value = [
+    ...guestbookItems.value.filter((existing) => existing.id !== item.id),
+    item,
+  ].slice(-PREVIEW_LIMIT)
+}
+
+/**
+ * Watch the board, but only while the card is on screen.
+ *
+ * This is the busiest page on the site and the stream is a held connection per
+ * visitor, so opening one for somebody who never scrolls past the hero is a
+ * cost with nothing to show for it.
+ */
+function watchGuestbook() {
+  if (guestbookStream || !BACKEND_URL) return
+  guestbookStream = new EventSource(`${BACKEND_URL}/guestbook/stream`)
+  // Reconnecting means time has passed and marks were missed.
+  guestbookStream.addEventListener('ready', () => void loadGuestbookPreview(true))
+  guestbookStream.addEventListener('guestbook', applyGuestbookChange)
+}
+
+function stopWatchingGuestbook() {
+  guestbookStream?.removeEventListener('guestbook', applyGuestbookChange)
+  guestbookStream?.close()
+  guestbookStream = undefined
+}
+
 onMounted(() => {
   if (!live.instagramImages.length) void live.fetchInstagram()
   if (!live.listening) void live.fetchListening()
   void loadGuestbookPreview()
+
+  onScreen = new IntersectionObserver(
+    ([entry]) => (entry.isIntersecting ? watchGuestbook() : stopWatchingGuestbook()),
+    { rootMargin: '200px' },
+  )
+  if (guestbookCanvas.value) onScreen.observe(guestbookCanvas.value)
+})
+
+onBeforeUnmount(() => {
+  onScreen?.disconnect()
+  stopWatchingGuestbook()
+  if (cameraMove) cancelAnimationFrame(cameraMove)
 })
 </script>
 
@@ -328,6 +452,7 @@ onMounted(() => {
         aria-label="Open the guestbook and leave your mark"
       >
         <svg
+          ref="guestbookCanvas"
           class="guestbook-mini absolute inset-0 size-full"
           :viewBox="guestbookViewBox"
           preserveAspectRatio="xMidYMid slice"
