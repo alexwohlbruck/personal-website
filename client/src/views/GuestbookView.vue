@@ -92,10 +92,16 @@ class ApiError extends Error {
     super(message)
   }
 }
+/**
+ * One entry per gesture, not per mark.
+ *
+ * Dragging six things and pressing undo should put six things back, and a
+ * single swipe of the eraser should come back in one piece too.
+ */
 type Command =
-  | { type: 'create'; item: GuestbookItem }
-  | { type: 'update'; before: GuestbookItem; after: GuestbookItem }
-  | { type: 'delete'; item: GuestbookItem }
+  | { type: 'create'; items: GuestbookItem[] }
+  | { type: 'update'; before: GuestbookItem[]; after: GuestbookItem[] }
+  | { type: 'delete'; items: GuestbookItem[] }
 
 type Bounds = { x: number; y: number; width: number; height: number }
 type CanvasTooltip = {
@@ -117,7 +123,8 @@ type Interaction =
   | { mode: 'pinch'; pointers: [number, number]; startDistance: number; startZoom: number; focal: Point }
   | { mode: 'draw'; pointer: number }
   | { mode: 'erase'; pointer: number; removed: GuestbookItem[] }
-  | { mode: 'move'; pointer: number; start: Point; before: GuestbookItem }
+  | { mode: 'marquee'; pointer: number; start: Point; kept: string[] }
+  | { mode: 'move'; pointer: number; start: Point; before: GuestbookItem[] }
   | { mode: 'resize'; pointer: number; start: Point; before: GuestbookItem }
   | { mode: 'rotate'; pointer: number; startAngle: number; before: GuestbookItem }
 
@@ -144,7 +151,9 @@ const message = ref('')
 const rateLimitWarning = ref('')
 const visitorCount = ref<number>()
 const tool = ref<Tool>('pan')
-const selectedId = ref<string>()
+const selectedIds = ref<string[]>([])
+/** The rubber band, in world units, while one is being dragged. */
+const marquee = ref<Bounds>()
 const emojiPickerOpen = ref(false)
 const selectedEmoji = ref('👋')
 const camera = ref({ x: 0, y: 0, zoom: 1 })
@@ -166,16 +175,23 @@ let preserveEditorBlur = false
 const touchPointers = new Map<number, Point>()
 const visitorNumber = new Intl.NumberFormat()
 
-const tools: { id: Tool; label: string; icon: typeof Hand }[] = [
-  { id: 'pan', label: 'Drag', icon: Hand },
-  { id: 'select', label: 'Select', icon: MousePointer2 },
-  { id: 'erase', label: 'Erase', icon: Eraser },
-  { id: 'pen', label: 'Draw', icon: Pencil },
-  { id: 'text', label: 'Text', icon: Type },
-  { id: 'sticky', label: 'Note', icon: StickyNote },
-  { id: 'emoji', label: 'Emoji', icon: Smile },
-  { id: 'image', label: 'Image', icon: ImagePlus },
+// The letter is a mnemonic for the label; the position in this list is also
+// its number key. Both end up in the button's tooltip, which is the only place
+// anyone is going to find out they exist.
+const tools: { id: Tool; label: string; key: string; icon: typeof Hand }[] = [
+  { id: 'pan', label: 'Drag', key: 'h', icon: Hand },
+  { id: 'select', label: 'Select', key: 'v', icon: MousePointer2 },
+  { id: 'erase', label: 'Erase', key: 'e', icon: Eraser },
+  { id: 'pen', label: 'Draw', key: 'p', icon: Pencil },
+  { id: 'text', label: 'Text', key: 't', icon: Type },
+  { id: 'sticky', label: 'Note', key: 'n', icon: StickyNote },
+  { id: 'emoji', label: 'Emoji', key: 'j', icon: Smile },
+  { id: 'image', label: 'Image', key: 'i', icon: ImagePlus },
 ]
+
+function toolTitle(entry: (typeof tools)[number]) {
+  return `${entry.label} (${entry.key.toUpperCase()} or ${tools.indexOf(entry) + 1})`
+}
 
 const stickyFill: Record<StickyColor, string> = {
   yellow: '#f4dd83',
@@ -231,7 +247,18 @@ const viewBox = computed(() => ({
 const viewBoxString = computed(
   () => `${viewBox.value.x} ${viewBox.value.y} ${viewBox.value.width} ${viewBox.value.height}`,
 )
-const selectedItem = computed(() => items.value.find((item) => item.id === selectedId.value))
+const selectedItems = computed(() => items.value.filter((item) => selectedIds.value.includes(item.id)))
+/**
+ * The selection when it is exactly one mark.
+ *
+ * Everything that edits a mark in place — the text caret, the font and colour
+ * controls, the resize and rotate handles, the tooltip — only makes sense
+ * aimed at one thing, so all of it hangs off this and quietly disappears once
+ * a second mark joins the selection.
+ */
+const selectedItem = computed(() =>
+  selectedItems.value.length === 1 ? selectedItems.value[0] : undefined,
+)
 const visitorLabel = computed(() => {
   if (visitorCount.value === undefined) return 'Visitors'
   const remainder = visitorCount.value % 100
@@ -241,6 +268,22 @@ const visitorLabel = computed(() => {
   return `You're the ${visitorNumber.format(visitorCount.value)}${suffix} guest`
 })
 const selectedBounds = computed(() => (selectedItem.value ? itemBounds(selectedItem.value) : undefined))
+/**
+ * Outlines for a group, measured once.
+ *
+ * A stroke's bounds mean walking its point list, and this renders on every
+ * frame of a drag, so the template gets a finished answer rather than calling
+ * itemBounds four times per mark for the x, y, width and height.
+ */
+const groupOutlines = computed(() =>
+  selectedItems.value.length > 1
+    ? selectedItems.value.map((item) => ({
+        id: item.id,
+        bounds: itemBounds(item),
+        transform: itemTransform(item),
+      }))
+    : [],
+)
 /** Yours, still being made, or everyone's because you own the site. */
 function editable(item?: GuestbookItem) {
   return Boolean(item && (item.owned || item.draft || moderating.value))
@@ -357,12 +400,15 @@ function beginPinch() {
   // A second finger turns the current gesture into navigation. Roll back a
   // partial transform and discard an unfinished stroke so pinching never
   // accidentally edits the canvas beneath it.
-  if (interaction?.mode === 'move' || interaction?.mode === 'resize' || interaction?.mode === 'rotate') {
+  if (interaction?.mode === 'move') {
+    interaction.before.forEach(replaceItem)
+  } else if (interaction?.mode === 'resize' || interaction?.mode === 'rotate') {
     replaceItem(interaction.before)
   } else if (interaction?.mode === 'erase' && interaction.removed.length) {
     void persistErasure(interaction.removed)
   }
   activePoints.value = []
+  marquee.value = undefined
 
   const first = entries[0][1]
   const second = entries[1][1]
@@ -507,10 +553,7 @@ function eraseAt(point: Point) {
   interaction.removed.push(...hits.map(cloneItem))
   const ids = new Set(hits.map((item) => item.id))
   items.value = items.value.filter((item) => !ids.has(item.id))
-  if (selectedId.value && ids.has(selectedId.value)) {
-    selectedId.value = undefined
-    editBefore = undefined
-  }
+  deselect(ids)
 }
 
 function drawingPath(points: Point[]) {
@@ -653,17 +696,73 @@ function record(command: Command) {
   future.value = []
 }
 
+function dropItems(list: GuestbookItem[]) {
+  const ids = new Set(list.map((item) => item.id))
+  items.value = items.value.filter((item) => !ids.has(item.id))
+  deselect(ids)
+}
+
+function deselect(ids: Set<string>) {
+  if (!selectedIds.value.some((id) => ids.has(id))) return
+  selectedIds.value = selectedIds.value.filter((id) => !ids.has(id))
+  editBefore = undefined
+}
+
+async function pushCreate(item: GuestbookItem) {
+  const saved = await api<GuestbookItem>('', { method: 'POST', body: JSON.stringify(payload(item)) })
+  saved.owned = true
+  replaceItem(saved)
+}
+
+async function pushUpdate(item: GuestbookItem) {
+  replaceItem(await api<GuestbookItem>(`/${item.id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload(item)),
+  }))
+}
+
+/**
+ * Which side of a command the canvas should be showing.
+ *
+ * A create and a delete are the same command read in opposite directions, so
+ * rather than four near-identical branches in each of undo and redo, ask
+ * whether the marks should be present and act on the answer.
+ */
+function commandItems(command: Command, undoing: boolean) {
+  if (command.type === 'update') return undoing ? command.before : command.after
+  return command.items
+}
+
+function showCommand(command: Command, undoing: boolean) {
+  const list = commandItems(command, undoing)
+  if (command.type === 'update') return list.forEach((item) => replaceItem(cloneItem(item)))
+  if (undoing === (command.type === 'delete')) list.forEach((item) => replaceItem(cloneItem(item)))
+  else dropItems(list)
+}
+
+async function sendCommand(command: Command, undoing: boolean) {
+  const list = commandItems(command, undoing)
+  if (command.type === 'update') {
+    for (const item of list) await pushUpdate(item)
+    return
+  }
+  if (undoing === (command.type === 'delete')) {
+    for (const item of list) await pushCreate(item)
+    return
+  }
+  for (const item of list) await api(`/${item.id}`, { method: 'DELETE' })
+}
+
 async function createRemote(item: GuestbookItem, recordHistory = true) {
   saving.value = true
   try {
     const saved = await api<GuestbookItem>('', { method: 'POST', body: JSON.stringify(payload(item)) })
     saved.owned = true
     replaceItem(saved)
-    if (recordHistory) record({ type: 'create', item: cloneItem(saved) })
+    if (recordHistory) record({ type: 'create', items: [cloneItem(saved)] })
     return saved
   } catch (error) {
-    items.value = items.value.filter((candidate) => candidate.id !== item.id)
-    selectedId.value = undefined
+    dropItems([item])
     showError(error)
   } finally {
     saving.value = false
@@ -681,10 +780,49 @@ async function updateRemote(before: GuestbookItem, after: GuestbookItem, recordH
       body: JSON.stringify(payload(after)),
     })
     replaceItem(saved)
-    if (recordHistory) record({ type: 'update', before: cloneItem(before), after: cloneItem(saved) })
+    if (recordHistory) record({ type: 'update', before: [cloneItem(before)], after: [cloneItem(saved)] })
   } catch (error) {
     replaceItem(before)
     showError(error)
+  } finally {
+    saving.value = false
+  }
+}
+
+/**
+ * Save a drag that moved more than one mark.
+ *
+ * Each mark is its own request, because the API speaks in single marks, but
+ * they share one history entry so that one undo puts the whole group back.
+ */
+async function moveRemote(changes: { before: GuestbookItem; after: GuestbookItem }[]) {
+  const moved = changes.filter(
+    (change) => JSON.stringify(payload(change.before)) !== JSON.stringify(payload(change.after)),
+  )
+  if (!moved.length) return
+  if (moved.length === 1) return updateRemote(moved[0].before, moved[0].after)
+
+  saving.value = true
+  const done: typeof moved = []
+  try {
+    for (const change of moved) {
+      try {
+        await pushUpdate(change.after)
+        done.push(change)
+      } catch (error) {
+        // Put back the ones that would not save and keep the rest. A partly
+        // moved group is still better than silently losing the whole drag.
+        replaceItem(change.before)
+        showError(error)
+      }
+    }
+    if (done.length) {
+      record({
+        type: 'update',
+        before: done.map((change) => cloneItem(change.before)),
+        after: done.map((change) => cloneItem(change.after)),
+      })
+    }
   } finally {
     saving.value = false
   }
@@ -694,133 +832,74 @@ async function persistErasure(removed: GuestbookItem[]) {
   const persisted = removed.filter((item) => !item.draft)
   if (!persisted.length) return
   saving.value = true
+  const gone: GuestbookItem[] = []
   try {
     for (const item of persisted) {
       try {
         await api(`/${item.id}`, { method: 'DELETE' })
-        record({ type: 'delete', item: cloneItem(item) })
+        gone.push(cloneItem(item))
       } catch (error) {
         replaceItem(item)
         showError(error)
       }
     }
+    // One entry for the whole swipe: undoing an erase that crossed nine marks
+    // should not be nine presses.
+    if (gone.length) record({ type: 'delete', items: gone })
   } finally {
     saving.value = false
   }
 }
 
-async function undo() {
-  if (saving.value || !history.value.length) return
-  const command = history.value[history.value.length - 1]
-  const previousSelection = selectedId.value
+/**
+ * Walk one command between the two stacks.
+ *
+ * Undo and redo are the same journey in opposite directions, so they share
+ * this: show the other side of the command, move it across, then tell the
+ * server. A request that fails puts the canvas and the stacks back as they
+ * were, which is the only reason the local change happens first.
+ */
+async function step(from: typeof history, to: typeof history, undoing: boolean) {
+  if (saving.value || !from.value.length) return
+  const command = from.value[from.value.length - 1]
+  const previousSelection = [...selectedIds.value]
   saving.value = true
 
-  if (command.type === 'create') {
-    items.value = items.value.filter((item) => item.id !== command.item.id)
-    if (selectedId.value === command.item.id) selectedId.value = undefined
-  } else if (command.type === 'delete') {
-    replaceItem(command.item)
-  } else {
-    replaceItem(command.before)
-  }
-  history.value.pop()
-  future.value.push(command)
+  showCommand(command, undoing)
+  from.value.pop()
+  to.value.push(command)
 
   try {
-    if (command.type === 'create') {
-      await api(`/${command.item.id}`, { method: 'DELETE' })
-    } else if (command.type === 'delete') {
-      const restored = await api<GuestbookItem>('', {
-        method: 'POST',
-        body: JSON.stringify(payload(command.item)),
-      })
-      restored.owned = true
-      replaceItem(restored)
-    } else {
-      const restored = await api<GuestbookItem>(`/${command.before.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(payload(command.before)),
-      })
-      replaceItem(restored)
-    }
+    await sendCommand(command, undoing)
   } catch (error) {
-    future.value.pop()
-    history.value.push(command)
-    if (command.type === 'create') {
-      replaceItem(command.item)
-      selectedId.value = previousSelection
-    } else if (command.type === 'delete') {
-      items.value = items.value.filter((item) => item.id !== command.item.id)
-      if (selectedId.value === command.item.id) selectedId.value = undefined
-    } else {
-      replaceItem(command.after)
-    }
+    to.value.pop()
+    from.value.push(command)
+    showCommand(command, !undoing)
+    selectedIds.value = previousSelection.filter((id) =>
+      items.value.some((item) => item.id === id),
+    )
     showError(error)
   } finally {
     saving.value = false
   }
 }
 
-async function redo() {
-  if (saving.value || !future.value.length) return
-  const command = future.value[future.value.length - 1]
-  const previousSelection = selectedId.value
-  saving.value = true
-
-  if (command.type === 'create') {
-    replaceItem(command.item)
-  } else if (command.type === 'delete') {
-    items.value = items.value.filter((item) => item.id !== command.item.id)
-    if (selectedId.value === command.item.id) selectedId.value = undefined
-  } else {
-    replaceItem(command.after)
-  }
-  future.value.pop()
-  history.value.push(command)
-
-  try {
-    if (command.type === 'create') {
-      const restored = await api<GuestbookItem>('', {
-        method: 'POST',
-        body: JSON.stringify(payload(command.item)),
-      })
-      restored.owned = true
-      replaceItem(restored)
-    } else if (command.type === 'delete') {
-      await api(`/${command.item.id}`, { method: 'DELETE' })
-    } else {
-      const applied = await api<GuestbookItem>(`/${command.after.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(payload(command.after)),
-      })
-      replaceItem(applied)
-    }
-  } catch (error) {
-    history.value.pop()
-    future.value.push(command)
-    if (command.type === 'create') {
-      items.value = items.value.filter((item) => item.id !== command.item.id)
-      if (selectedId.value === command.item.id) selectedId.value = undefined
-    } else if (command.type === 'delete') {
-      replaceItem(command.item)
-      selectedId.value = previousSelection
-    } else {
-      replaceItem(command.before)
-    }
-    showError(error)
-  } finally {
-    saving.value = false
-  }
-}
+const undo = () => step(history, future, true)
+const redo = () => step(future, history, false)
 
 function selectTool(next: Tool) {
+  // Reaching for the tool you already hold should not throw away a selection
+  // you just spent a drag building. Image is the exception: pressing it again
+  // is how you open the file picker.
+  if (next === tool.value && next !== 'image') return
+
   const selected = selectedItem.value
   if (selected?.draft) {
     if (isEmptyEditableDraft(selected)) cancelDraft()
     else if (selected.kind === 'text' || selected.kind === 'sticky') commitEditor(selected)
   }
   tool.value = next
-  selectedId.value = undefined
+  selectedIds.value = []
   emojiPickerOpen.value = next === 'emoji'
   if (next === 'image') imageInput.value?.click()
   if (next === 'pen') keepDrawingToolNearMarks()
@@ -863,9 +942,24 @@ function onCanvasPointerDown(event: PointerEvent) {
     return
   }
 
-  if (tool.value === 'select' || tool.value === 'image') {
+  if (tool.value === 'select') {
     if (isEmptyEditableDraft(selectedItem.value)) cancelDraft()
-    selectedId.value = undefined
+    // Pressing empty canvas starts a rubber band. It only clears the selection
+    // if it turns out to have been a click, which pointerup decides.
+    const point = worldPoint(event)
+    interaction = {
+      mode: 'marquee',
+      pointer: event.pointerId,
+      start: point,
+      kept: event.shiftKey ? [...selectedIds.value] : [],
+    }
+    marquee.value = { x: point[0], y: point[1], width: 0, height: 0 }
+    return
+  }
+
+  if (tool.value === 'image') {
+    if (isEmptyEditableDraft(selectedItem.value)) cancelDraft()
+    selectedIds.value = []
     return
   }
 
@@ -894,7 +988,7 @@ function onCanvasPointerDown(event: PointerEvent) {
       id: crypto.randomUUID(), kind: 'emoji', x, y, rotation: 0, emoji: selectedEmoji.value, size: 64, owned: true,
     }
     items.value.push(item)
-    selectedId.value = item.id
+    selectedIds.value = [item.id]
     tool.value = 'select'
     emojiPickerOpen.value = false
     void createRemote(item)
@@ -903,7 +997,7 @@ function onCanvasPointerDown(event: PointerEvent) {
 
 function addEditableDraft(item: TextItem | StickyItem) {
   items.value.push(item)
-  selectedId.value = item.id
+  selectedIds.value = [item.id]
   tool.value = 'select'
   void nextTick(() => window.setTimeout(() => {
     const editor = document.querySelector<HTMLTextAreaElement>(`[data-guestbook-editor="${item.id}"]`)
@@ -915,7 +1009,20 @@ function selectItem(event: PointerEvent, item: GuestbookItem) {
   if (tool.value !== 'select') return
   event.stopPropagation()
   if (selectedItem.value?.id !== item.id && isEmptyEditableDraft(selectedItem.value)) cancelDraft()
-  selectedId.value = item.id
+
+  if (event.shiftKey) {
+    // Adding to or removing from a group, which is not also a request to drag
+    // it: releasing shift-click where you pressed it should not have moved
+    // anything.
+    selectedIds.value = selectedIds.value.includes(item.id)
+      ? selectedIds.value.filter((id) => id !== item.id)
+      : [...selectedIds.value, item.id]
+    return
+  }
+
+  // Pressing a mark that is already part of a group keeps the group, so the
+  // whole thing travels together. Pressing anything else starts over.
+  if (!selectedIds.value.includes(item.id)) selectedIds.value = [item.id]
   if (editable(item)) startMove(event, item)
 }
 
@@ -923,8 +1030,17 @@ function startMove(event: PointerEvent, item: GuestbookItem) {
   if (!editable(item)) return
   event.stopPropagation()
   capturePointer(event)
-  selectedId.value = item.id
-  interaction = { mode: 'move', pointer: event.pointerId, start: worldPoint(event), before: cloneItem(item) }
+  if (!selectedIds.value.includes(item.id)) selectedIds.value = [item.id]
+  // Marks in the group that belong to someone else stay where they are. The
+  // server would refuse them anyway, and half a group arriving is worse than
+  // the part you were allowed to move arriving on its own.
+  const travelling = selectedItems.value.filter(editable)
+  interaction = {
+    mode: 'move',
+    pointer: event.pointerId,
+    start: worldPoint(event),
+    before: (travelling.length ? travelling : [item]).map(cloneItem),
+  }
 }
 
 function startResize(event: PointerEvent, item: GuestbookItem) {
@@ -994,8 +1110,23 @@ function onPointerMove(event: PointerEvent) {
     eraseAt(worldPoint(event))
     return
   }
+  if (interaction.mode === 'marquee') {
+    stretchMarquee(interaction, worldPoint(event))
+    return
+  }
 
   const active = interaction
+  if (active.mode === 'move') {
+    const point = worldPoint(event)
+    const dx = point[0] - active.start[0]
+    const dy = point[1] - active.start[1]
+    for (const original of active.before) {
+      const current = items.value.find((item) => item.id === original.id)
+      if (current) moveItem(current, original, dx, dy)
+    }
+    return
+  }
+
   const current = items.value.find((item) => item.id === active.before.id)
   if (!current) return
   const point = worldPoint(event)
@@ -1005,16 +1136,43 @@ function onPointerMove(event: PointerEvent) {
     current.rotation = ((active.before.rotation + angle - active.startAngle + 180) % 360 + 360) % 360 - 180
     return
   }
+  // Only a resize reaches here. Its handle sits on a corner that the mark's
+  // own rotation has moved, so the drag is measured in the mark's frame.
   const before = active.before
-  const localPoint = active.mode === 'resize' ? itemLocalPoint(point, before) : point
-  const localStart = active.mode === 'resize' ? itemLocalPoint(active.start, before) : active.start
-  const dx = localPoint[0] - localStart[0]
-  const dy = localPoint[1] - localStart[1]
-  if (active.mode === 'move') {
-    moveItem(current, before, dx, dy)
-  } else {
-    resizeItem(current, before, dx, dy)
+  const localPoint = itemLocalPoint(point, before)
+  const localStart = itemLocalPoint(active.start, before)
+  resizeItem(current, before, localPoint[0] - localStart[0], localPoint[1] - localStart[1])
+}
+
+/**
+ * Grow the rubber band and show what it currently holds.
+ *
+ * The selection follows the band rather than waiting for the release, so you
+ * can see what you are about to get while you are still deciding.
+ */
+function stretchMarquee(active: Extract<Interaction, { mode: 'marquee' }>, point: Point) {
+  const box = {
+    x: Math.min(active.start[0], point[0]),
+    y: Math.min(active.start[1], point[1]),
+    width: Math.abs(point[0] - active.start[0]),
+    height: Math.abs(point[1] - active.start[1]),
   }
+  marquee.value = box
+
+  // Only marks you could actually do something with. A visitor sweeping the
+  // board would otherwise collect a hundred of other people's and find that
+  // nothing they tried worked.
+  const caught = items.value.filter((item) => editable(item) && overlaps(itemBounds(item), box))
+  selectedIds.value = [...new Set([...active.kept, ...caught.map((item) => item.id)])]
+}
+
+function overlaps(bounds: Bounds, box: Bounds) {
+  return (
+    bounds.x <= box.x + box.width &&
+    bounds.x + bounds.width >= box.x &&
+    bounds.y <= box.y + box.height &&
+    bounds.y + bounds.height >= box.y
+  )
 }
 
 function moveItem(current: GuestbookItem, before: GuestbookItem, dx: number, dy: number) {
@@ -1074,9 +1232,29 @@ function onPointerUp(event: PointerEvent) {
       points, color: penColor.value, width: penWidth.value, owned: true,
     }
     items.value.push(item)
-    selectedId.value = undefined
+    selectedIds.value = []
     void createRemote(item)
-  } else if (finished.mode === 'move' || finished.mode === 'resize' || finished.mode === 'rotate') {
+  } else if (finished.mode === 'marquee') {
+    // A press and release in the same spot was a click on empty canvas, which
+    // means "select nothing" rather than "select everything within zero".
+    const box = marquee.value
+    if (box && Math.max(box.width, box.height) < 4 / camera.value.zoom) {
+      selectedIds.value = finished.kept
+    }
+    marquee.value = undefined
+  } else if (finished.mode === 'move') {
+    void moveRemote(
+      finished.before
+        .map((original) => ({
+          before: original,
+          after: items.value.find((item) => item.id === original.id),
+        }))
+        .filter((change): change is { before: GuestbookItem; after: GuestbookItem } =>
+          Boolean(change.after && !change.after.draft),
+        )
+        .map((change) => ({ before: change.before, after: cloneItem(change.after) })),
+    )
+  } else if (finished.mode === 'resize' || finished.mode === 'rotate') {
     const current = items.value.find((item) => item.id === finished.before.id)
     if (current && !current.draft) {
       void updateRemote(finished.before, cloneItem(current))
@@ -1176,8 +1354,7 @@ async function confirmDraft(draft?: GuestbookItem) {
 function cancelDraft() {
   const item = selectedItem.value
   if (!item?.draft) return
-  items.value = items.value.filter((candidate) => candidate.id !== item.id)
-  selectedId.value = undefined
+  dropItems([item])
   editBefore = undefined
 }
 
@@ -1257,7 +1434,7 @@ async function prepareImage(event: Event) {
       alt: file.name.replace(/\.[^.]+$/, '').slice(0, 120), owned: true,
     }
     items.value.push(item)
-    selectedId.value = item.id
+    selectedIds.value = [item.id]
     tool.value = 'select'
     void createRemote(item)
   } catch {
@@ -1349,7 +1526,7 @@ function connectRealtime() {
       | { action: 'delete'; id: string }
     if (change.action === 'delete') {
       items.value = items.value.filter((item) => item.id !== change.id)
-      if (selectedId.value === change.id) selectedId.value = undefined
+      deselect(new Set([change.id]))
       return
     }
     const existing = items.value.find((item) => item.id === change.item.id)
@@ -1360,18 +1537,53 @@ function connectRealtime() {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  const target = event.target as HTMLElement
-  if (target.matches('input, textarea, select, [contenteditable="true"]')) return
-  const modifier = event.metaKey || event.ctrlKey
-  if (!modifier) return
-  if (event.key.toLowerCase() === 'z') {
-    event.preventDefault()
-    if (event.shiftKey) void redo()
-    else void undo()
-  } else if (event.key.toLowerCase() === 'y') {
-    event.preventDefault()
-    void redo()
+  // Single letters are tools now, so anything aimed at a field is off limits.
+  const target = event.target as HTMLElement | null
+  if (target?.matches?.('input, textarea, select, [contenteditable="true"]')) return
+  const key = event.key.toLowerCase()
+  if (event.metaKey || event.ctrlKey) {
+    if (key === 'z') {
+      event.preventDefault()
+      if (event.shiftKey) void redo()
+      else void undo()
+    } else if (key === 'y') {
+      event.preventDefault()
+      void redo()
+    }
+    return
   }
+  if (event.altKey) return
+
+  if (key === 'escape') {
+    clearSelection()
+    return
+  }
+  if (key === 'backspace' || key === 'delete') {
+    event.preventDefault()
+    void deleteSelection()
+    return
+  }
+
+  const chosen = /^[1-8]$/.test(key)
+    ? tools[Number(key) - 1]
+    : tools.find((entry) => entry.key === key)
+  if (!chosen) return
+  event.preventDefault()
+  selectTool(chosen.id)
+}
+
+function clearSelection() {
+  if (isEmptyEditableDraft(selectedItem.value)) return cancelDraft()
+  selectedIds.value = []
+  editBefore = undefined
+}
+
+/** Remove whatever is selected and can be removed, in one history entry. */
+async function deleteSelection() {
+  const targets = selectedItems.value.filter(editable).map(cloneItem)
+  if (!targets.length) return
+  dropItems(targets)
+  await persistErasure(targets)
 }
 
 function onDeviceMotion(event: DeviceMotionEvent) {
@@ -1554,7 +1766,7 @@ onBeforeUnmount(() => {
           <template v-else-if="item.kind === 'text'">
             <foreignObject :x="item.x" :y="item.y" :width="item.width" :height="item.height">
               <textarea
-                v-if="selectedId === item.id && editable(item)"
+                v-if="selectedItem?.id === item.id && editable(item)"
                 v-model="item.text"
                 :data-guestbook-editor="item.id"
                 class="canvas-editor canvas-text-editor"
@@ -1581,7 +1793,7 @@ onBeforeUnmount(() => {
             <path :d="`M ${item.x + item.width - 38} ${item.y + 2} Q ${item.x + item.width - 13} ${item.y + 12} ${item.x + item.width - 2} ${item.y + 35}`" fill="none" stroke="#5c4024" stroke-opacity="0.18" stroke-width="1.5" />
             <foreignObject :x="item.x + 14" :y="item.y + 15" :width="item.width - 28" :height="item.height - 28">
               <textarea
-                v-if="selectedId === item.id && editable(item)"
+                v-if="selectedItem?.id === item.id && editable(item)"
                 v-model="item.text"
                 :data-guestbook-editor="item.id"
                 class="canvas-editor sticky-copy"
@@ -1621,6 +1833,37 @@ onBeforeUnmount(() => {
         </g>
 
         <path v-if="activePoints.length > 1" :d="drawingPath(activePoints)" fill="none" :stroke="penColor" :stroke-width="penWidth" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none" />
+
+        <!-- Every mark in a group gets its own outline, so it is obvious what is coming along. -->
+        <rect
+          v-for="outline in groupOutlines"
+          :key="`group-${outline.id}`"
+          :x="outline.bounds.x - 4 / camera.zoom"
+          :y="outline.bounds.y - 4 / camera.zoom"
+          :width="outline.bounds.width + 8 / camera.zoom"
+          :height="outline.bounds.height + 8 / camera.zoom"
+          :transform="outline.transform"
+          fill="none"
+          stroke="var(--accent)"
+          :stroke-width="1.5 / camera.zoom"
+          :stroke-dasharray="`${5 / camera.zoom} ${4 / camera.zoom}`"
+          class="pointer-events-none"
+        />
+
+        <rect
+          v-if="marquee"
+          :x="marquee.x"
+          :y="marquee.y"
+          :width="marquee.width"
+          :height="marquee.height"
+          :rx="3 / camera.zoom"
+          fill="var(--accent)"
+          fill-opacity="0.08"
+          stroke="var(--accent)"
+          :stroke-width="1.5 / camera.zoom"
+          :stroke-dasharray="`${5 / camera.zoom} ${4 / camera.zoom}`"
+          class="pointer-events-none"
+        />
 
         <g v-if="selectedItem && selectedTooltip" :key="`tooltip-${selectedItem.id}`" class="pointer-events-none canvas-tooltip">
           <path
@@ -1714,7 +1957,7 @@ onBeforeUnmount(() => {
       <div class="absolute inset-x-3 top-3 z-10 sm:inset-x-4 sm:top-4">
         <div class="toolbar unified-toolbar max-w-full rounded-xl p-1.5">
           <div class="toolbar-tools">
-            <button v-for="entry in tools" :key="entry.id" type="button" class="tool-button" :class="tool === entry.id && 'tool-button-active'" :aria-label="entry.label" :aria-pressed="tool === entry.id" :title="entry.label" @click="selectTool(entry.id)">
+            <button v-for="entry in tools" :key="entry.id" type="button" class="tool-button" :class="tool === entry.id && 'tool-button-active'" :aria-label="entry.label" :aria-pressed="tool === entry.id" :title="toolTitle(entry)" @click="selectTool(entry.id)">
               <component :is="entry.icon" class="size-4" />
               <span class="tool-label text-xs font-medium">{{ entry.label }}</span>
             </button>
