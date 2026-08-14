@@ -80,7 +80,8 @@ interface EmojiItem extends BaseItem {
 
 interface ImageItem extends BaseItem {
   kind: 'image'
-  src: string
+  /** Absent on a mark that arrived over the live stream, which omits uploads. */
+  src?: string
   /** A postage stamp of the same picture, for previews that cannot carry src. */
   thumb?: string
   width: number
@@ -146,6 +147,10 @@ const TILE = 1024
 const OPENING_ZOOM = 0.55
 /** How many marks to hold before letting go of the ones furthest behind. */
 const MARK_BUDGET = 1_200
+// Base64 characters, so about three quarters of this in bytes. A 480px picture
+// has no business being larger, and the server refuses anything over 700,000.
+const UPLOAD_BUDGET = 160_000
+const THUMB_BUDGET = 8_000
 /**
  * Signed in as the site owner, every mark on the board is editable, not just
  * the ones this browser session made. The server enforces the same rule; this
@@ -726,6 +731,8 @@ async function api<T = void>(path = '', init?: RequestInit): Promise<T> {
   const response = await fetch(`${endpoint}${path}`, {
     ...init,
     cache: 'no-store',
+    // Carries the admin session cookie where the browser keeps one.
+    credentials: 'include',
     headers: { ...requestHeaders(Boolean(init?.body)), ...init?.headers },
   })
   if (!response.ok) {
@@ -1481,8 +1488,8 @@ async function prepareImage(event: Event) {
     const height = Math.max(40, Math.round(image.naturalHeight * scale))
     const item: ImageItem = {
       id: crypto.randomUUID(), kind: 'image', x: camera.value.x - width / 2, y: camera.value.y - height / 2, rotation: 0,
-      src: redraw(image, width, height).toDataURL('image/webp', 0.8),
-      thumb: redraw(image, ...fitWithin(width, height, 96)).toDataURL('image/webp', 0.5),
+      src: encode(redraw(image, width, height), UPLOAD_BUDGET),
+      thumb: encode(redraw(image, ...fitWithin(width, height, 96)), THUMB_BUDGET),
       width, height,
       alt: file.name.replace(/\.[^.]+$/, '').slice(0, 120), owned: true,
     }
@@ -1500,8 +1507,40 @@ function redraw(image: HTMLImageElement, width: number, height: number) {
   const bitmap = document.createElement('canvas')
   bitmap.width = width
   bitmap.height = height
-  bitmap.getContext('2d')!.drawImage(image, 0, 0, width, height)
+  const context = bitmap.getContext('2d')!
+  // JPEG has no transparency, and undrawn canvas is transparent black, so a
+  // PNG with a see-through background would otherwise come out on black.
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, width, height)
+  context.drawImage(image, 0, 0, width, height)
   return bitmap
+}
+
+/**
+ * Encode small, and make sure it really was encoded small.
+ *
+ * toDataURL quietly returns a PNG when it cannot produce the format asked for,
+ * and a PNG ignores the quality argument entirely, so a photograph that should
+ * have been thirty kilobytes of webp arrives as half a megabyte and nothing
+ * anywhere says so. Three of the images already on the board got in that way.
+ *
+ * So: check what came back rather than what was asked for, fall back to JPEG,
+ * which every browser can write and which honours quality, and step the
+ * quality down until the result is a reasonable thing to put in a database.
+ */
+function encode(bitmap: HTMLCanvasElement, budget: number) {
+  let smallest = ''
+  for (const quality of [0.8, 0.65, 0.5]) {
+    for (const type of ['image/webp', 'image/jpeg']) {
+      const encoded = bitmap.toDataURL(type, quality)
+      if (!encoded.startsWith(`data:${type}`)) continue
+      if (!smallest || encoded.length < smallest.length) smallest = encoded
+      if (encoded.length <= budget) return encoded
+    }
+  }
+  // Every attempt overshot. Send the smallest of them and let the server's own
+  // ceiling have the final say.
+  return smallest || bitmap.toDataURL('image/jpeg', 0.5)
 }
 
 /** The same shape, scaled so its longest side is at most `longest`. */
@@ -1685,6 +1724,30 @@ async function loadVisitorCount() {
   }
 }
 
+/**
+ * Ask for the picture behind a mark that arrived without one.
+ *
+ * Only when it is on screen. Somebody reading a different corner of the board
+ * has no use for it, and the point of leaving uploads out of the broadcast was
+ * that they should not pay for it.
+ */
+async function collectUpload(item: GuestbookItem) {
+  const box = itemBounds(item)
+  const view = viewBox.value
+  const onScreen =
+    box.x <= view.x + view.width && box.x + box.width >= view.x &&
+    box.y <= view.y + view.height && box.y + box.height >= view.y
+  if (!onScreen) return
+
+  try {
+    const full = await api<GuestbookItem>(`/${item.id}`)
+    const current = items.value.find((candidate) => candidate.id === item.id)
+    if (current && !current.draft) replaceItem({ ...full, owned: current.owned })
+  } catch {
+    // The thumbnail stands in until this part of the board is loaded again.
+  }
+}
+
 function connectRealtime() {
   liveStream?.close()
   liveStream = new EventSource(`${endpoint}/stream`)
@@ -1702,6 +1765,7 @@ function connectRealtime() {
     change.item.owned = Boolean(existing?.owned)
     if (existing?.draft) return
     replaceItem(change.item)
+    if (change.item.kind === 'image' && !change.item.src) void collectUpload(change.item)
   })
 }
 
@@ -1794,6 +1858,7 @@ function flushPendingDraft() {
   void fetch(endpoint, {
     method: 'POST',
     keepalive: true,
+    credentials: 'include',
     headers: requestHeaders(true),
     body: JSON.stringify(payload(item)),
   })
@@ -2006,7 +2071,7 @@ onBeforeUnmount(() => {
             :class="tool === 'select' ? undefined : 'pointer-events-none'"
           >
             <rect :x="item.x - 6" :y="item.y - 6" :width="item.width + 12" :height="item.height + 12" rx="5" fill="#fffdf7" filter="url(#guest-shadow)" />
-            <image :href="item.src" :x="item.x" :y="item.y" :width="item.width" :height="item.height" preserveAspectRatio="xMidYMid meet" />
+            <image :href="item.src ?? item.thumb" :x="item.x" :y="item.y" :width="item.width" :height="item.height" preserveAspectRatio="xMidYMid meet" />
           </g>
         </g>
 

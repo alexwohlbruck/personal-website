@@ -10,12 +10,18 @@ process.env.MAIL_USER = 'owner@example.com'
 process.env.MAIL_PASS = 'not-a-real-password'
 
 const {
+  ensureAdminSessions,
   isAdminEmail,
   readAdminSession,
   requestAdminCode,
+  revokeAdminSessions,
   verifyAdminCode,
   verifyAdminToken,
 } = await import('../src/lib/admin-auth.js')
+
+// No DATABASE_URL here, so sessions fall back to a generation held in memory.
+// The behaviour under test is the same either way.
+await ensureAdminSessions()
 
 const OWNER = 'owner@example.com'
 const RESEND_AFTER = 30_000
@@ -118,5 +124,51 @@ describe('admin sessions', () => {
       process.env.ADMIN_EMAIL = OWNER
     }
     assert.equal(verifyAdminToken(token, { now })?.email, OWNER)
+  })
+})
+
+describe('signing out', () => {
+  it('stops a token that was valid a moment ago', async () => {
+    const code = freshCode()
+    const token = verifyAdminCode(OWNER, code, { now })
+    assert.equal(verifyAdminToken(token, { now })?.email, OWNER)
+
+    await revokeAdminSessions()
+    assert.equal(verifyAdminToken(token, { now }), null)
+  })
+
+  it('leaves a session minted afterwards alone', async () => {
+    await revokeAdminSessions()
+    const token = verifyAdminCode(OWNER, freshCode(), { now })
+    assert.equal(verifyAdminToken(token, { now })?.email, OWNER)
+  })
+
+  it('reads a session out of a cookie as well as a header', () => {
+    const token = verifyAdminCode(OWNER, freshCode(), { now })
+    const cookie = (jar) => readAdminSession({ headers: { cookie: jar } })
+    assert.equal(cookie(`guestbook_admin=${token}`)?.email, OWNER)
+    assert.equal(cookie(`other=1; guestbook_admin=${token}; another=2`)?.email, OWNER)
+    assert.equal(cookie(`guestbook_admin_other=${token}`), null)
+    assert.equal(cookie('guestbook_admin='), null)
+    assert.equal(readAdminSession({ headers: {} }), null)
+  })
+})
+
+describe('a code that is still good', () => {
+  it('is resent rather than replaced, so nobody can reset it', () => {
+    const code = freshCode()
+    clock += RESEND_AFTER + 1_000
+    // Somebody else asking for a code must not invalidate the one in the
+    // owner's inbox.
+    assert.equal(requestAdminCode(OWNER, { now }), code)
+    assert.equal(verifyAdminCode(OWNER, code, { now })?.length > 0, true)
+  })
+
+  it('gives way to a new one once it has expired', () => {
+    const code = freshCode()
+    clock += 11 * 60_000
+    const replacement = requestAdminCode(OWNER, { now })
+    assert.notEqual(replacement, code)
+    assert.match(replacement, /^\d{6}$/)
   })
 })

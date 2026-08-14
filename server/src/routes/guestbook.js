@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { getGuestbookVisitorCount } from '../apis/analytics.js'
-import { readAdminSession } from '../lib/admin-auth.js'
+import { ensureAdminSessions, readAdminSession } from '../lib/admin-auth.js'
 import { cached } from '../lib/cache.js'
 import { database, ensureGuestbookSchema } from '../lib/database.js'
 import { guestbookItemBounds } from '../lib/guestbook-geometry.js'
@@ -391,15 +391,38 @@ router.get('/preview', async (req, res) => {
 })
 
 router.get('/stream', (req, res) => {
-  const { send, close } = openStream(req, res)
+  const { send, sendRaw, close } = openStream(req, res)
   send('ready', { connected: true })
-  close(subscribeToGuestbook((change) => send('guestbook', change)))
+  close(subscribeToGuestbook((frame) => sendRaw('guestbook', frame)))
 })
 
 router.get('/visitors', async (req, res) => {
   const count = await getGuestbookVisitorCount()
   res.set('Cache-Control', 'no-store')
   res.json({ count })
+})
+
+/**
+ * One mark, in full.
+ *
+ * The live stream leaves uploads out, so this is how a canvas that is looking
+ * at a photograph someone just added gets the photograph. One request from
+ * whoever is actually watching that spot, rather than a megabyte pushed at
+ * everybody who happens to have the page open.
+ */
+router.get('/:id', async (req, res) => {
+  const clientId = guestbookClientId(req, false)
+  if (!UUID.test(req.params.id)) reject('Invalid item id.')
+  await ensureGuestbookSchema()
+  const result = await database().query(
+    `SELECT id, kind, x, y, payload, created_at AS "createdAt", updated_at AS "updatedAt",
+            client_id = $2::uuid AS owned
+       FROM guestbook_items WHERE id = $1`,
+    [req.params.id, clientId],
+  )
+  if (!result.rowCount) return res.status(404).json({ message: 'That mark is no longer here.' })
+  res.set('Cache-Control', 'no-store')
+  res.json(shape(result.rows[0]))
 })
 
 router.post('/', writeLimiter.guard, async (req, res) => {
@@ -426,6 +449,9 @@ router.post('/', writeLimiter.guard, async (req, res) => {
 })
 
 router.put('/:id', async (req, res) => {
+  // Load the session generation before asking whether this is the owner: the
+  // check reads it synchronously and answers "no" if it is not there yet.
+  await ensureAdminSessions()
   const admin = Boolean(readAdminSession(req))
   const clientId = guestbookClientId(req, !admin)
   const item = sanitizeGuestbookItem(req.body)
@@ -459,6 +485,7 @@ router.put('/:id', async (req, res) => {
 })
 
 router.delete('/:id', async (req, res) => {
+  await ensureAdminSessions()
   const admin = Boolean(readAdminSession(req))
   const clientId = guestbookClientId(req, !admin)
   if (!UUID.test(req.params.id)) reject('Invalid item id.')

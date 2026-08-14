@@ -19,9 +19,10 @@ export async function sendAdminSignInCode({ email, code }) {
   return transporter().sendMail({
     from: { name: 'alex.wohlbruck.com', address: config.mail.user },
     to: email,
-    // The code is in the subject so it can be read from a notification without
-    // opening anything.
-    subject: `${code} is your guestbook moderation code`,
+    // Not in the subject line. A subject travels through more hands than a
+    // body does, sits in notification previews on a locked screen, and is the
+    // part of a message most likely to be kept in somebody's logs.
+    subject: 'Your guestbook moderation code',
     text: [
       `Your code is ${code}. It expires in 10 minutes.`,
       '',

@@ -38,8 +38,19 @@ const guestbookCanvas = ref<SVGSVGElement>()
 let guestbookStream: EventSource | undefined
 let onScreen: IntersectionObserver | undefined
 
+/** A handful of distinct picks, not a ranking, so the pile need not sort what it draws from. */
+function sample<T>(items: T[], count: number): T[] {
+  const pool = [...items]
+  const picked: T[] = []
+  while (picked.length < count && pool.length) {
+    const index = Math.floor(Math.random() * pool.length)
+    picked.push(pool.splice(index, 1)[0])
+  }
+  return picked
+}
+
 const pileTiles = computed(() => {
-  const photos = live.instagramImages.slice(0, 5).reverse().map((photo) => ({
+  const photos = sample(live.instagramImages, 5).map((photo) => ({
     key: photo.key,
     url: photo.url,
     alt: photo.caption?.slice(0, 80) ?? 'Recent photo',
@@ -354,9 +365,9 @@ function applyGuestbookChange(event: Event) {
     return
   }
 
-  // Drop the full upload. The card draws the thumbnail, and holding a megabyte
-  // of base64 on the home page to paint something the size of a stamp is a
-  // poor trade.
+  // The stream leaves uploads out, so what arrives is already the small
+  // version: the card draws the thumbnail. Stripping src again costs nothing
+  // and means this holds no megabytes even if that ever changes.
   const { src, ...item } = change.item
   void src
   guestbookItems.value = [

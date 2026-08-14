@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { config } from '../config.js'
+import { database } from './database.js'
 import { ApiError, log } from '../util.js'
 
 /**
@@ -24,6 +25,63 @@ const SESSION_TTL = 7 * 24 * 60 * 60_000
 /** The single outstanding code. Undefined once it is used, spent or expired. */
 let challenge
 let signingKey
+
+/**
+ * Which generation of sessions is current.
+ *
+ * Every token carries the generation it was minted under, and signing out
+ * starts a new one, which is what turns "sign out" from a browser forgetting
+ * a token into the server refusing it. Kept in the database so that a token
+ * cannot come back to life across a restart.
+ */
+let epoch
+let epochReady
+/** Used only when there is no database to keep a generation in. */
+const processEpoch = crypto.randomUUID()
+
+export function ensureAdminSessions() {
+  if (!config.database.configured) {
+    // Sign out still works for as long as this process lives. Saying so is
+    // better than pretending the guarantee is stronger than it is.
+    epoch ??= processEpoch
+    return Promise.resolve(epoch)
+  }
+
+  epochReady ??= database()
+    .query(`
+      CREATE TABLE IF NOT EXISTS admin_sessions (
+        only_row boolean PRIMARY KEY DEFAULT true CHECK (only_row),
+        epoch uuid NOT NULL DEFAULT gen_random_uuid(),
+        rotated_at timestamptz NOT NULL DEFAULT now()
+      );
+
+      INSERT INTO admin_sessions (only_row) VALUES (true) ON CONFLICT DO NOTHING;
+    `)
+    .then(async () => {
+      const result = await database().query('SELECT epoch FROM admin_sessions WHERE only_row')
+      epoch = result.rows[0].epoch
+      return epoch
+    })
+    .catch((error) => {
+      epochReady = undefined
+      throw error
+    })
+
+  return epochReady
+}
+
+/** End every session everywhere. There is one admin, so there is one answer. */
+export async function revokeAdminSessions() {
+  await ensureAdminSessions()
+  if (!config.database.configured) {
+    epoch = crypto.randomUUID()
+    return
+  }
+  const result = await database().query(
+    'UPDATE admin_sessions SET epoch = gen_random_uuid(), rotated_at = now() WHERE only_row RETURNING epoch',
+  )
+  epoch = result.rows[0].epoch
+}
 
 function key() {
   if (signingKey) return signingKey
@@ -56,7 +114,7 @@ export function isAdminEmail(email) {
 }
 
 function issueSession(email, now) {
-  const payload = encode({ email, exp: now + SESSION_TTL })
+  const payload = encode({ email, epoch, exp: now + SESSION_TTL })
   return `${payload}.${sign(payload)}`
 }
 
@@ -71,6 +129,14 @@ export function requestAdminCode(email, { now = Date.now } = {}) {
   if (!isAdminEmail(email)) return null
   if (challenge && now() - challenge.sentAt < RESEND_AFTER) {
     throw new ApiError('A code was just sent. Check your inbox before asking for another.', 429)
+  }
+
+  // A code that is still good gets sent again rather than replaced. Minting a
+  // new one here would let anyone who can reach this endpoint invalidate the
+  // code the owner is halfway through typing, simply by asking for one.
+  if (challenge && challenge.expiresAt > now()) {
+    challenge.sentAt = now()
+    return challenge.code
   }
 
   const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, '0')
@@ -118,18 +184,39 @@ export function verifyAdminToken(token, { now = Date.now } = {}) {
   // ADMIN_EMAIL can change. A token minted for the previous owner should not
   // outlive that change.
   if (!isAdminEmail(claims.email)) return null
+  // Signed out, or asked about before the current generation was loaded. Both
+  // mean this token proves nothing right now.
+  if (!epoch || claims.epoch !== epoch) return null
   return { email: normalizeEmail(claims.email), expiresAt: claims.exp }
 }
 
+export const SESSION_COOKIE = 'guestbook_admin'
+export const SESSION_MAX_AGE = SESSION_TTL
+
 /**
- * The admin session on a request, if it carries one.
+ * The admin session on a request, from a cookie or a bearer header.
  *
- * A bearer header rather than a cookie: in development the client and the API
- * are different origins, where a cookie would have to be SameSite=None and
- * therefore Secure, and neither side is running TLS.
+ * The cookie is the one worth having, because it can be httpOnly and so is
+ * beyond the reach of any script on the page. It only works when the browser
+ * and the API share an origin, which they do in production and do not in
+ * development, where Vite serves on its own port. So the header stays as the
+ * way in for development, and for anything that is not a browser.
  */
 export function readAdminSession(req) {
   const header = req.get?.('Authorization') ?? ''
-  if (!header.startsWith('Bearer ')) return null
-  return verifyAdminToken(header.slice(7).trim())
+  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : readCookie(req, SESSION_COOKIE)
+  if (!token) return null
+  return verifyAdminToken(token)
+}
+
+function readCookie(req, name) {
+  const jar = req.headers?.cookie
+  if (!jar) return ''
+  for (const part of jar.split(';')) {
+    const separator = part.indexOf('=')
+    if (separator < 0) continue
+    if (part.slice(0, separator).trim() !== name) continue
+    return decodeURIComponent(part.slice(separator + 1).trim())
+  }
+  return ''
 }

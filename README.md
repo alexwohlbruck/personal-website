@@ -80,8 +80,12 @@ nothing. `GET /guestbook/overview` says how big the board is and where to open
 it: the middle of the twenty most recent marks.
 
 Marks written before the bounding box existed are measured once, on the first
-request after deploying. Older images get their preview thumbnail from
-`npm run thumbs:guestbook`, which borrows sharp from the client.
+request after deploying. `npm run images:guestbook` tidies up the pictures
+already on the board: it builds any missing thumbnails and recompresses images
+a browser stored as PNG. `toDataURL` returns a PNG when it cannot encode the
+format asked for, and a PNG ignores the quality argument, so an upload that
+should be thirty kilobytes can land as half a megabyte with nothing to say so.
+New uploads check what came back and fall back to JPEG instead.
 
 ### Moderating the guestbook
 
@@ -92,8 +96,13 @@ that can touch everything else.
 Sign in from the link under the canvas: enter that address, read the six digit
 code out of the mailbox, and the canvas opens up — every mark becomes movable,
 editable and erasable, while still showing whose it was. There is no password
-and no account to create; the mailbox is the credential. The session lasts a
-week and signing out just discards it locally.
+and no account to create; the mailbox is the credential.
+
+The session lives in an httpOnly cookie wherever the site and the API share an
+origin, which is everywhere except local development, where they sit on
+different ports and a bearer token stands in. Signing out ends every session
+rather than only the one in front of you, so a token that leaked somewhere else
+stops working the moment you notice.
 
 ## Development
 

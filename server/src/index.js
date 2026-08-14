@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { startTokenRenewal } from './apis/instagram.js'
 import { config } from './config.js'
+import { ensureAdminSessions } from './lib/admin-auth.js'
 import routes from './routes/index.js'
 import { log } from './util.js'
 
@@ -16,7 +17,9 @@ app.disable('x-powered-by')
 // Production is only reachable through the single Caddy hop in deploy/vega.
 // This keeps per-address write limits per visitor instead of per reverse proxy.
 app.set('trust proxy', production ? 1 : false)
-app.use(cors({ origin: allowOrigin }))
+// credentials so the admin session cookie is sent and accepted. The origin
+// callback below never answers with a wildcard, which credentialed CORS forbids.
+app.use(cors({ origin: allowOrigin, credentials: true }))
 
 /**
  * Whether a browser origin may read from here.
@@ -89,4 +92,7 @@ app.listen(config.port, () => {
   }
 
   startTokenRenewal()
+  // Load the admin session generation now, so the very first request can check
+  // a token without waiting on the database.
+  ensureAdminSessions().catch((error) => log(`Admin sessions unavailable: ${error.message}`, 'FgYellow'))
 })

@@ -24,6 +24,17 @@ export function openStream(req, res) {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data ?? null)}\n\n`)
   }
 
+  /**
+   * Write a frame whose body was serialised elsewhere.
+   *
+   * For a broadcast, the same payload goes to every listener, and building it
+   * once beats building it once per socket.
+   */
+  const sendRaw = (event, json) => {
+    if (res.writableEnded) return
+    res.write(`event: ${event}\ndata: ${json}\n\n`)
+  }
+
   // A comment line is a valid no-op frame. It keeps the connection warm without
   // the client having to know it happened.
   const heartbeat = setInterval(() => {
@@ -39,5 +50,5 @@ export function openStream(req, res) {
     })
   }
 
-  return { send, close }
+  return { send, sendRaw, close }
 }

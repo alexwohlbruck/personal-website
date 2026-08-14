@@ -96,7 +96,7 @@ onMounted(() => void restoreAdminSession())
         <ShieldCheck class="size-3.5" />
         Moderating as {{ email }}
       </span>
-      <button type="button" class="admin-link" @click="signOutAdmin">
+      <button type="button" class="admin-link" @click="signOutAdmin()">
         <LogOut class="size-3.5" />
         Sign out
       </button>
