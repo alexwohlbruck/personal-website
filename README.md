@@ -40,6 +40,8 @@ cd ../client && npm install
 | Name                  | Type   | Recommended value         |  Description |
 |-----------------------|--------|---------------------------|-----------------------------------------------|
 | PORT                  | number | 3000                      | Port to run the server on                     |
+| ADMIN_EMAIL           | string | Your gmail                | The one address that can moderate the guestbook |
+| ADMIN_SESSION_SECRET  | string | 32 random bytes, hex      | Signs admin sessions; unset means a restart signs you out |
 | DATABASE_URL          | string | Neon pooled connection    | Postgres connection for the shared guestbook  |
 | GOOGLE_API_KEY        | string |                           | API key from Google Developers Console        |
 | GOOGLE_CALENDAR_ID    | string | Your gmail                | Your calendar ID, usually your gmail address  |
@@ -66,6 +68,18 @@ cd ../client && npm install
 Leave `VITE_BACKEND_URL` unset and the live sections (now playing, photos,
 availability, contact form) fall back to a quiet offline state instead of
 erroring. The rest of the site is fully static.
+
+### Moderating the guestbook
+
+Anyone can draw on `/guestbook`, and by default a visitor can only touch what
+their own browser session put there. `ADMIN_EMAIL` names the single account
+that can touch everything else.
+
+Sign in from the link under the canvas: enter that address, read the six digit
+code out of the mailbox, and the canvas opens up — every mark becomes movable,
+editable and erasable, while still showing whose it was. There is no password
+and no account to create; the mailbox is the credential. The session lasts a
+week and signing out just discards it locally.
 
 ## Development
 

@@ -22,6 +22,26 @@ export const config = {
     },
   },
 
+  /**
+   * The one account that can moderate the guestbook.
+   *
+   * Read lazily so the address can be changed without a rebuild, and so tests
+   * can set it themselves. Sign in needs mail: a code that cannot be delivered
+   * is not a login.
+   */
+  admin: {
+    get email() {
+      return env('ADMIN_EMAIL')?.toLowerCase()
+    },
+    /** Signs session tokens. Unset means a restart signs the moderator out. */
+    get secret() {
+      return env('ADMIN_SESSION_SECRET')
+    },
+    get configured() {
+      return Boolean(this.email) && has('MAIL_HOST', 'MAIL_USER', 'MAIL_PASS')
+    },
+  },
+
   spotify: {
     clientId: env('SPOTIFY_CLIENT_ID'),
     clientSecret: env('SPOTIFY_CLIENT_SECRET'),

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { getGuestbookVisitorCount } from '../apis/analytics.js'
+import { readAdminSession } from '../lib/admin-auth.js'
 import { database, ensureGuestbookSchema } from '../lib/database.js'
 import { publishGuestbook, subscribeToGuestbook } from '../lib/guestbook-live.js'
 import { resolveIpLocation } from '../lib/ip-location.js'
@@ -31,6 +32,10 @@ export function createWriteLimiter({ limit = WRITE_LIMIT, windowMs = WINDOW_MS, 
   }
 
   function guard(req, res, next) {
+    // The limit exists to stop one visitor filling the board. The owner
+    // clearing up after them should not be spending the same allowance.
+    if (readAdminSession(req)) return next()
+
     const key = req.ip
     const timestamp = now()
     const recent = (writes.get(key) ?? []).filter((entry) => timestamp - entry.time < windowMs)
@@ -269,7 +274,8 @@ router.post('/', writeLimiter.guard, async (req, res) => {
 })
 
 router.put('/:id', async (req, res) => {
-  const clientId = guestbookClientId(req)
+  const admin = Boolean(readAdminSession(req))
+  const clientId = guestbookClientId(req, !admin)
   const item = sanitizeGuestbookItem(req.body)
   if (item.id !== req.params.id) reject('The item id cannot be changed.')
   const { id, kind, x, y, ...payload } = item
@@ -284,24 +290,28 @@ router.put('/:id', async (req, res) => {
               ELSE '{}'::jsonb
             END,
             updated_at = now()
-      WHERE id = $1 AND client_id = $6
-      RETURNING payload, created_at AS "createdAt", updated_at AS "updatedAt"`,
-    [id, kind, x, y, payload, clientId],
+      WHERE id = $1 AND ($6::uuid IS NULL OR client_id = $6)
+      RETURNING payload, client_id AS "clientId", created_at AS "createdAt", updated_at AS "updatedAt"`,
+    // A null here means "any owner", which only an admin session can ask for.
+    [id, kind, x, y, payload, admin ? null : clientId],
   )
   if (!result.rowCount) return res.status(404).json({ message: 'That mark cannot be edited from this session.' })
-  const saved = { ...item, ...result.rows[0].payload, ...result.rows[0] }
-  delete saved.payload
+  const { payload: stored, clientId: owner, ...timestamps } = result.rows[0]
+  const saved = { ...item, ...stored, ...timestamps }
   publishGuestbook({ action: 'upsert', item: { ...saved, owned: false } })
-  res.json({ ...saved, owned: true })
+  // An admin editing somebody else's mark has not adopted it, and the canvas
+  // still shows whose it was.
+  res.json({ ...saved, owned: Boolean(clientId) && owner === clientId })
 })
 
 router.delete('/:id', async (req, res) => {
-  const clientId = guestbookClientId(req)
+  const admin = Boolean(readAdminSession(req))
+  const clientId = guestbookClientId(req, !admin)
   if (!UUID.test(req.params.id)) reject('Invalid item id.')
   await ensureGuestbookSchema()
   const result = await database().query(
-    'DELETE FROM guestbook_items WHERE id = $1 AND client_id = $2',
-    [req.params.id, clientId],
+    'DELETE FROM guestbook_items WHERE id = $1 AND ($2::uuid IS NULL OR client_id = $2)',
+    [req.params.id, admin ? null : clientId],
   )
   if (!result.rowCount) return res.status(404).json({ message: 'That mark cannot be removed from this session.' })
   writeLimiter.release(req.params.id)

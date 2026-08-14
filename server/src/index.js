@@ -81,6 +81,7 @@ app.listen(config.port, () => {
     analytics: config.analytics.configured,
     mailer: config.mail.configured,
     database: config.database.configured,
+    admin: config.admin.configured,
   })
 
   for (const [name, ready] of configured) {

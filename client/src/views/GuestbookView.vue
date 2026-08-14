@@ -19,6 +19,8 @@ import {
   Undo2,
   X,
 } from '@lucide/vue'
+import AdminSignIn from '@/components/guestbook/AdminSignIn.vue'
+import { useAdmin } from '@/lib/admin'
 import { BACKEND_URL } from '@/data/site'
 
 type Point = [number, number]
@@ -120,6 +122,12 @@ type Interaction =
   | { mode: 'rotate'; pointer: number; startAngle: number; before: GuestbookItem }
 
 const endpoint = `${BACKEND_URL}/guestbook`
+/**
+ * Signed in as the site owner, every mark on the board is editable, not just
+ * the ones this browser session made. The server enforces the same rule; this
+ * only decides what the canvas offers to do.
+ */
+const { signedIn: moderating, adminHeaders } = useAdmin()
 const sessionKey = 'guestbook-client-id'
 const existingClientId = sessionStorage.getItem(sessionKey)
 const clientId = existingClientId ?? crypto.randomUUID()
@@ -233,7 +241,11 @@ const visitorLabel = computed(() => {
   return `You're the ${visitorNumber.format(visitorCount.value)}${suffix} guest`
 })
 const selectedBounds = computed(() => (selectedItem.value ? itemBounds(selectedItem.value) : undefined))
-const canEditSelected = computed(() => Boolean(selectedItem.value?.owned || selectedItem.value?.draft))
+/** Yours, still being made, or everyone's because you own the site. */
+function editable(item?: GuestbookItem) {
+  return Boolean(item && (item.owned || item.draft || moderating.value))
+}
+const canEditSelected = computed(() => editable(selectedItem.value))
 const canTransformSelected = computed(
   () => canEditSelected.value && selectedItem.value?.kind !== 'drawing',
 )
@@ -489,7 +501,7 @@ function eraseAt(point: Point) {
   if (interaction?.mode !== 'erase') return
   const removedIds = new Set(interaction.removed.map((item) => item.id))
   const hits = items.value.filter((item) =>
-    (item.owned || item.draft) && !removedIds.has(item.id) && eraserHits(item, point),
+    editable(item) && !removedIds.has(item.id) && eraserHits(item, point),
   )
   if (!hits.length) return
   interaction.removed.push(...hits.map(cloneItem))
@@ -511,6 +523,16 @@ function drawingPath(points: Point[]) {
   }
   const last = points[points.length - 1]
   return `${path} L ${last[0]} ${last[1]}`
+}
+
+/**
+ * How wide a stroke is to grab, as opposed to how wide it looks.
+ *
+ * Pointer events on a path only land on the stroke itself, and a one pixel
+ * line drawn at low zoom is a target nobody can hit with a finger.
+ */
+function grabWidth(item: DrawingItem) {
+  return Math.max(item.width, 18 / camera.value.zoom)
 }
 
 function fontFamily(font: Font) {
@@ -597,6 +619,7 @@ function itemPostedDate(item: GuestbookItem) {
 function requestHeaders(body = false): HeadersInit {
   return {
     'X-Guestbook-Client': clientId,
+    ...adminHeaders(),
     ...(body ? { 'Content-Type': 'application/json' } : {}),
   }
 }
@@ -651,11 +674,12 @@ async function updateRemote(before: GuestbookItem, after: GuestbookItem, recordH
   if (JSON.stringify(payload(before)) === JSON.stringify(payload(after))) return
   saving.value = true
   try {
+    // Whether this is still your mark is the server's answer, not an
+    // assumption: moderating someone else's does not make it yours.
     const saved = await api<GuestbookItem>(`/${after.id}`, {
       method: 'PUT',
       body: JSON.stringify(payload(after)),
     })
-    saved.owned = true
     replaceItem(saved)
     if (recordHistory) record({ type: 'update', before: cloneItem(before), after: cloneItem(saved) })
   } catch (error) {
@@ -717,7 +741,6 @@ async function undo() {
         method: 'PUT',
         body: JSON.stringify(payload(command.before)),
       })
-      restored.owned = true
       replaceItem(restored)
     }
   } catch (error) {
@@ -770,7 +793,6 @@ async function redo() {
         method: 'PUT',
         body: JSON.stringify(payload(command.after)),
       })
-      applied.owned = true
       replaceItem(applied)
     }
   } catch (error) {
@@ -890,21 +912,15 @@ function addEditableDraft(item: TextItem | StickyItem) {
 }
 
 function selectItem(event: PointerEvent, item: GuestbookItem) {
-  if (tool.value !== 'select' || item.kind === 'drawing') return
+  if (tool.value !== 'select') return
   event.stopPropagation()
   if (selectedItem.value?.id !== item.id && isEmptyEditableDraft(selectedItem.value)) cancelDraft()
   selectedId.value = item.id
-  if (item.owned || item.draft) startMove(event, item)
-}
-
-function selectDrawing(event: PointerEvent, item: DrawingItem) {
-  if (tool.value !== 'select') return
-  event.stopPropagation()
-  selectedId.value = selectedId.value === item.id ? undefined : item.id
+  if (editable(item)) startMove(event, item)
 }
 
 function startMove(event: PointerEvent, item: GuestbookItem) {
-  if (item.kind === 'drawing' || (!item.owned && !item.draft)) return
+  if (!editable(item)) return
   event.stopPropagation()
   capturePointer(event)
   selectedId.value = item.id
@@ -919,7 +935,7 @@ function startResize(event: PointerEvent, item: GuestbookItem) {
 }
 
 function startRotate(event: PointerEvent, item: GuestbookItem) {
-  if (item.kind === 'drawing' || (!item.owned && !item.draft)) return
+  if (item.kind === 'drawing' || !editable(item)) return
   event.stopPropagation()
   event.preventDefault()
   capturePointer(event)
@@ -995,10 +1011,20 @@ function onPointerMove(event: PointerEvent) {
   const dx = localPoint[0] - localStart[0]
   const dy = localPoint[1] - localStart[1]
   if (active.mode === 'move') {
-    current.x = before.x + dx
-    current.y = before.y + dy
+    moveItem(current, before, dx, dy)
   } else {
     resizeItem(current, before, dx, dy)
+  }
+}
+
+function moveItem(current: GuestbookItem, before: GuestbookItem, dx: number, dy: number) {
+  current.x = before.x + dx
+  current.y = before.y + dy
+  // Everything else hangs off x and y. A stroke is a list of absolute points
+  // with nothing to hang, so the whole line travels. x and y stay on the first
+  // point, which is where drawing put them.
+  if (current.kind === 'drawing' && before.kind === 'drawing') {
+    current.points = before.points.map(([x, y]) => [x + dx, y + dy])
   }
 }
 
@@ -1292,7 +1318,7 @@ async function loadItems(center = false) {
     const drafts = items.value.filter((item) => item.draft)
     const selected = selectedItem.value
     items.value = result.items.map((remote) => {
-      if (selected?.id === remote.id && selected.owned) return selected
+      if (selected?.id === remote.id && editable(selected)) return selected
       return normalizeItem(remote)
     })
     for (const draft of drafts) if (!items.value.some((item) => item.id === draft.id)) items.value.push(draft)
@@ -1498,25 +1524,37 @@ onBeforeUnmount(() => {
           :key="item.id"
           :opacity="item.draft ? 0.82 : 1"
           :transform="itemTransform(item)"
-          :class="item.kind !== 'drawing' && tool === 'select' ? (item.owned || item.draft ? 'canvas-owned' : 'canvas-inspect') : undefined"
+          :class="item.kind !== 'drawing' && tool === 'select' ? (editable(item) ? 'canvas-owned' : 'canvas-inspect') : undefined"
           @pointerdown="item.kind !== 'drawing' && selectItem($event, item)"
         >
-          <path
-            v-if="item.kind === 'drawing'"
-            :d="drawingPath(item.points)"
-            fill="none"
-            :stroke="item.color"
-            :stroke-width="item.width"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            :class="tool === 'select' ? 'doodle-inspect' : 'pointer-events-none'"
-            @pointerdown="selectDrawing($event, item)"
-          />
+          <template v-if="item.kind === 'drawing'">
+            <!-- Invisible and a little fatter, so a thin line can still be grabbed. -->
+            <path
+              v-if="tool === 'select'"
+              :d="drawingPath(item.points)"
+              fill="none"
+              stroke="transparent"
+              :stroke-width="grabWidth(item)"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              :class="editable(item) ? 'doodle-move' : 'doodle-inspect'"
+              @pointerdown="selectItem($event, item)"
+            />
+            <path
+              :d="drawingPath(item.points)"
+              fill="none"
+              :stroke="item.color"
+              :stroke-width="item.width"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="pointer-events-none"
+            />
+          </template>
 
           <template v-else-if="item.kind === 'text'">
             <foreignObject :x="item.x" :y="item.y" :width="item.width" :height="item.height">
               <textarea
-                v-if="selectedId === item.id && (item.owned || item.draft)"
+                v-if="selectedId === item.id && editable(item)"
                 v-model="item.text"
                 :data-guestbook-editor="item.id"
                 class="canvas-editor canvas-text-editor"
@@ -1543,7 +1581,7 @@ onBeforeUnmount(() => {
             <path :d="`M ${item.x + item.width - 38} ${item.y + 2} Q ${item.x + item.width - 13} ${item.y + 12} ${item.x + item.width - 2} ${item.y + 35}`" fill="none" stroke="#5c4024" stroke-opacity="0.18" stroke-width="1.5" />
             <foreignObject :x="item.x + 14" :y="item.y + 15" :width="item.width - 28" :height="item.height - 28">
               <textarea
-                v-if="selectedId === item.id && (item.owned || item.draft)"
+                v-if="selectedId === item.id && editable(item)"
                 v-model="item.text"
                 :data-guestbook-editor="item.id"
                 class="canvas-editor sticky-copy"
@@ -1636,8 +1674,14 @@ onBeforeUnmount(() => {
           >{{ selectedTooltip.date }}</text>
         </g>
 
-        <g v-if="selectedItem && selectedBounds && canTransformSelected" class="selection-controls" :transform="itemTransform(selectedItem)">
+        <!--
+          The outline says "this is yours to drag", which is true of a stroke
+          too. The handles resize and rotate, which a list of points does not
+          do, so they stay behind canTransformSelected.
+        -->
+        <g v-if="selectedItem && selectedBounds && canEditSelected" class="selection-controls" :transform="itemTransform(selectedItem)">
           <rect :x="selectedBounds.x - 5 / camera.zoom" :y="selectedBounds.y - 5 / camera.zoom" :width="selectedBounds.width + 10 / camera.zoom" :height="selectedBounds.height + 10 / camera.zoom" fill="none" stroke="var(--accent)" :stroke-width="1.5 / camera.zoom" :stroke-dasharray="`${5 / camera.zoom} ${4 / camera.zoom}`" class="pointer-events-none" />
+          <template v-if="canTransformSelected">
           <line
             :x1="selectedBounds.x + selectedBounds.width / 2"
             :y1="selectedBounds.y - 5 / camera.zoom"
@@ -1663,6 +1707,7 @@ onBeforeUnmount(() => {
             <circle :cx="selectedBounds.x + selectedBounds.width + 5 / camera.zoom" :cy="selectedBounds.y + selectedBounds.height + 5 / camera.zoom" :r="22 / camera.zoom" fill="transparent" />
             <circle :cx="selectedBounds.x + selectedBounds.width + 5 / camera.zoom" :cy="selectedBounds.y + selectedBounds.height + 5 / camera.zoom" :r="7 / camera.zoom" fill="#fffaf0" stroke="var(--accent)" :stroke-width="2 / camera.zoom" class="pointer-events-none" />
           </g>
+          </template>
         </g>
       </svg>
 
@@ -1744,9 +1789,10 @@ onBeforeUnmount(() => {
       <p class="sr-only" role="status" aria-live="polite">{{ message }}</p>
     </section>
 
-    <p class="mt-3 text-xs leading-relaxed text-ink-3">
-      shake to undo
-    </p>
+    <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+      <p class="text-xs leading-relaxed text-ink-3">shake to undo</p>
+      <AdminSignIn />
+    </div>
   </div>
 </template>
 
@@ -1789,6 +1835,7 @@ onBeforeUnmount(() => {
 .rotate-handle:active { cursor: grabbing; }
 .transform-handle { touch-action: none; -webkit-tap-highlight-color: transparent; }
 .doodle-inspect { cursor: pointer; pointer-events: stroke; }
+.doodle-move { cursor: move; pointer-events: stroke; touch-action: none; }
 .rate-limit-warning { position: absolute; z-index: 20; right: 1rem; bottom: 1rem; left: 1rem; display: flex; max-width: 30rem; align-items: center; justify-content: space-between; gap: 0.75rem; margin-inline: auto; border: 1px solid color-mix(in oklab, var(--accent) 45%, var(--rule-strong)); border-radius: 0.85rem; padding: 0.7rem 0.75rem 0.7rem 0.9rem; color: var(--ink); background: color-mix(in oklab, var(--surface) 96%, transparent); box-shadow: var(--shadow-2); backdrop-filter: blur(16px); font-size: 0.78rem; font-weight: 650; line-height: 1.35; }
 .rate-limit-warning button { display: grid; width: 1.8rem; height: 1.8rem; flex: none; place-items: center; border-radius: 0.5rem; color: var(--ink-2); transition: color 150ms ease, background-color 150ms ease; }
 .rate-limit-warning button:hover { color: var(--ink); background: var(--accent-wash); }
