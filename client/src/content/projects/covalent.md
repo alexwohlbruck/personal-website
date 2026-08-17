@@ -1,0 +1,3 @@
+For my final CS capstone course, using Node.js and the ESP32 microcontroller, this project aims to connect friends who live far away with a lamp for each person that will light up and pulse in sync when someone sends a message.
+
+I made two lamps, each equipped with a Wemos D1 mini, which connected to a Node.js Socket.io server and can be controlled using a web app via Bluetooth. Colors can be changed by rotating the top bezel, and the pulse sent by pressing down. A double press will activate a simple reading mode, which lights the lamp indefinitely in the color temperature of your choice. The lamps are also outfitted with PIR motion and ambient light sensors, which can smartly dim the lamp when you are sleeping or not in the room.

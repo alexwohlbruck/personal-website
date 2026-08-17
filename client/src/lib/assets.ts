@@ -10,6 +10,13 @@ const portfolioUrls = import.meta.glob('../assets/portfolio/**/*.{png,jpg,jpeg,g
   import: 'default',
 }) as Record<string, string>
 
+/** Images belonging to a blog post, under `assets/posts/<slug>/`. */
+const postUrls = import.meta.glob('../assets/posts/**/*.{png,jpg,jpeg,gif,webp}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>
+
 const assetUrls = import.meta.glob('../assets/{svg,img}/*.{svg,png,jpg,jpeg}', {
   eager: true,
   query: '?url',
@@ -43,6 +50,7 @@ function keyBy(record: Record<string, string>, marker: string) {
 }
 
 const portfolio = keyBy(portfolioUrls, '/assets/portfolio/')
+const posts = keyBy(postUrls, '/assets/posts/')
 const derived = keyBy(derivedUrls, '/assets/derived/')
 const assets = keyBy(assetUrls, '/assets/')
 const svgSource = keyBy(rawSvgs, '/assets/svg/')
@@ -55,6 +63,11 @@ export function assetUrl(path: string): string {
 /** `projectImage('parchment', 'main.png')` */
 export function projectImage(project: string, file: string): string {
   return portfolio[`${project}/${file}`] ?? ''
+}
+
+/** `postImage('hello-world', 'diagram.png')` */
+export function postImage(slug: string, file: string): string {
+  return posts[`${slug}/${file}`] ?? ''
 }
 
 interface ImageMeta {
@@ -88,18 +101,20 @@ export interface ImageSource {
  * `src` points at a middle rendition rather than the original, so a browser
  * that ignores srcset still gets something reasonable at either extreme. The
  * original stays reachable through `projectImage` for the lightbox.
+ *
+ * `key` is the path the manifest stores, which is also where the renditions
+ * sit under `assets/derived`.
  */
-export function projectImageSet(project: string, file: string): ImageSource {
-  const entry = meta[`${project}/${file}`]
-  const original = projectImage(project, file)
+function imageSet(key: string, original: string): ImageSource {
+  const entry = meta[key]
   if (!entry) return { src: original, width: 1600, height: 1000 }
 
   const base = { width: entry.w, height: entry.h, lqip: entry.lqip }
   if (!entry.srcset?.length) return { src: original, ...base }
 
-  const stem = file.slice(0, file.lastIndexOf('.'))
+  const stem = key.slice(0, key.lastIndexOf('.'))
   const renditions = entry.srcset
-    .map((w) => ({ w, url: derived[`${project}/${stem}-${w}.webp`] }))
+    .map((w) => ({ w, url: derived[`${stem}-${w}.webp`] }))
     .filter((r): r is { w: number; url: string } => Boolean(r.url))
 
   if (!renditions.length) return { src: original, ...base }
@@ -107,6 +122,14 @@ export function projectImageSet(project: string, file: string): ImageSource {
   const srcset = [...renditions.map((r) => `${r.url} ${r.w}w`), `${original} ${entry.w}w`].join(', ')
   const fallback = renditions[Math.min(1, renditions.length - 1)]!
   return { src: fallback.url, srcset, ...base }
+}
+
+export function projectImageSet(project: string, file: string): ImageSource {
+  return imageSet(`${project}/${file}`, projectImage(project, file))
+}
+
+export function postImageSet(slug: string, file: string): ImageSource {
+  return imageSet(`posts/${slug}/${file}`, postImage(slug, file))
 }
 
 /**

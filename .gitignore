@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 # Generated image renditions
 src/assets/derived/
+
+# Scratch directory the prerender pass builds into
+.vite-ssg-temp/

@@ -2,22 +2,37 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Motion } from 'motion-v'
-import { ArrowLeft, ArrowRight, ExternalLink } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, BookOpen, ExternalLink } from '@lucide/vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import ProjectTile from '@/components/project/ProjectTile.vue'
 import ProjectGallery from '@/components/project/ProjectGallery.vue'
+import RichText from '@/components/ui/RichText.vue'
 import NotFoundView from './NotFoundView.vue'
-import { adjacentProjects, findProject } from '@/data/projects'
+import { adjacentProjects, findProject, projectBody } from '@/data/projects'
+import { findPost } from '@/data/posts'
 import { tagLabel } from '@/data/skills'
 import { dateRange, duration as humanDuration } from '@/lib/format'
 import { duration, ease, inView } from '@/lib/motion'
+import { usePageMeta } from '@/composables/usePageMeta'
 
 const route = useRoute()
 
 const project = computed(() => findProject(String(route.params.name)))
-const paragraphs = computed(() => project.value?.description.split('\n').filter(Boolean) ?? [])
+
+usePageMeta({
+  title: computed(() => project.value?.title),
+  description: computed(() => project.value?.summary),
+})
+const body = computed(() => projectBody(String(route.params.name)))
 const siblings = computed(() => adjacentProjects(String(route.params.name)))
+
+/**
+ * Resolved rather than trusted: a project can name a post that is still a
+ * draft, and `findPost` leaves those out of production builds. Looking it up
+ * means the button disappears with the post instead of linking nowhere.
+ */
+const post = computed(() => (project.value?.post ? findPost(project.value.post) : undefined))
 
 const spec = computed(() => {
   const current = project.value
@@ -74,12 +89,15 @@ const enter = (delay: number) => ({
         </div>
       </Motion>
 
-      <Motion v-bind="enter(0.08)" class="mt-8 max-w-2xl space-y-4">
-        <p v-for="(paragraph, i) in paragraphs" :key="i" class="prose-body">{{ paragraph }}</p>
+      <Motion v-bind="enter(0.08)" class="mt-8 max-w-2xl">
+        <RichText v-if="body" :label="`${project.title} image`">
+          <component :is="body" />
+        </RichText>
+        <p v-else class="prose-body">{{ project.summary }}</p>
       </Motion>
 
       <Motion
-        v-if="project.url || project.github"
+        v-if="project.url || project.github || post"
         v-bind="enter(0.14)"
         class="mt-8 flex flex-wrap gap-3"
       >
@@ -90,6 +108,12 @@ const enter = (delay: number) => ({
         <AppButton v-if="project.github" :href="project.github">
           <InlineIcon name="github" :size="15" />
           Source
+        </AppButton>
+        <!-- Only rendered once the post exists and is published, so a draft
+             never leaves a dead button on the page. -->
+        <AppButton v-if="post" :to="{ name: 'post', params: { slug: post.slug } }">
+          <BookOpen class="size-4" />
+          Read the post
         </AppButton>
       </Motion>
     </header>

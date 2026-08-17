@@ -1,0 +1,3 @@
+Give Portolan a city's published schedule data and it draws the transit map. Every agency publishes a GTFS feed, but a feed is built for trip planners rather than for looking at: draw one straight onto a map and fifteen lines pile up along the same corridor, with only the last one drawn visible.
+
+Portolan does what a mapmaker would do by hand. It works out which routes share a trunk, runs them alongside each other at an even spacing, splits them apart at junctions, and labels every station with the routes that call there. The pipeline is Go and the workbench is Vue. No mapmaker is involved at any step.

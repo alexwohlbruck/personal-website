@@ -6,6 +6,7 @@ import { projects } from '@/data/projects'
 
 const nav = [
   { name: 'projects', label: 'Projects' },
+  { name: 'blog', label: 'Writing' },
   { name: 'about', label: 'About' },
   { name: 'social', label: 'Social' },
   { name: 'guestbook', label: 'Guestbook' },

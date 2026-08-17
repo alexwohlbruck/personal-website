@@ -6,15 +6,18 @@ export interface Project {
   color: string
   /** Path under `assets/`, e.g. `svg/parchment.svg`. Falls back to a monogram. */
   icon?: string
-  /** One line for the index and cards. Falls back to the description. */
-  summary?: string
-  /** Blank line separated; rendered as paragraphs on the project page. */
-  description: string
+  /**
+   * One line for the index, the cards and the page's meta description. The
+   * prose itself lives in `content/projects/<name>.md`.
+   */
+  summary: string
   start: Date
   /** Omitted for projects that never formally ended. */
   end?: Date
   url?: string
   github?: string
+  /** Slug of a blog post about this project, linked from the masthead. */
+  post?: string
   /** Filenames under `assets/portfolio/<name>/`. May be empty. */
   images: string[]
   /** Which image fronts the project. Defaults to the first in `images`. */

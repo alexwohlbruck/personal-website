@@ -1,0 +1,1 @@
+This is the website you're looking at right now. The current edition runs on Vue 3, Vite and Tailwind, with a paper-and-ink design system that follows your system theme. It hosts my projects, a bit about me, and media pulled live from the Instagram and Spotify APIs. Go ahead and explore the rest.
