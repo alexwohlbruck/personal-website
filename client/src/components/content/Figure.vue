@@ -38,10 +38,28 @@ const image = computed(() =>
 const original = computed(() =>
   props.post ? postImage(props.post, props.file) : projectImage(props.project ?? '', props.file),
 )
+
+/**
+ * Tall images are bounded by height rather than by the column.
+ *
+ * A phone screenshot is roughly twice as tall as it is wide, so filling the
+ * prose column makes it about 1500px tall and pushes everything else off the
+ * screen. Capping the height and working the width back out keeps a portrait
+ * shot the size a reader expects, whatever its exact proportions.
+ */
+const MAX_TALL_HEIGHT = 620
+
+const frameWidth = computed(() => {
+  const { width, height } = image.value
+  if (!width || !height || height <= width) return undefined
+  return Math.round(MAX_TALL_HEIGHT * (width / height))
+})
 </script>
 
 <template>
-  <figure :class="wide ? 'md:-mx-12 lg:-mx-20' : undefined">
+  <figure :class="wide && !frameWidth ? 'md:-mx-12 lg:-mx-20' : undefined">
+    <!-- The cap sits on the frame rather than the figure, so a narrow portrait
+         shot does not drag its caption into a column of its own width. -->
     <button
       type="button"
       data-lightbox
@@ -49,12 +67,13 @@ const original = computed(() =>
       :data-caption="caption || alt"
       :aria-label="`Open ${alt} full size`"
       class="card group relative block w-full cursor-zoom-in overflow-hidden transition-shadow duration-300 ease-out-quint hover:shadow-e3"
+      :style="frameWidth ? { maxWidth: `${frameWidth}px` } : undefined"
     >
       <ProgressiveImage
         :image="image"
         :alt="alt"
         ratio
-        sizes="(min-width: 768px) 42rem, 100vw"
+        :sizes="frameWidth ? `${frameWidth}px` : '(min-width: 768px) 42rem, 100vw'"
         class="w-full transition-transform duration-500 ease-out-quint group-hover:scale-[1.01]"
         img-class="w-full"
       />
