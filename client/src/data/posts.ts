@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+import { findProject } from './projects'
 
 export interface Post {
   /** From the filename, so the URL is chosen by naming the file. */
@@ -125,6 +126,91 @@ export function adjacentPosts(slug: string) {
     previous: posts[(index - 1 + posts.length) % posts.length],
     next: posts[(index + 1) % posts.length],
   }
+}
+
+/**
+ * The project a tag names, if it names one.
+ *
+ * A tag matching a project's slug is treated as a reference to that project
+ * rather than as a free-text label, so `barrelman` on a post and the Barrelman
+ * project are the same thing to the site.
+ */
+export function tagProject(tag: string) {
+  return findProject(tag)
+}
+
+/** Projects show their real title. Everything else shows the tag as written. */
+export function postTagLabel(tag: string): string {
+  return tagProject(tag)?.title ?? tag
+}
+
+/**
+ * Posts that reference a project, in reading order.
+ *
+ * Parts first, so a devlog reads from the beginning on the project page. A post
+ * with no part falls back to its date.
+ */
+export function postsForProject(project: string): Post[] {
+  return posts
+    .filter((post) => post.tags.includes(project))
+    .sort((a, b) => (a.part ?? 0) - (b.part ?? 0) || a.date.getTime() - b.date.getTime())
+}
+
+/** One row of a project's writing list: a whole series, or a single post. */
+export type ProjectWriting =
+  | { kind: 'series'; key: string; series: string; entries: Post[]; start: Post; updated: Date }
+  | { kind: 'post'; key: string; post: Post; updated: Date }
+
+/**
+ * What a project page lists under "Writing".
+ *
+ * A series collapses to one row. Five devlog entries on a project page push
+ * everything else off the screen and say the same thing five times, so the run
+ * is named once and the reader opens it at part one. Standalone posts stay as
+ * they are.
+ *
+ * Newest activity first, so an updated series rises back to the top.
+ */
+export function writingForProject(project: string): ProjectWriting[] {
+  const rows: ProjectWriting[] = []
+  const seen = new Map<string, Extract<ProjectWriting, { kind: 'series' }>>()
+
+  for (const post of postsForProject(project)) {
+    if (!post.series) {
+      rows.push({ kind: 'post', key: post.slug, post, updated: post.date })
+      continue
+    }
+
+    const existing = seen.get(post.series)
+    if (existing) {
+      existing.entries.push(post)
+      if (post.date > existing.updated) existing.updated = post.date
+      continue
+    }
+
+    // `postsForProject` is already in reading order, so the first one seen is
+    // the entry point into the run.
+    const row = {
+      kind: 'series' as const,
+      key: `series:${post.series}`,
+      series: post.series,
+      entries: [post],
+      start: post,
+      updated: post.date,
+    }
+    seen.set(post.series, row)
+    rows.push(row)
+  }
+
+  return rows
+    .map((row) =>
+      // One entry is not a run. If only a single part of a series mentions this
+      // project, name the entry rather than the series it happens to belong to.
+      row.kind === 'series' && row.entries.length === 1
+        ? { kind: 'post' as const, key: row.start.slug, post: row.start, updated: row.updated }
+        : row,
+    )
+    .sort((a, b) => b.updated.getTime() - a.updated.getTime())
 }
 
 /** Every tag in use, most-used first. */

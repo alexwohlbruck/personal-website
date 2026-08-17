@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { AnimatePresence, Motion } from 'motion-v'
 import { ArrowUpRight } from '@lucide/vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
-import { posts, postDate, postTags } from '@/data/posts'
+import { posts, postDate, postTagLabel, postTags } from '@/data/posts'
 import { duration, ease, step } from '@/lib/motion'
 
 const active = ref<string | null>(null)
@@ -41,7 +41,7 @@ function toggle(tag: string) {
         :aria-pressed="active === tag"
         @click="toggle(tag)"
       >
-        {{ tag }}
+        {{ postTagLabel(tag) }}
       </button>
     </div>
 

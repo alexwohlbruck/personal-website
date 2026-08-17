@@ -5,7 +5,14 @@ import { Motion } from 'motion-v'
 import { ArrowLeft, ArrowRight } from '@lucide/vue'
 import RichText from '@/components/ui/RichText.vue'
 import NotFoundView from './NotFoundView.vue'
-import { adjacentPosts, findPost, postDate, seriesPosition } from '@/data/posts'
+import {
+  adjacentPosts,
+  findPost,
+  postDate,
+  postTagLabel,
+  seriesPosition,
+  tagProject,
+} from '@/data/posts'
 import { duration, ease, inView } from '@/lib/motion'
 import { usePageMeta } from '@/composables/usePageMeta'
 
@@ -63,27 +70,29 @@ const enter = (delay: number) => ({
         </time>
         <span v-if="post.tags.length" class="text-rule-strong" aria-hidden="true">·</span>
         <ul v-if="post.tags.length" class="flex flex-wrap gap-1.5">
-          <li v-for="tag in post.tags" :key="tag" class="chip">{{ tag }}</li>
+          <li v-for="tag in post.tags" :key="tag">
+            <!-- A tag naming a project links to it; the rest are plain labels. -->
+            <RouterLink
+              v-if="tagProject(tag)"
+              :to="{ name: 'project', params: { name: tag } }"
+              class="chip chip-active transition-colors hover:text-accent-hover"
+            >
+              {{ postTagLabel(tag) }}
+            </RouterLink>
+            <span v-else class="chip">{{ tag }}</span>
+          </li>
         </ul>
       </Motion>
     </header>
 
-    <!-- Body ----------------------------------------------------------------->
-    <Motion v-bind="enter(0.12)" class="max-w-2xl py-10 md:py-14">
-      <RichText :label="`${post.title} image`">
-        <component :is="post.body" />
-      </RichText>
-    </Motion>
-
-    <!-- The rest of the run -------------------------------------------------->
+    <!-- Series contents ------------------------------------------------------
+         Above the prose rather than below it: a reader arriving at part three
+         wants the map of the run before the text, not after it. -->
     <Motion
       v-if="position && position.total > 1"
       as="section"
-      :initial="{ opacity: 0, y: 16 }"
-      :while-in-view="{ opacity: 1, y: 0 }"
-      :in-view-options="inView"
-      :transition="{ duration: duration.base, ease }"
-      class="mb-10 max-w-2xl border-t border-rule pt-8"
+      v-bind="enter(0.1)"
+      class="max-w-2xl pt-8"
     >
       <h2 class="label text-ink-3">In this series</h2>
       <ol class="mt-4">
@@ -123,6 +132,13 @@ const enter = (delay: number) => ({
           </RouterLink>
         </li>
       </ol>
+    </Motion>
+
+    <!-- Body ----------------------------------------------------------------->
+    <Motion v-bind="enter(0.12)" class="max-w-2xl py-10 md:py-14">
+      <RichText :label="`${post.title} image`">
+        <component :is="post.body" />
+      </RichText>
     </Motion>
 
     <!-- Prev / next ---------------------------------------------------------->

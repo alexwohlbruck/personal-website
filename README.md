@@ -56,6 +56,13 @@ draft: true
 `draft: true` keeps a post visible while running locally and out of production
 entirely — no page, no feed entry, no sitemap URL.
 
+A tag matching a project's `name` in `src/data/projects.ts` is treated as a
+reference to that project rather than a label. It renders as the project's title
+and links to it, and the project page grows a **Writing** section listing every
+post that names it — so tagging a post `barrelman` is all it takes to connect the
+two. `post:` on the project record still picks the one entry the masthead button
+opens.
+
 `series` and `part` group a run of posts. An entry in a series shows its name and
 "Part 2 of 4" above the title, lists the whole run at the foot, and its prev/next
 walk the series in `part` order rather than the whole blog by date — stopping at
