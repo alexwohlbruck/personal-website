@@ -73,8 +73,10 @@ export default defineConfig({
             'bash',
             'css',
             'diff',
+            'dotenv',
             'go',
             'html',
+            'ini',
             'javascript',
             'json',
             'markdown',
@@ -85,6 +87,14 @@ export default defineConfig({
             'vue',
             'yaml',
           ],
+          // An unlisted language renders as plain text rather than failing the
+          // build. Writing a post is not the moment to discover that a fence
+          // tag is missing from a config file.
+          //
+          // Shiki resolves the plain-text pseudo-languages at runtime, but the
+          // option's type only lists real grammars.
+          // @ts-expect-error -- 'text' is accepted, just not declared
+          fallbackLanguage: 'text',
         })
 
         // Shiki's plugin is typed against markdown-it. This plugin runs

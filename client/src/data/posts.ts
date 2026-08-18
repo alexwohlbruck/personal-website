@@ -77,7 +77,10 @@ function toPost(path: string, matter: PostModule): Post {
 export const posts: Post[] = Object.entries(modules)
   .map(([path, module]) => toPost(path, module))
   .filter((post) => import.meta.env.DEV || !post.draft)
-  .sort((a, b) => b.date.getTime() - a.date.getTime())
+  // Newest first. Entries published on the same day fall back to their part
+  // number, so a series posted in one go still reads from the beginning rather
+  // than in whatever order the filenames happen to sort.
+  .sort((a, b) => b.date.getTime() - a.date.getTime() || (a.part ?? 0) - (b.part ?? 0))
 
 export function findPost(slug: string): Post | undefined {
   return posts.find((post) => post.slug === slug)
