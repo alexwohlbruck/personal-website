@@ -55,11 +55,10 @@ onward.
 would rather not be. The goal is the app you would pick anyway.
 
 **I will not sell out.** Most software I have loved was eventually acquired and
-hollowed out by people who did not use it.
-[Home Assistant](https://www.home-assistant.io/) put itself under a non-profit
-foundation precisely so that cannot happen to it, and I want Parchment held to
-that standard. An acquisition is the single event that breaks all four
-commitments above at once, so it is the one I intend to make structurally
-impossible rather than merely promise.
+hollowed out by people who did not use it. An acquisition is the single event
+that breaks all four commitments above at once, so it is not enough to promise
+it will not happen. The projects that survive intact are the ones that put
+themselves somewhere they cannot be sold, and that is the bar I want Parchment
+held to.
 
 The rest of the series chronicles the challenges and revelations that I have had during the development of my silly little maps app.
