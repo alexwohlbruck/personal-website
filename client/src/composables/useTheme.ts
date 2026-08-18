@@ -6,6 +6,9 @@ export type ThemeSetting = 'system' | 'light' | 'dark'
 const STORAGE_KEY = 'theme'
 
 function stored(): ThemeSetting {
+  // This module is pulled in by the header, so it loads on every route,
+  // including under the prerender pass where there is no storage to read.
+  if (import.meta.env.SSR) return 'system'
   const value = localStorage.getItem(STORAGE_KEY)
   return value === 'light' || value === 'dark' ? value : 'system'
 }
@@ -18,18 +21,20 @@ const resolved = computed<'light' | 'dark'>(() =>
   setting.value === 'system' ? (prefersDark.value ? 'dark' : 'light') : setting.value,
 )
 
-watch(
-  resolved,
-  (theme) => {
-    document.documentElement.dataset.theme = theme
-  },
-  { immediate: true },
-)
+if (!import.meta.env.SSR) {
+  watch(
+    resolved,
+    (theme) => {
+      document.documentElement.dataset.theme = theme
+    },
+    { immediate: true },
+  )
 
-watch(setting, (value) => {
-  if (value === 'system') localStorage.removeItem(STORAGE_KEY)
-  else localStorage.setItem(STORAGE_KEY, value)
-})
+  watch(setting, (value) => {
+    if (value === 'system') localStorage.removeItem(STORAGE_KEY)
+    else localStorage.setItem(STORAGE_KEY, value)
+  })
+}
 
 /**
  * Follows the OS by default; the toggle pins a preference until the user cycles

@@ -1,6 +1,8 @@
 export const site = {
   name: 'Alex Wohlbruck',
   initials: 'AW',
+  /** Canonical origin, used to build absolute URLs for meta tags and the feed. */
+  url: 'https://alex.wohlbruck.com',
   role: 'Software engineer & designer',
   location: 'Brooklyn, NY',
   timezone: 'America/New_York',

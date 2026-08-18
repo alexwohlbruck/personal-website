@@ -5,14 +5,13 @@ import TiltCard from '@/components/ui/TiltCard.vue'
 import ProjectTile from './ProjectTile.vue'
 import ProgressiveImage from '@/components/ui/ProgressiveImage.vue'
 import { projectImageSet } from '@/lib/assets'
-import { projectCover, projectSummary } from '@/data/projects'
+import { projectCover } from '@/data/projects'
 import { dateRange } from '@/lib/format'
 import type { Project } from '@/data/types'
 
 const props = defineProps<{ project: Project }>()
 
 const coverImage = computed(() => projectCover(props.project))
-const summary = computed(() => projectSummary(props.project))
 const cover = computed(() => projectImageSet(props.project.name, coverImage.value.file))
 </script>
 
@@ -51,7 +50,7 @@ const cover = computed(() => projectImageSet(props.project.name, coverImage.valu
             {{ dateRange(project.start, project.end) }}
           </time>
           <p class="mt-2.5 line-clamp-2 text-sm leading-relaxed text-ink-3">
-            {{ summary }}
+            {{ project.summary }}
           </p>
         </div>
         <ArrowUpRight

@@ -10,17 +10,87 @@ Instagram, Google Calendar and mail integrations and persists the guestbook.
 | | |
 |---|---|
 | Framework | Vue 3.5 (`<script setup>`, TypeScript) |
-| Build | Vite 8 |
+| Build | Vite 8, prerendered to static HTML by [vite-ssg](https://github.com/antfu-collective/vite-ssg) |
+| Content | Markdown compiled to Vue components by [unplugin-vue-markdown](https://github.com/unplugin/unplugin-vue-markdown), highlighted at build time by Shiki |
 | Styling | Tailwind CSS v4, CSS-first tokens in `client/src/styles/main.css` |
 | Motion | [motion-v](https://motion.dev/docs/vue), CSS transitions on a shared token scale |
 | Lightbox | PhotoSwipe 5 |
 | Primitives | Reka UI (dialog), custom everything else |
 | State | Pinia for the live integrations. Static content is plain modules. |
+| Head | [unhead](https://unhead.unjs.io), per-page, baked into the prerendered HTML |
 | Type | Instrument Serif (display), Geist (UI), Geist Mono (labels), self-hosted via Fontsource |
 
 Design notes: paper-and-ink palette in oklch, light and dark, following the OS
 by default with a three-state toggle. Surfaces are lit from above: a hairline
 highlight on top edges, a soft shadow below, inverted when pressed.
+
+## Writing
+
+Prose lives in Markdown under `client/src/content`, compiled to Vue components
+at build time. Nothing is parsed in the browser.
+
+| | |
+|---|---|
+| Project write-ups | `content/projects/<slug>.md`, where the slug matches the project's `name` in `src/data/projects.ts` |
+| Blog posts | `content/posts/<slug>.md`, where the filename is the URL |
+| Post images | `src/assets/posts/<slug>/`, alongside the project screenshots in `src/assets/portfolio/` |
+| Widgets | `src/components/content/*.vue`, registered globally under their filename |
+
+Project metadata — dates, colour, screenshots, tags — stays typed in
+`src/data/projects.ts`. Only the prose moves to Markdown.
+
+A post declares its own frontmatter. Only `title` and `date` are required:
+
+```yaml
+---
+title: A post
+date: 2026-08-17
+summary: Shown on the index, in the feed, and as the page description.
+tags: [maps]
+series: Parchment devlog
+part: 2
+draft: true
+---
+```
+
+`draft: true` keeps a post visible while running locally and out of production
+entirely — no page, no feed entry, no sitemap URL.
+
+A tag matching a project's `name` in `src/data/projects.ts` is treated as a
+reference to that project rather than a label. It renders as the project's title
+and links to it, and the project page grows a **Writing** section listing every
+post that names it — so tagging a post `barrelman` is all it takes to connect the
+two. `post:` on the project record still picks the one entry the masthead button
+opens.
+
+`series` and `part` group a run of posts. An entry in a series shows its name and
+"Part 2 of 4" above the title, lists the whole run at the foot, and its prev/next
+walk the series in `part` order rather than the whole blog by date — stopping at
+both ends instead of wrapping. The index labels each entry with its series and
+part but stays one list in date order, so filtering still behaves.
+
+`Figure` takes a `project` or a `post` plus a filename rather than a URL, so an
+image gets the WebP renditions and blur-up from `npm run images` for free.
+Clicking one opens the lightbox, and every image in a document forms a single
+set, so the arrows walk the page — bare `![alt](…)` images included.
+
+Markdown files may use any component in `src/components/content/` by name, with
+no import. `Callout`, `Figure` and `Embed` ship with it; anything dropped in that
+folder joins them. Leave a blank line after the opening tag for Markdown inside a
+widget to be parsed:
+
+```md
+<Callout kind="insight" title="A heading">
+
+Body text, with **formatting** intact.
+
+</Callout>
+```
+
+`npm run build` prerenders every route to static HTML, so prose and per-page
+`og:` tags are in the source rather than assembled after hydration — which is
+what the crawlers that unfurl a shared link read. It also writes `feed.xml` and
+`sitemap.xml`. `/guestbook` is deliberately left client-rendered.
 
 ## Requirements
 

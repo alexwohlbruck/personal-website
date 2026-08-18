@@ -1,23 +1,76 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Motion } from 'motion-v'
-import { ArrowLeft, ArrowRight, ExternalLink } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, ExternalLink } from '@lucide/vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import ProjectTile from '@/components/project/ProjectTile.vue'
 import ProjectGallery from '@/components/project/ProjectGallery.vue'
+import RichText from '@/components/ui/RichText.vue'
 import NotFoundView from './NotFoundView.vue'
-import { adjacentProjects, findProject } from '@/data/projects'
+import { adjacentProjects, findProject, projectBody } from '@/data/projects'
+import { findPost, postDate, writingForProject } from '@/data/posts'
 import { tagLabel } from '@/data/skills'
 import { dateRange, duration as humanDuration } from '@/lib/format'
 import { duration, ease, inView } from '@/lib/motion'
+import { usePageMeta } from '@/composables/usePageMeta'
 
 const route = useRoute()
 
 const project = computed(() => findProject(String(route.params.name)))
-const paragraphs = computed(() => project.value?.description.split('\n').filter(Boolean) ?? [])
+
+usePageMeta({
+  title: computed(() => project.value?.title),
+  description: computed(() => project.value?.summary),
+})
+const body = computed(() => projectBody(String(route.params.name)))
 const siblings = computed(() => adjacentProjects(String(route.params.name)))
+
+/**
+ * Resolved rather than trusted: a project can name a post that is still a
+ * draft, and `findPost` leaves those out of production builds. Looking it up
+ * means the button disappears with the post instead of linking nowhere.
+ */
+const post = computed(() => (project.value?.post ? findPost(project.value.post) : undefined))
+
+/**
+ * Everything written about this project, found by its own slug used as a post
+ * tag. A series counts as one row. Drafts are already filtered out, so an
+ * unpublished entry never shows.
+ */
+const writing = computed(() => writingForProject(String(route.params.name)))
+
+/**
+ * The list is paged purely to keep a long devlog from burying the gallery.
+ * Every entry is already in the document, so this hides rows rather than
+ * fetching them, and the prerendered HTML still carries all of them for
+ * anything that does not run the script.
+ */
+const PER_PAGE = 5
+
+const page = ref(1)
+
+const pageCount = computed(() => Math.max(1, Math.ceil(writing.value.length / PER_PAGE)))
+
+const visibleWriting = computed(() =>
+  writing.value.slice((page.value - 1) * PER_PAGE, page.value * PER_PAGE),
+)
+
+/** "1–5 of 7". */
+const pageRange = computed(() => {
+  const first = (page.value - 1) * PER_PAGE + 1
+  const last = Math.min(page.value * PER_PAGE, writing.value.length)
+  return `${first}–${last} of ${writing.value.length}`
+})
+
+// `RouterView` is keyed on the path, so moving between projects remounts this
+// view and the page starts at one again without anything resetting it.
+
+// A series counts as one item here, so the label counts rows rather than posts.
+const writingCount = computed(() =>
+  writing.value.length === 1 ? '1 item' : `${writing.value.length} items`,
+)
 
 const spec = computed(() => {
   const current = project.value
@@ -74,12 +127,15 @@ const enter = (delay: number) => ({
         </div>
       </Motion>
 
-      <Motion v-bind="enter(0.08)" class="mt-8 max-w-2xl space-y-4">
-        <p v-for="(paragraph, i) in paragraphs" :key="i" class="prose-body">{{ paragraph }}</p>
+      <Motion v-bind="enter(0.08)" class="mt-8 max-w-2xl">
+        <RichText v-if="body" :label="`${project.title} image`">
+          <component :is="body" />
+        </RichText>
+        <p v-else class="prose-body">{{ project.summary }}</p>
       </Motion>
 
       <Motion
-        v-if="project.url || project.github"
+        v-if="project.url || project.github || post"
         v-bind="enter(0.14)"
         class="mt-8 flex flex-wrap gap-3"
       >
@@ -90,6 +146,12 @@ const enter = (delay: number) => ({
         <AppButton v-if="project.github" :href="project.github">
           <InlineIcon name="github" :size="15" />
           Source
+        </AppButton>
+        <!-- Only rendered once the post exists and is published, so a draft
+             never leaves a dead button on the page. -->
+        <AppButton v-if="post" :to="{ name: 'post', params: { slug: post.slug } }">
+          <BookOpen class="size-4" />
+          Read the write-up
         </AppButton>
       </Motion>
     </header>
@@ -109,6 +171,99 @@ const enter = (delay: number) => ({
 
     <Motion as="ul" v-bind="enter(0.22)" class="flex flex-wrap gap-1.5 border-b border-rule py-6">
       <li v-for="tag in project.tags" :key="tag" class="chip">{{ tagLabel(tag) }}</li>
+    </Motion>
+
+    <!-- Writing -------------------------------------------------------------->
+    <Motion
+      v-if="writing.length"
+      as="section"
+      :initial="{ opacity: 0, y: 16 }"
+      :while-in-view="{ opacity: 1, y: 0 }"
+      :in-view-options="inView"
+      :transition="{ duration: duration.base, ease }"
+      class="py-12"
+    >
+      <div class="mb-2 flex items-baseline justify-between gap-4 border-b border-rule pb-4">
+        <h2 class="title text-2xl">Writing</h2>
+        <p class="text-sm text-ink-3">{{ writingCount }}</p>
+      </div>
+
+      <ol>
+        <li v-for="row in visibleWriting" :key="row.key">
+          <!-- A series opens at its first entry, which is the way in to the
+               run. A standalone post opens itself. -->
+          <RouterLink
+            :to="{
+              name: 'post',
+              params: { slug: row.kind === 'series' ? row.start.slug : row.post.slug },
+            }"
+            class="group flex flex-col gap-1 border-b border-rule py-5 md:flex-row md:items-baseline md:gap-8"
+          >
+            <time
+              :datetime="row.updated.toISOString().slice(0, 10)"
+              class="label shrink-0 text-ink-3 md:w-32 md:pt-1"
+            >
+              {{ postDate(row.updated) }}
+            </time>
+
+            <span v-if="row.kind === 'series'" class="min-w-0 flex-1">
+              <span class="label mb-1 block text-accent">Series</span>
+              <span class="title flex items-start gap-2 text-xl transition-colors group-hover:text-accent">
+                <span class="min-w-0">{{ row.series }}</span>
+                <span class="chip mt-1 shrink-0">{{ row.entries.length }} parts</span>
+                <!-- A one-part series is rendered as its own post instead, so
+                     this branch always has at least two. -->
+                <ArrowUpRight
+                  class="mt-1 size-4 shrink-0 text-ink-3 transition-transform duration-300 ease-out-quint group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
+              </span>
+              <span v-if="row.start.summary" class="mt-1.5 block max-w-2xl text-sm text-ink-3">
+                {{ row.start.summary }}
+              </span>
+            </span>
+
+            <span v-else class="min-w-0 flex-1">
+              <span class="title flex items-start gap-2 text-xl transition-colors group-hover:text-accent">
+                <span class="min-w-0">{{ row.post.title }}</span>
+                <span v-if="row.post.draft" class="chip mt-1 shrink-0">Draft</span>
+                <ArrowUpRight
+                  class="mt-1 size-4 shrink-0 text-ink-3 transition-transform duration-300 ease-out-quint group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
+              </span>
+              <span v-if="row.post.summary" class="mt-1.5 block max-w-2xl text-sm text-ink-3">
+                {{ row.post.summary }}
+              </span>
+            </span>
+          </RouterLink>
+        </li>
+      </ol>
+
+      <div v-if="pageCount > 1" class="mt-6 flex items-center justify-between gap-4">
+        <p class="label tabular text-ink-3">{{ pageRange }}</p>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="btn btn-sm"
+            :disabled="page === 1"
+            aria-label="Previous entries"
+            @click="page -= 1"
+          >
+            <ArrowLeft class="size-3.5" />
+            Previous
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm"
+            :disabled="page === pageCount"
+            aria-label="More entries"
+            @click="page += 1"
+          >
+            More
+            <ArrowRight class="size-3.5" />
+          </button>
+        </div>
+      </div>
     </Motion>
 
     <!-- Gallery -------------------------------------------------------------->

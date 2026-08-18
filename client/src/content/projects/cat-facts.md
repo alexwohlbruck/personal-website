@@ -1,0 +1,1 @@
+What started out as a fun prank texting friends random cat facts every day, turned into a wide-scale API that people around the world use in their "pet" projects (ha). Here I host a database of facts about cats, dogs, and other animals. Facts are crowdsourced from users and voted on to elect the best facts.

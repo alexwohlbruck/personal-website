@@ -1,0 +1,1 @@
+This project was inspired by the personal photo slideshow on the Google Nest devices. This app uses the Google Photos API to retrieve a user's photo albums, changing their desktop wallpaper on a customized cycle.

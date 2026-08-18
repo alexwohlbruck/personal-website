@@ -16,14 +16,25 @@
  * Run via `npm run images` (also part of `npm run build`).
  */
 import { readdirSync, readFileSync, writeFileSync, statSync, mkdirSync, existsSync } from 'node:fs'
-import { join, dirname, relative, extname, basename } from 'node:path'
+import { join, dirname, relative, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const portfolioDir = join(root, 'src/assets/portfolio')
 const derivedDir = join(root, 'src/assets/derived')
 const outFile = join(root, 'src/data/image-sizes.generated.json')
+
+/**
+ * Where images live, and the prefix their manifest keys get.
+ *
+ * Project screenshots are keyed bare (`parchment/main.png`) because that is
+ * what the manifest has always stored. Post images are keyed under `posts/` so
+ * a post slug can never collide with a project name.
+ */
+const SOURCES = [
+  { dir: join(root, 'src/assets/portfolio'), prefix: '' },
+  { dir: join(root, 'src/assets/posts'), prefix: 'posts/' },
+]
 
 /** Widths worth having: a list thumbnail, a card, and a gallery tile at 2x. */
 const WIDTHS = [400, 800, 1400]
@@ -41,11 +52,12 @@ function collect(dir, files = []) {
   return files
 }
 
-const files = collect(portfolioDir)
+const files = SOURCES.flatMap(({ dir, prefix }) =>
+  existsSync(dir) ? collect(dir).map((path) => ({ path, key: prefix + relative(dir, path) })) : [],
+)
 let written = 0
 
-for (const path of files) {
-  const key = relative(portfolioDir, path)
+for (const { path, key } of files) {
   const buffer = readFileSync(path)
   const image = sharp(buffer)
   const { width, height } = await image.metadata()

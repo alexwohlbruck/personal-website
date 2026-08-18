@@ -22,6 +22,7 @@ import { useLiveStore } from '@/stores/live'
 
 const nav = [
   { name: 'projects', label: 'Projects' },
+  { name: 'blog', label: 'Writing' },
   { name: 'about', label: 'About' },
   { name: 'social', label: 'Social' },
   { name: 'guestbook', label: 'Guestbook' },
@@ -45,7 +46,9 @@ watch(() => route.fullPath, () => (menuOpen.value = false))
 
 function isActive(name: string) {
   // Detail pages keep their parent lit.
-  return route.name === name || (name === 'projects' && route.name === 'project')
+  if (name === 'projects' && route.name === 'project') return true
+  if (name === 'blog' && route.name === 'post') return true
+  return route.name === name
 }
 
 function togglePlayback() {
