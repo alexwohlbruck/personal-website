@@ -119,6 +119,59 @@ export default defineConfig({
           }
           return openLink(tokens, i, options, env, self)
         }
+
+        /**
+         * Give every heading an id and a link to it, so a section of a post can
+         * be pointed at directly. Done here rather than in the view because the
+         * ids have to be in the prerendered HTML for a shared link to land on
+         * the right place on first paint.
+         */
+        md.core.ruler.push('heading_anchor', (state) => {
+          // Scoped to the one document: two posts may each have a "What works",
+          // and each owns its own `#what-works`.
+          const used = new Map<string, number>()
+
+          state.tokens.forEach((token, index) => {
+            if (token.type !== 'heading_open') return
+
+            const inline = state.tokens[index + 1]
+            if (!inline?.children) return
+
+            // Slugged from the words a reader sees, so a heading carrying a
+            // link or a code span points at its text rather than its markup.
+            const text = inline.children
+              .filter((child) => child.type === 'text' || child.type === 'code_inline')
+              .map((child) => child.content)
+              .join('')
+
+            // Accents fold rather than drop, so "Café" reads as `#cafe` rather
+            // than `#caf`, and an apostrophe closes up instead of splitting a
+            // word into `people-s`. The typographer has curled it by the time
+            // this runs, so both shapes are listed.
+            const base = text
+              .normalize('NFKD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .toLowerCase()
+              .replace(/['’]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+            if (!base) return
+
+            // A repeated heading takes a suffix rather than a duplicate id,
+            // which would send every link to the first one.
+            const seen = used.get(base) ?? 0
+            used.set(base, seen + 1)
+            const slug = seen ? `${base}-${seen + 1}` : base
+
+            token.attrSet('id', slug)
+
+            const anchor = new state.Token('html_inline', '', 0)
+            anchor.content =
+              `<a class="heading-anchor" href="#${slug}"` +
+              ` aria-label="Link to this section">#</a>`
+            inline.children.push(anchor)
+          })
+        })
       },
     }),
     tailwindcss(),
