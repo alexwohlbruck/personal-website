@@ -647,6 +647,38 @@
   text-decoration-color: var(--accent);
 }
 
+/* Every heading is addressable, and says so on hover. The marker holds its
+   space whether or not it is showing, so revealing one never reflows the line
+   it sits on. */
+.richtext .heading-anchor {
+  margin-left: 0.35em;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 0.7em;
+  text-decoration: none;
+  opacity: 0;
+  transition:
+    opacity 0.2s var(--ease-out-quint),
+    color 0.2s var(--ease-out-quint);
+}
+
+.richtext :is(h1, h2, h3, h4, h5, h6):hover .heading-anchor,
+.richtext .heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+.richtext .heading-anchor:hover {
+  color: var(--accent);
+}
+
+/* Nothing hovers on a touch screen, so the marker stays out where it can be
+   tapped, quiet enough not to read as part of the heading. */
+@media (hover: none) {
+  .richtext .heading-anchor {
+    opacity: 0.4;
+  }
+}
+
 .richtext :is(ul, ol) {
   padding-left: 1.5em;
 }
