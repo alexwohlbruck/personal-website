@@ -47,9 +47,30 @@ if (production) {
   app.use('/api', routes)
   app.use('/api', (req, res) => res.status(404).json({ message: 'Not found.' }))
 
-  app.use(express.static(clientDist, { index: false, maxAge: '1h' }))
-  // Vue Router owns all non-API paths after the first page load.
-  app.get('{*path}', (req, res) => res.sendFile(path.join(clientDist, 'index.html')))
+  // `redirect: false` so a prerendered route is not bounced to a trailing
+  // slash before the handler below can serve it.
+  app.use(express.static(clientDist, { index: false, redirect: false, maxAge: '1h' }))
+  /**
+   * Vue Router owns all non-API paths after the first page load, but the build
+   * prerenders most routes to `<route>/index.html`. Serving that file when it
+   * exists is what makes the prose and the per-page `og:` tags reachable by a
+   * crawler; falling straight through to the SPA shell would hand every route
+   * the same generic title and an empty body.
+   *
+   * Routes that are only rendered in the browser, `/guestbook` among them, have
+   * no prerendered file and still get the shell.
+   */
+  app.get('{*path}', (req, res) => {
+    const prerendered = path.join(clientDist, req.path, 'index.html')
+    // `req.path` is attacker-controlled, so confirm the resolved file is still
+    // inside the build before handing it over.
+    if (path.resolve(prerendered).startsWith(clientDist + path.sep)) {
+      return res.sendFile(prerendered, (error) => {
+        if (error) res.sendFile(path.join(clientDist, 'index.html'))
+      })
+    }
+    res.sendFile(path.join(clientDist, 'index.html'))
+  })
 } else {
   // Local development keeps the original root-level API paths, so the Vite
   // client and existing tests can continue talking to http://localhost:3001.
