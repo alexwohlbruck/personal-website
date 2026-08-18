@@ -7,6 +7,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import ProjectTile from '@/components/project/ProjectTile.vue'
 import ProjectGallery from '@/components/project/ProjectGallery.vue'
+import PostRow from '@/components/post/PostRow.vue'
 import RichText from '@/components/ui/RichText.vue'
 import NotFoundView from './NotFoundView.vue'
 import { adjacentProjects, findProject, projectBody } from '@/data/projects'
@@ -190,13 +191,20 @@ const enter = (delay: number) => ({
 
       <ol>
         <li v-for="row in visibleWriting" :key="row.key">
-          <!-- A series opens at its first entry, which is the way in to the
-               run. A standalone post opens itself. -->
+          <!-- Every row on this page belongs to this project, so a post names
+               itself rather than the run it happens to sit in. -->
+          <PostRow
+            v-if="row.kind === 'post'"
+            :post="row.post"
+            compact
+            heading="h3"
+            :show-series="false"
+          />
+
+          <!-- A series opens at its first entry, which is the way in to the run. -->
           <RouterLink
-            :to="{
-              name: 'post',
-              params: { slug: row.kind === 'series' ? row.start.slug : row.post.slug },
-            }"
+            v-else
+            :to="{ name: 'post', params: { slug: row.start.slug } }"
             class="group flex flex-col gap-1 border-b border-rule py-5 md:flex-row md:items-baseline md:gap-8"
           >
             <time
@@ -206,7 +214,7 @@ const enter = (delay: number) => ({
               {{ postDate(row.updated) }}
             </time>
 
-            <span v-if="row.kind === 'series'" class="min-w-0 flex-1">
+            <span class="min-w-0 flex-1">
               <span class="label mb-1 block text-accent">Series</span>
               <span class="title flex items-start gap-2 text-xl transition-colors group-hover:text-accent">
                 <span class="min-w-0">{{ row.series }}</span>
@@ -219,19 +227,6 @@ const enter = (delay: number) => ({
               </span>
               <span v-if="row.start.summary" class="mt-1.5 block max-w-2xl text-sm text-ink-3">
                 {{ row.start.summary }}
-              </span>
-            </span>
-
-            <span v-else class="min-w-0 flex-1">
-              <span class="title flex items-start gap-2 text-xl transition-colors group-hover:text-accent">
-                <span class="min-w-0">{{ row.post.title }}</span>
-                <span v-if="row.post.draft" class="chip mt-1 shrink-0">Draft</span>
-                <ArrowUpRight
-                  class="mt-1 size-4 shrink-0 text-ink-3 transition-transform duration-300 ease-out-quint group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                />
-              </span>
-              <span v-if="row.post.summary" class="mt-1.5 block max-w-2xl text-sm text-ink-3">
-                {{ row.post.summary }}
               </span>
             </span>
           </RouterLink>

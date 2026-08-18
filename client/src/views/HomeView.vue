@@ -12,12 +12,15 @@ import ProjectMini from '@/components/project/ProjectMini.vue'
 import RotatingWord from '@/components/home/RotatingWord.vue'
 import IndexCard from '@/components/home/IndexCard.vue'
 import LivePreviews from '@/components/home/LivePreviews.vue'
+import PostRow from '@/components/post/PostRow.vue'
 import { featuredProjects, moreProjects, projects } from '@/data/projects'
+import { posts, recentPosts } from '@/data/posts'
 import { site } from '@/data/site'
 import { duration, ease, inView, step } from '@/lib/motion'
 
 const featured = featuredProjects
 const alsoRan = moreProjects(4)
+const recent = recentPosts(3)
 
 const enter = (delay: number) => ({
   initial: { opacity: 0, y: 14, filter: 'blur(4px)' },
@@ -126,6 +129,36 @@ function leanWash(event: PointerEvent) {
       <div class="mt-10 flex justify-center">
         <AppButton :to="{ name: 'projects' }" variant="ghost" class="nudge">
           See all {{ projects.length }} projects
+          <ArrowRight class="size-4" />
+        </AppButton>
+      </div>
+    </section>
+
+    <!-- Recent writing ------------------------------------------------------>
+    <section v-if="recent.length" class="py-16">
+      <SectionHeading
+        title="Recent writings"
+        note="Dev logs, ideas, and shower thoughts that I felt like writing down."
+      />
+
+      <ol>
+        <Motion
+          v-for="(post, index) in recent"
+          :key="post.slug"
+          as="li"
+          :initial="{ opacity: 0, y: 14, filter: 'blur(4px)' }"
+          :while-in-view="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :in-view-options="inView"
+          :transition="{ duration: duration.base, ease, delay: step(index) }"
+        >
+          <PostRow :post="post" compact heading="h3" />
+        </Motion>
+      </ol>
+
+      <!-- Nothing to go and see if the list already holds everything. -->
+      <div v-if="posts.length > recent.length" class="mt-10 flex justify-center">
+        <AppButton :to="{ name: 'blog' }" variant="ghost" class="nudge">
+          Read all {{ posts.length }} posts
           <ArrowRight class="size-4" />
         </AppButton>
       </div>
