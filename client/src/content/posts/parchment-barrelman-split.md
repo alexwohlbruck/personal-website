@@ -62,8 +62,7 @@ larger ones.
 
 That taught me the shape of the work. Import a large extract. Build the indexes,
 keep them fresh, and answer fast enough that an autocomplete field feels instant.
-It is a real system, not a URL. It is also the first thing in this story that was
-genuinely mine to change.
+It is a real system, not a URL. It is also the first thing in this story that was mine to change.
 
 Then the problem from part two came back, one level down. A planet-scale
 geospatial API is not a homelab workload. Hundreds of gigabytes, hours of index
@@ -134,7 +133,7 @@ covers every endpoint. It's a beautifully simple idea that could subsidize the c
 
 ### It self-hosts after all
 
-The other surprise came from a friend. Jackson Sippe wanted to use Parchment in
+The other surprise came from my buddy Jackson Sippe. He wanted to use Parchment in
 Colorado, and my staging server carried a partial import that did not reach that
 far. So he asked me to stand up an instance covering it.
 
