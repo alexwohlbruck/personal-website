@@ -1111,5 +1111,34 @@
       1400
     ],
     "lqip": "data:image/webp;base64,UklGRioAAABXRUJQVlA4IB4AAAAwAQCdASoQAAwAA4BaJaQAA3AA/vSsqdlflgM+4AA="
+  },
+  "posts/parchment-barrelman-split/region-import.png": {
+    "w": 2280,
+    "h": 2661,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADQAwCdASoQABMAPu1iqU2ppaOiMAgBMB2JaQAAW/DvnLL+5HvKOkAA/u7ifny2k1LPY5Y/bWh76DMmuS+XimrCUPK4NW/THry8SgEUwWUZ29iF5++s8kAAAAA="
+  },
+  "posts/where-parchment-started/cycle-layers.jpg": {
+    "w": 2400,
+    "h": 1600,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAABwAQCdASoQAAsAA4BaJZQCdAGIQAD+8ACFrHIvW3POyE92TuQmEY0mid8AAA=="
+  },
+  "posts/where-parchment-started/transit-layers.jpg": {
+    "w": 1395,
+    "h": 1261,
+    "srcset": [
+      400,
+      800
+    ],
+    "lqip": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAAAQAgCdASoQAA4AA4BaJZAC7AEPAJ8tU0gAAP71FwILvQg+JX9wm8uoxplNoNkUwAA="
   }
 }
