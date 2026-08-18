@@ -18,12 +18,11 @@ and it has not changed since.
 
 ## Free was the goal
 
-OpenStreetMap supplies the data. What I did not expect was the rest of it. An
+I knew i wanted OpenStreetMap to supply the data. But I had no idea how I would map that to a user interface. After some research, I discovered an
 entire ecosystem of open source services reads that data, and most of them run
 as free public endpoints that anyone can call.
 
-So the first version of Parchment was a Vue app, a thin server, and a list of
-other people's URLs.
+So the first version of Parchment was a Vue app, a thin server, and a list of URLs that pointed to other services.
 
 That was not a compromise. Every one of those services is open source, and every
 one of them can be self-hosted. Building on them was the goal working as
@@ -46,7 +45,7 @@ I wrote none of it, and it already looked like something worth using.
 
 Transit was the same idea with a different source. Transitland publishes the
 route geometries, so drawing a subway map became a styling problem rather than a
-data problem.
+data problem. Of course, I did expand on that idea [later](/projects/portolan).
 
 <Figure
   post="where-parchment-started"
@@ -131,17 +130,6 @@ provider I added disagreed in a new way.
 So the code that consumed them grew a branch for each. Anything that merged
 results from two services had to normalize both first, in whatever function
 happened to need it.
-
-<Callout kind="warning" title="The real cost of this">
-
-The waste was not the extra code. It was that the shape of every provider leaked
-upward into the app.
-
-A component that renders a place knew, somewhere in its history, which service
-that place came from. Adding a provider meant touching everything that read a
-place. That is the tax that made the next rewrite unavoidable.
-
-</Callout>
 
 ### One outage removed one feature
 
