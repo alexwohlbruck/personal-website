@@ -82,6 +82,11 @@ export const posts: Post[] = Object.entries(modules)
   // throughout rather than flipping order inside a series.
   .sort((a, b) => b.date.getTime() - a.date.getTime() || (b.part ?? 0) - (a.part ?? 0))
 
+/** The newest few, for the home page's writing list. */
+export function recentPosts(count: number): Post[] {
+  return posts.slice(0, count)
+}
+
 export function findPost(slug: string): Post | undefined {
   return posts.find((post) => post.slug === slug)
 }
