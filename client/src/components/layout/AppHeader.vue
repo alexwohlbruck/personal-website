@@ -68,7 +68,7 @@ function togglePlayback() {
     <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 md:px-8">
       <RouterLink
         :to="{ name: 'home' }"
-        class="group flex items-center gap-2.5"
+        class="group flex shrink-0 items-center gap-2.5"
         :aria-label="`${site.name}, home`"
       >
         <span
@@ -78,24 +78,24 @@ function togglePlayback() {
         >
           A
         </span>
-        <span class="title hidden text-[0.95rem] sm:block">{{ site.name }}</span>
+        <span class="title hidden whitespace-nowrap text-[0.95rem] sm:block">{{ site.name }}</span>
       </RouterLink>
 
       <div class="flex min-w-0 items-center gap-1.5">
         <LayoutGroup>
-          <nav class="mr-1 hidden items-center md:flex">
+          <nav class="mr-1 hidden shrink-0 items-center lg:flex">
             <RouterLink
               v-for="item in nav"
               :key="item.name"
               :to="{ name: item.name }"
-              class="label relative px-3 py-2 transition-colors duration-200"
+              class="label relative whitespace-nowrap px-2 py-2 tracking-[0.1em] transition-colors duration-200 xl:px-3 xl:tracking-[0.14em]"
               :class="isActive(item.name) ? 'text-ink' : 'text-ink-3 hover:text-ink'"
             >
               {{ item.label }}
               <Motion
                 v-if="isActive(item.name)"
                 layout-id="nav-underline"
-                class="absolute inset-x-3 -bottom-px h-px bg-accent"
+                class="absolute inset-x-2 -bottom-px h-px bg-accent xl:inset-x-3"
                 :transition="{ duration: 0.35, ease }"
               />
             </RouterLink>
@@ -108,7 +108,7 @@ function togglePlayback() {
           class="btn btn-icon group relative flex min-w-0 shrink items-center overflow-hidden text-left transition-[transform,width,padding,gap,border-color,background-color,box-shadow,filter] duration-300 ease-out-quint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           :class="
             live.spotifyAudioPlaying
-              ? 'w-9 justify-center p-0 sm:min-w-36 sm:w-56 sm:justify-start sm:gap-2 sm:rounded-lg sm:border-rule sm:bg-paper-sunk/60 sm:py-1 sm:pl-1 sm:pr-2 sm:shadow-sm sm:hover:border-accent'
+              ? 'w-9 justify-center p-0 sm:min-w-36 sm:w-56 sm:justify-start sm:gap-2 sm:rounded-lg sm:border-rule sm:bg-paper-sunk/60 sm:py-1 sm:pl-1 sm:pr-2 sm:shadow-sm sm:hover:border-accent lg:w-44 xl:w-56'
               : 'w-9 justify-center gap-0 p-0'
           "
           :disabled="live.spotifyAudioStatus === 'loading'"
@@ -123,11 +123,11 @@ function togglePlayback() {
           @click="togglePlayback"
         >
           <span
-            class="playback-artwork shrink-0 overflow-hidden transition-[opacity,filter] duration-500 ease-out-quint md:transition-[width,opacity,transform,filter] md:duration-200"
+            class="playback-artwork shrink-0 overflow-hidden transition-[opacity,filter] duration-500 ease-out-quint sm:transition-[width,opacity,transform,filter] sm:duration-200"
             :class="
               live.spotifyAudioPlaying
-                ? 'w-9 opacity-100 blur-0 md:w-7 md:translate-x-0'
-                : 'w-9 opacity-0 blur-[10px] md:w-0 md:-translate-x-1 md:blur-0'
+                ? 'w-9 opacity-100 blur-0 sm:w-7 sm:translate-x-0'
+                : 'w-9 opacity-0 blur-[10px] sm:w-0 sm:-translate-x-1 sm:blur-0'
             "
             aria-hidden="true"
           >
@@ -173,7 +173,7 @@ function togglePlayback() {
 
         <DialogRoot v-model:open="menuOpen">
           <DialogTrigger as-child>
-            <button type="button" class="btn btn-icon md:hidden" aria-label="Open menu">
+            <button type="button" class="btn btn-icon lg:hidden" aria-label="Open menu">
               <Menu class="size-4" />
             </button>
           </DialogTrigger>
