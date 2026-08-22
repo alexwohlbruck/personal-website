@@ -776,6 +776,35 @@
     ],
     "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADQAQCdASoQAAwAA4BaJQBOgB6Ri5ZzQAD+9DtlvTMjmI69xr2+0nfCVQbOdBRX+tO2QUrL8u0Zdcg4AAA="
   },
+  "portolan/amtrak-north-america.jpg": {
+    "w": 2088,
+    "h": 1550,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAAAQAgCdASoQAAwAA4BaJbACdAEO96lkPeAAAP7yRHz0hbxHwcj16VDeIXoW3luGtP1E4sKOoMAAAA=="
+  },
+  "portolan/coney-island-nyc.jpg": {
+    "w": 1356,
+    "h": 1090,
+    "srcset": [
+      400,
+      800
+    ],
+    "lqip": "data:image/webp;base64,UklGRjAAAABXRUJQVlA4ICQAAABwAQCdASoQAA0AA4BaJZ2HgAGIAAD+8cSX7fqL+ShsX0YQAAA="
+  },
+  "portolan/elevated-chicago.jpg": {
+    "w": 1712,
+    "h": 1340,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADwAQCdASoQAAwAA4BaJZwAAuRzRyg49sAA/u/YPuws7eV6JLAWvjXHpJKy+HZDy4EHqJQGIGF2AQIAAAA="
+  },
   "portolan/loop-chicago.png": {
     "w": 1600,
     "h": 1541,
@@ -785,6 +814,16 @@
       1400
     ],
     "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADQAQCdASoQAA8AA4BaJaQAAuQMT+xj4AD+85PZPBSjhIWMWEIrM/sk4HnX8NswQIAAAA=="
+  },
+  "portolan/lynx-charlotte.jpg": {
+    "w": 1700,
+    "h": 1344,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAABwAQCdASoQAA0AA4BaJZ12AAHJgAD+8Xd5db9VxRPCFieDtsAAAA=="
   },
   "portolan/workbench-nyc.png": {
     "w": 2000,

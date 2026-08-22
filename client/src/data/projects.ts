@@ -11,7 +11,14 @@ export const projects: Project[] = [
     start: new Date('2026-08-04'),
     end: new Date(),
     github: 'https://github.com/alexwohlbruck/portolan',
-    images: ['workbench-nyc.png', 'loop-chicago.png'],
+    images: [
+      'workbench-nyc.png',
+      'amtrak-north-america.jpg',
+      'loop-chicago.png',
+      'elevated-chicago.jpg',
+      'coney-island-nyc.jpg',
+      'lynx-charlotte.jpg',
+    ],
     tags: ['client-side', 'server-side', 'cartography', 'ci-cd'],
   },
   {
