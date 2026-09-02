@@ -8,29 +8,29 @@ part: 3
 ---
 
 By spring 2025, [Parchment](/projects/parchment) talked to a handful of external
-services and knew the name of every one of them in application code. Adding
-another meant touching search, place detail, and the merge logic between them.
+services and knew every one of them by name in application code. Adding another
+meant touching search, place detail, and the merge logic between them.
 
-Worse than the work was the hesitation. Every choice of provider felt permanent.
-I put off picking a routing engine for months, because picking one seemed to mean
-living with all of it's quirks and flaws.
+The work was annoying, but the hesitation was worse. Every provider choice felt
+permanent. I put off picking a routing engine for months because picking one
+seemed to mean living with all of its quirks forever.
 
 ## The idea came from my house
 
-I run [Home Assistant](https://www.home-assistant.io/) on my homelab, and it solves this
-problem so thoroughly that I stopped noticing it.
+I run [Home Assistant](https://www.home-assistant.io/) on my homelab, and it
+solves this exact problem so well that I'd stopped noticing it.
 
-Home Assistant does not know about Hue bulbs or Zigbee switches. It knows about
-**lights**. An integration teaches it that some device is a light, and from that
-moment every dashboard, automation and voice command works on the light. The
-brand stops being interesting. Swap the hardware and nothing above it moves.
+Home Assistant doesn't know about Hue bulbs or Zigbee switches. It knows about
+**lights**. An integration tells it that some device is a light, and from then on
+every dashboard, automation and voice command works on the light. The brand stops
+mattering. Swap the hardware and nothing above it moves.
 
 Parchment needed the same thing for maps.
 
 ## Capabilities
 
-So Parchment stopped defining a geocoder, a router and a tile server. It defines
-a list of **capabilities**, and a capability is one job a map needs done:
+So Parchment stopped defining a geocoder, a router and a tile server, and started
+defining a list of **capabilities**. A capability is one job a map needs done:
 
 ```ts
 export enum IntegrationCapabilityId {
@@ -47,8 +47,8 @@ export enum IntegrationCapabilityId {
 ```
 
 There are twenty-two of them now. An integration declares which ones it can fill,
-and the app asks for the capability rather than the vendor. `routing` resolves to
-whichever integration is configured for that job.
+and the app asks for the capability instead of the vendor. `routing` resolves to
+whatever integration is configured for that job.
 
 <Figure
   project="parchment"
@@ -59,13 +59,13 @@ whichever integration is configured for that job.
 
 ## One file per provider
 
-The other half is translation, and it is smaller than it sounds. Each integration
-ships an **adapter**, and an adapter has one job. It turns that provider's
-response into Parchment's own vocabulary.
+The other half is translation, and it's smaller than it sounds. Each integration
+ships an **adapter**, and the adapter has one job: turn that provider's response
+into Parchment's own types.
 
-There is one `Place` type in the app. It carries geometry, an address, opening
-hours, transit details, relations to parent and child places, and per-field
-attribution. Every adapter produces that, whatever shape it received:
+There's one `Place` type in the app. It has geometry, an address, opening hours,
+transit details, relations to parent and child places, and per-field attribution.
+Every adapter produces that, whatever it got back from the provider:
 
 ```ts
 import type {
@@ -78,34 +78,34 @@ import type {
 } from '../../../types/place.types'
 ```
 
-`AttributedValue` earns its keep here. A place page often merges a name from
+`AttributedValue` is the interesting one. A place page often merges a name from
 [OpenStreetMap](https://www.openstreetmap.org/), a photo from
 [Wikimedia Commons](https://commons.wikimedia.org/) and a rating from a
-commercial provider. Each field credits its own source, because attribution
-belongs to the value rather than to the page.
+commercial provider. Each field credits its own source, since attribution belongs
+to the value rather than the whole page.
 
-That is the whole contract. A new provider is a declaration of what it can do,
-plus one file that speaks its dialect. Nothing above that file learns its name.
+That's the entire contract. A new provider is a declaration of what it can do
+plus one file that speaks its dialect, and nothing above that file has to know
+which provider it's talking to.
 
 ## What it actually changed
 
 I expected cleaner code. What I got was a different way of designing features.
 
-**The fear went away.** Choosing a routing engine stopped being a commitment.
+Choosing a routing engine stopped feeling like a commitment.
 [Valhalla](https://valhalla.github.io/valhalla/) and
 [GraphHopper](https://www.graphhopper.com/) are each good at different things,
-and I no longer had to be right about which one. Trying the other is a settings
-change and an adapter, not a rewrite.
+and I no longer had to be right about which one to use. Trying the other is a
+settings change and an adapter instead of a rewrite.
 
-**Several providers can answer at once.** Search does not pick a winner. It asks
-every integration that fills `search` and merges the results into one list. A
-place found by one source and described better by another arrives as a single
-entry.
+Several providers can answer at once. Search doesn't pick a winner; it asks every
+integration that fills `search` and merges the results into one list. A place
+found by one source and described better by another shows up as a single entry.
 
-**Features get designed against capabilities.** I now ask which capability a
-feature needs, rather than which service to sign up for. If nothing fills that
-capability yet, the feature degrades instead of breaking, and it switches on the
-day something does.
+And I now design features against capabilities. I ask which capability a feature
+needs instead of which service to sign up for. If nothing fills that capability
+yet, the feature degrades instead of breaking, and it turns on the day something
+does.
 
 The rewrite took about three weeks and landed as one merge at the end of May
 2025.

@@ -7,32 +7,31 @@ series: Parchment devlog
 part: 5
 ---
 
-The first four entries are how [Parchment](/projects/parchment) got here. This
-one is where it actually is, which is a less tidy answer: in closed alpha, behind
-a waitlist, with a small group of people using it daily and a lot of unfinished
-edges.
+The first four entries are about how [Parchment](/projects/parchment) got here.
+This one is about where it actually is: closed alpha, behind a waitlist, with a
+small group of people using it daily and a lot of rough edges.
 
-It runs on the web, iOS, Android and desktop from one codebase, and it is
-self-hostable end to end. That part is done. What is not done is everything
+It runs on web, iOS, Android and desktop from one codebase, and it's
+self-hostable end to end. That part is done. What isn't done is everything
 between "works" and "ready for the public".
 
 ## What works
 
 - **Search and places.** 44 browse categories, including the ones other maps
-  skip: drinking water, benches, bike parking, defibrillators. Place pages read
-  [OpenStreetMap tags](https://wiki.openstreetmap.org/wiki/Map_features) back in
-  plain language, in your own language where mappers recorded one, with opening
-  hours resolved in the place's own time zone.
+  skip: drinking water, benches, bike parking, defibrillators. Place pages
+  translate [OpenStreetMap tags](https://wiki.openstreetmap.org/wiki/Map_features)
+  into plain language, in your own language where mappers recorded one, with
+  opening hours shown in the place's own time zone.
 - **Directions.** Driving, cycling, walking and transit, with departure boards,
-  isochrones and a carbon figure for each route.
+  isochrones and a carbon estimate for each route.
 - **The map.** A globe at low zoom, day and night styles, indoor floor plans, and
-  street-level imagery from [Mapillary](https://www.mapillary.com/). Layers cover
+  street-level imagery from [Mapillary](https://www.mapillary.com/). Layers for
   weather, air quality from [OpenAQ](https://openaq.org/) and active wildfires
   from [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/).
 - **Your own data.** Saved places and collections, offline regions, optional
   location history that stays on your server, and
-  [OpenStreetMap editing](https://www.openstreetmap.org/edit), so a place page
-  that is wrong can be fixed at the source rather than reported into a void.
+  [OpenStreetMap editing](https://www.openstreetmap.org/edit), so a wrong place
+  page can be fixed at the source instead of reported into a void.
 
 <Figure
   project="parchment"
@@ -41,54 +40,51 @@ between "works" and "ready for the public".
   caption="A transit leg shows the next several departures, not just the first, and keeps the ones you already missed on screen."
 />
 
-## What I am working on
+## What I'm working on
 
-Almost none of the remaining work is new features. It is the difference between
-software that functions and software you would hand to someone without an
-apology.
+Almost none of what's left is new features. It's the gap between software that
+functions and software I'd hand to someone without apologizing first.
 
-**The interface.** A good deal of the app works without being good yet. Screens
-that function are not the same as screens I would hand to a stranger, and this is
-the slowest category by some distance, because a unit test doesn't fail when a panel
-is merely awkward to look at.
+**The interface.** A lot of the app works without being good yet. This is the
+slowest category by far, because a unit test doesn't fail when a panel is merely
+awkward to look at.
 
 **Native mobile apps.** Parchment already runs on iOS and Android, but from the
-same codebase as everything else, which shows. Native clients are in the
-pipeline: ones that follow each platform's own design language properly rather
-than wearing the same interface twice. A maps app is something you open one-handed
-while navigating a metro system, and it should look and perform like it belongs on the device.
+same codebase as everything else, and it shows. Native clients are in the
+pipeline, ones that follow each platform's design language instead of wearing the
+same interface twice. A maps app is something you open one-handed in a metro
+station, and it should look and feel like it belongs on the device.
 
-**Transit.** The richest source of real bugs, and each one is somebody's actual
-commute. Transit is unforgiving in a way road routing is not. A wrong turn in a
-car costs you a minute. A missed connection costs you twenty, in the cold.
+**Transit.** The richest source of real bugs, and each one is somebody's commute.
+Transit is unforgiving in a way road routing isn't. A wrong turn in a car costs
+you a minute. A missed connection costs you twenty.
 
-**Getting facts right.** Opening hours, closures, and the long tail of what
-OpenStreetMap records versus what is true on the ground. A maps app that lies
-about whether somewhere is open is worse than one that says nothing at all.
+**Getting facts right.** Opening hours, closures, and the long tail of what OSM
+records versus what's true on the ground. A maps app that's wrong about whether a
+place is open is worse than one that doesn't say.
 
-**Planet-scale servers that run reliably and efficiently.** Building
-[Barrelman](/projects/barrelman) and operating it turn out to be different jobs.
-Imports have to finish, indexes have to stay fresh, and queries have to stay fast
-with the whole planet sitting behind them. Efficient enough that a free tier is
-not charity, and steady enough that people trust it with directions while they
-are already late.
+**Running planet-scale servers reliably.** Building
+[Barrelman](/projects/barrelman) and operating it turned out to be different
+jobs. Imports have to finish, indexes have to stay fresh, and queries have to
+stay fast with the whole planet behind them. Efficient enough that the free tier
+isn't charity, and stable enough that people trust it for directions when they're
+already late.
 
 **The commercial side.** Billing and the paywall behind Barrelman's
-free-for-individuals model. That is the last structural piece rather than a
-polish item.
+free-for-individuals model. That's the last structural piece.
 
 ## The last stretch before beta
 
-The waitlist exists because I would rather disappoint people slowly than all at
-once. Alpha testers know they are testing something. Beta users reasonably expect
-it to work.
+The waitlist exists so I can let people in at a pace where I can actually fix
+what they find. Alpha testers know they're testing something. Beta users will
+reasonably expect it to work.
 
-So the next step is a beta with the doors opened part way: a limited group of
-testers, and possibly limited regions to begin with.
+So the next step is a beta with the doors part way open: a limited group of
+testers, and possibly limited regions to start.
 
-I have been talking to municipal governments and to other engineers about what
-that rollout looks like — a partnership in some places, a route to a business
-that sustains itself in others. The condition is the same either way. None of it
-at the product's expense.
+I've been talking to municipal governments and other engineers about what that
+rollout looks like. In some places that might be a partnership, in others a path
+to a business that sustains itself. Either way, none of it at the product's
+expense.
 
-If you want to be in that group, the [waitlist](https://parchment.app) is open.
+If you want in, the [waitlist](https://parchment.app) is open.
