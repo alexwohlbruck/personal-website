@@ -2,4 +2,4 @@ The search and routing engine behind [Parchment](/projects/parchment). Barrelman
 
 [PostGIS](https://postgis.net/) does the heavy lifting, [Martin](https://martin.maplibre.org/) serves the tiles and [GraphHopper](https://www.graphhopper.com/) handles routes. [GTFS](https://gtfs.org/) transit feeds, bike share systems and address data import alongside the OSM extract.
 
-Barrelman began as a subsystem of Parchment and became its own product, priced by usage against [Google Maps Platform](https://mapsplatform.google.com/), [Mapbox](https://www.mapbox.com/) and [Geoapify](https://www.geoapify.com/). That story is in [The subsystem that became a product](/blog/parchment-barrelman-split).
+Barrelman began as a subsystem of Parchment and became its own product, priced by usage against [Google Maps Platform](https://mapsplatform.google.com/), [Mapbox](https://www.mapbox.com/) and [Geoapify](https://www.geoapify.com/). That story is in [How Barrelman spun out of Parchment](/blog/parchment-barrelman-split).

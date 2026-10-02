@@ -20,4 +20,4 @@ billed by usage.
 Today Parchment runs on the web, iOS, Android and desktop from one codebase. It
 covers search, directions, transit, saved places and offline regions. I keep a
 devlog of how it got here and where it is going, starting with
-[How I built a maps app on open data](/blog/building-parchment-on-open-data).
+[Why I'm building my own maps app](/blog/building-parchment-on-open-data).

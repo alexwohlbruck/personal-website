@@ -1,36 +1,38 @@
 ---
-title: Turning map providers into an interface
+title: Making map providers swappable
 date: 2026-08-17
-summary: Parchment stopped asking which service to call and started asking which job needs doing. The idea came from Home Assistant, and it changed how every feature after it got designed.
+summary: Parchment's code used to reference every map service by name, which made changing anything painful. I borrowed the way Home Assistant handles devices, and now switching providers doesn't mean rewriting features.
 tags: [parchment, maps, openstreetmap, architecture]
 series: Parchment devlog
 part: 3
 ---
 
 By spring 2025, [Parchment](/projects/parchment) talked to a handful of external
-services and knew every one of them by name in application code. Adding another
-meant touching search, place detail, and the merge logic between them.
+services, and the application code referred to every one of them by name. Adding
+another meant changing search, the place details page, and the logic that merged
+results between them.
 
-The work was annoying, but the hesitation was worse. Every provider choice felt
-permanent. I put off picking a routing engine for months because picking one
-seemed to mean living with all of its quirks forever.
+That setup also made decisions harder, since every provider choice felt
+permanent. I put off picking a routing engine for months because I thought I'd
+be stuck with all of its quirks forever.
 
-## The idea came from my house
+## Borrowing an idea from Home Assistant
 
 I run [Home Assistant](https://www.home-assistant.io/) on my homelab, and it
-solves this exact problem so well that I'd stopped noticing it.
+handles this exact problem so well that I'd stopped noticing it.
 
-Home Assistant doesn't know about Hue bulbs or Zigbee switches. It knows about
-**lights**. An integration tells it that some device is a light, and from then on
-every dashboard, automation and voice command works on the light. The brand stops
-mattering. Swap the hardware and nothing above it moves.
+Home Assistant doesn't care about Hue bulbs or Zigbee switches specifically. It
+cares about **lights**. An integration tells it that some device is a light, and
+from then on every dashboard, automation and voice command treats it as a light,
+whatever the brand. You can swap the hardware without changing anything that
+uses it.
 
-Parchment needed the same thing for maps.
+I wanted the same thing for Parchment.
 
 ## Capabilities
 
-So Parchment stopped defining a geocoder, a router and a tile server, and started
-defining a list of **capabilities**. A capability is one job a map needs done:
+So instead of defining a geocoder, a router and a tile server, I defined a list
+of **capabilities**. A capability is one job that a maps app needs done:
 
 ```ts
 export enum IntegrationCapabilityId {
@@ -46,26 +48,26 @@ export enum IntegrationCapabilityId {
 }
 ```
 
-There are twenty-two of them now. An integration declares which ones it can fill,
-and the app asks for the capability instead of the vendor. `routing` resolves to
-whatever integration is configured for that job.
+There are twenty-two of them now. Each integration declares which capabilities it
+supports, and the app asks for a capability instead of a specific vendor. A
+request for `routing` goes to whichever integration is configured to handle it.
 
 <Figure
   project="parchment"
   file="integrations.png"
   alt="Parchment's integrations settings, with a card for each provider"
-  caption="Each card lists the capabilities that provider can fill. The badges say whether it runs in the cloud or on your own hardware, and whether it answered last time we asked."
+  caption="Each card lists the capabilities that provider supports. The badges show whether it runs in the cloud or on your own hardware, and whether it responded the last time it was called."
 />
 
-## One file per provider
+## Adapters
 
-The other half is translation, and it's smaller than it sounds. Each integration
-ships an **adapter**, and the adapter has one job: turn that provider's response
-into Parchment's own types.
+The other half is converting each provider's data, and that turned out to be
+less work than I expected. Each integration includes an **adapter** that turns
+the provider's response into Parchment's own types.
 
 There's one `Place` type in the app. It has geometry, an address, opening hours,
-transit details, relations to parent and child places, and per-field attribution.
-Every adapter produces that, whatever it got back from the provider:
+transit details, links to parent and child places, and attribution for each
+field. Every adapter returns that, no matter what the provider sent back:
 
 ```ts
 import type {
@@ -78,36 +80,35 @@ import type {
 } from '../../../types/place.types'
 ```
 
-`AttributedValue` is the interesting one. A place page often merges a name from
+`AttributedValue` handles attribution. A place page often combines a name from
 [OpenStreetMap](https://www.openstreetmap.org/), a photo from
 [Wikimedia Commons](https://commons.wikimedia.org/) and a rating from a
-commercial provider. Each field credits its own source, since attribution belongs
-to the value rather than the whole page.
+commercial provider, and each of those fields credits its own source.
 
-That's the entire contract. A new provider is a declaration of what it can do
-plus one file that speaks its dialect, and nothing above that file has to know
-which provider it's talking to.
+So adding a new provider only takes a list of what it supports and one adapter
+file, and nothing else in the app needs to know which provider it's using.
 
-## What it actually changed
+## What it changed
 
-I expected cleaner code. What I got was a different way of designing features.
+The code got a lot cleaner, and it also changed how I design features.
 
-Choosing a routing engine stopped feeling like a commitment.
+Choosing a routing engine stopped feeling like a big commitment.
 [Valhalla](https://valhalla.github.io/valhalla/) and
 [GraphHopper](https://www.graphhopper.com/) are each good at different things,
-and I no longer had to be right about which one to use. Trying the other is a
-settings change and an adapter instead of a rewrite.
+and I didn't have to get the choice right the first time. Switching is a
+settings change and a new adapter instead of a rewrite.
 
-Several providers can answer at once. Search doesn't pick a winner; it asks every
-integration that fills `search` and merges the results into one list. A place
-found by one source and described better by another shows up as a single entry.
+Several providers can also answer at once. Search sends the query to every
+integration that supports `search` and merges the results into one list. If one
+source finds a place and another has better details for it, it shows up as a
+single result.
 
-And I now design features against capabilities. I ask which capability a feature
-needs instead of which service to sign up for. If nothing fills that capability
-yet, the feature degrades instead of breaking, and it turns on the day something
-does.
+And now when I plan a feature, I start by asking which capability it needs
+instead of which service to sign up for. If nothing supports that capability yet,
+the feature is just unavailable instead of broken, and it starts working as soon
+as an integration supports it.
 
-The rewrite took about three weeks and landed as one merge at the end of May
+The rewrite took about three weeks and was merged all at once at the end of May
 2025.
 
-Next: [The subsystem that became a product](/blog/parchment-barrelman-split).
+Next: [How Barrelman spun out of Parchment](/blog/parchment-barrelman-split).

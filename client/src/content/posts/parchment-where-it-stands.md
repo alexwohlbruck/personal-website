@@ -1,90 +1,90 @@
 ---
-title: Where Parchment stands, and what is left
+title: Where Parchment is today
 date: 2026-08-17
-summary: Parchment is in closed alpha behind a waitlist. Here is what works, what is still being built, and what has to be true before I let more people in.
+summary: Parchment is in closed alpha with a small group of testers. Here's what's working so far, and what I want to finish before opening up a beta.
 tags: [parchment, maps, openstreetmap, roadmap]
 series: Parchment devlog
 part: 5
 ---
 
-The first four entries are about how [Parchment](/projects/parchment) got here.
-This one is about where it actually is: closed alpha, behind a waitlist, with a
-small group of people using it daily and a lot of rough edges.
+[Parchment](/projects/parchment) is in closed alpha right now. There's a
+waitlist, a small group of people use it every day, and it still has plenty of
+rough edges.
 
-It runs on web, iOS, Android and desktop from one codebase, and it's
-self-hostable end to end. That part is done. What isn't done is everything
-between "works" and "ready for the public".
+It runs on web, iOS, Android and desktop from one codebase, and the whole thing
+can be self-hosted.
 
 ## What works
 
-- **Search and places.** 44 browse categories, including the ones other maps
-  skip: drinking water, benches, bike parking, defibrillators. Place pages
+- **Search and places.** 44 browse categories, including ones other maps skip
+  like drinking water, benches, bike parking and defibrillators. Place pages
   translate [OpenStreetMap tags](https://wiki.openstreetmap.org/wiki/Map_features)
-  into plain language, in your own language where mappers recorded one, with
-  opening hours shown in the place's own time zone.
+  into plain language, in your own language where mappers have recorded one,
+  and show opening hours in the place's own time zone.
 - **Directions.** Driving, cycling, walking and transit, with departure boards,
   isochrones and a carbon estimate for each route.
 - **The map.** A globe at low zoom, day and night styles, indoor floor plans, and
-  street-level imagery from [Mapillary](https://www.mapillary.com/). Layers for
-  weather, air quality from [OpenAQ](https://openaq.org/) and active wildfires
-  from [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/).
+  street-level imagery from [Mapillary](https://www.mapillary.com/). There are
+  also layers for weather, air quality from [OpenAQ](https://openaq.org/) and
+  active wildfires from [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/).
 - **Your own data.** Saved places and collections, offline regions, optional
   location history that stays on your server, and
-  [OpenStreetMap editing](https://www.openstreetmap.org/edit), so a wrong place
-  page can be fixed at the source instead of reported into a void.
+  [OpenStreetMap editing](https://www.openstreetmap.org/edit), so if a place
+  page is wrong you can fix it at the source instead of submitting a report and
+  hoping someone reads it.
 
 <Figure
   project="parchment"
   file="transit.png"
   alt="Transit directions from Dumbo, with four departures for an A train"
-  caption="A transit leg shows the next several departures, not just the first, and keeps the ones you already missed on screen."
+  caption="A transit leg lists the next several departures and keeps the ones you've already missed on screen."
 />
 
 ## What I'm working on
 
-Almost none of what's left is new features. It's the gap between software that
-functions and software I'd hand to someone without apologizing first.
+What's left is mostly polish. I want to be able to hand it to someone without a
+list of caveats.
 
-**The interface.** A lot of the app works without being good yet. This is the
-slowest category by far, because a unit test doesn't fail when a panel is merely
-awkward to look at.
+**The interface.** A lot of the app works but isn't good yet. This is the
+slowest part by far, because it mostly comes down to using the app a lot and
+fixing things by eye.
 
 **Native mobile apps.** Parchment already runs on iOS and Android, but from the
-same codebase as everything else, and it shows. Native clients are in the
-pipeline, ones that follow each platform's design language instead of wearing the
-same interface twice. A maps app is something you open one-handed in a metro
-station, and it should look and feel like it belongs on the device.
+same codebase as everything else, and you can tell. I'm planning native clients
+that follow each platform's design guidelines instead of reusing the same
+interface on both. People open a maps app one-handed in a subway station, so it
+should look and feel like it belongs on their phone.
 
-**Transit.** The richest source of real bugs, and each one is somebody's commute.
-Transit is unforgiving in a way road routing isn't. A wrong turn in a car costs
-you a minute. A missed connection costs you twenty.
+**Transit.** This is where most of the real bugs are, and they matter more than
+most, since a wrong departure time can make someone miss their train and wait
+twenty minutes for the next one.
 
-**Getting facts right.** Opening hours, closures, and the long tail of what OSM
-records versus what's true on the ground. A maps app that's wrong about whether a
-place is open is worse than one that doesn't say.
+**Getting facts right.** Opening hours, closures, and all the small differences
+between what's in OSM and what's actually true on the ground. I'd rather show
+nothing than tell someone a place is open when it isn't.
 
 **Running planet-scale servers reliably.** Building
-[Barrelman](/projects/barrelman) and operating it turned out to be different
-jobs. Imports have to finish, indexes have to stay fresh, and queries have to
-stay fast with the whole planet behind them. Efficient enough that the free tier
-isn't charity, and stable enough that people trust it for directions when they're
-already late.
+[Barrelman](/projects/barrelman) and keeping it running turned out to be very
+different jobs. Imports need to finish, indexes need to stay up to date, and
+queries need to stay fast with the whole planet behind them. It needs to be
+efficient enough that the free tier is sustainable, and stable enough that
+people can rely on it for directions when they're already running late.
 
-**The commercial side.** Billing and the paywall behind Barrelman's
-free-for-individuals model. That's the last structural piece.
+**The commercial side.** Billing and the paywall for Barrelman's
+free-for-individuals model. That's the last big piece I need to build.
 
-## The last stretch before beta
+## Getting to beta
 
-The waitlist exists so I can let people in at a pace where I can actually fix
-what they find. Alpha testers know they're testing something. Beta users will
-reasonably expect it to work.
+The waitlist lets me bring people in slowly enough that I can actually fix what
+they find. Alpha testers know they're testing something unfinished, but beta
+users will reasonably expect it to work.
 
-So the next step is a beta with the doors part way open: a limited group of
-testers, and possibly limited regions to start.
+So the next step is a limited beta, with a small group of testers and possibly
+only a few regions to start.
 
-I've been talking to municipal governments and other engineers about what that
-rollout looks like. In some places that might be a partnership, in others a path
-to a business that sustains itself. Either way, none of it at the product's
-expense.
+I've been talking with municipal governments and other engineers about what
+that rollout could look like. In some places it might be a partnership, and in
+others it could become a business that pays for itself. Either way, I don't
+want any of it to come at the expense of the product.
 
-If you want in, the [waitlist](https://parchment.app) is open.
+If you want to try it, you can join the [waitlist](https://parchment.app).
