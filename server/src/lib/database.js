@@ -21,6 +21,13 @@ export function database() {
       max: 5,
       connectionTimeoutMillis: 10_000,
       idleTimeoutMillis: 30_000,
+      // A socket that dies mid-query never errors on its own, and each one
+      // holds a pool slot forever; five of them wedge the guestbook until a
+      // restart. Time out the query so the pool discards the client, and probe
+      // idle sockets so a half-open one is noticed.
+      query_timeout: 20_000,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10_000,
       allowExitOnIdle: true,
     })
     // A dropped idle connection should be reported, not become an unhandled
