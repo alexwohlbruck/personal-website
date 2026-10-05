@@ -38,7 +38,6 @@ function toggle(tag: string) {
   <div class="pb-8">
     <PageHeader
       title="Everything I've built"
-      :lede="`Ten years of side projects, experimentation, and one cat facts API that refuses to die.`"
     />
 
     <!-- Filter ------------------------------------------------------------->

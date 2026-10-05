@@ -23,10 +23,10 @@ onMounted(() => void live.fetchListening())
 
 const liked = computed(() => live.listening?.liked ?? [])
 
-const RANGES: { key: SpotifyRange; label: string; note: string }[] = [
-  { key: 'month', label: '4 weeks', note: 'What Spotify makes of the last four weeks.' },
-  { key: 'sixMonths', label: '6 months', note: 'Last half year of listening.' },
-  { key: 'allTime', label: 'All time', note: 'As far back as Spotify keeps count.' },
+const RANGES: { key: SpotifyRange; label: string }[] = [
+  { key: 'month', label: '4 weeks' },
+  { key: 'sixMonths', label: '6 months' },
+  { key: 'allTime', label: 'All time' },
 ]
 
 const range = ref<SpotifyRange>('month')
@@ -37,14 +37,12 @@ const available = computed(() =>
 )
 
 const top = computed(() => live.listening?.ranges[range.value] ?? null)
-const note = computed(() => RANGES.find((option) => option.key === range.value)?.note ?? '')
 </script>
 
 <template>
   <section class="py-10">
     <SectionHeading
       title="Currently in my ears"
-      note="Here's what I've been listening to lately."
     />
 
     <div v-if="available.length > 1" class="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -62,7 +60,6 @@ const note = computed(() => RANGES.find((option) => option.key === range.value)?
           {{ option.label }}
         </button>
       </div>
-      <span class="text-xs text-ink-3">{{ note }}</span>
     </div>
 
     <div class="grid gap-6 lg:grid-cols-2 lg:items-start" :class="available.length > 1 ? 'mt-6' : 'mt-10'">

@@ -13,7 +13,7 @@ import { duration, ease, inView } from '@/lib/motion'
   <div class="pb-8">
     <PageHeader
       title="A bit about me"
-      :lede="`${site.role} in ${site.location}. I build front-ends, and lately almost all of them have been maps.`"
+      :lede="`${site.role} in ${site.location}. I mostly build front-ends, and lately a lot of maps.`"
     />
 
     <!-- Bio ----------------------------------------------------------------->
@@ -42,18 +42,17 @@ import { duration, ease, inView } from '@/lib/motion'
       >
         <p class="prose-body text-lg">
           I started designing and building for the web in high school. Photoshop turned into HTML
-          and I never went back. These days I write mostly TypeScript and mostly Vue, and I spend a
-          suspicious amount of my free time on maps.
+          and I never went back. These days I write mostly TypeScript and Vue, and I spend a lot of
+          my free time on maps.
         </p>
         <p class="prose-body">
-          I like the front end because the craft is visible. A hundred small decisions about type,
-          motion, and hierarchy add up to something that either feels right or doesn't. So far
-          I've shipped a labor management platform, a public API that outlived its own joke, and a
-          navigation app built entirely on open data.
+          I like front-end work because you can see the result. I've built a labor management
+          platform, a cat facts API that people still use, and a navigation app built on open
+          data.
         </p>
         <p class="prose-body">
-          Off the clock you'll find me on a bike, at a piano, editing OpenStreetMap, or arguing
-          that the city should have built the train.
+          Outside of work I ride my bike, play piano, edit OpenStreetMap, and go to city council
+          meetings.
         </p>
       </Motion>
     </section>

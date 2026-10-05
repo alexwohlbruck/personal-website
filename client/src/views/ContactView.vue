@@ -14,7 +14,7 @@ const elsewhere = socials.filter((social) => social.href)
   <div class="pb-8">
     <PageHeader
       title="Say hello"
-      lede="Work, side projects, or a strong opinion about bike infrastructure. All welcome."
+      lede="Reach out about work, side projects, or anything else."
     />
 
     <section class="grid gap-12 border-t border-rule py-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
@@ -45,7 +45,7 @@ const elsewhere = socials.filter((social) => social.href)
     <section class="py-10">
       <SectionHeading
         title="This week"
-        note="Roughly when I'm free. Weekends are usually a maybe."
+        note="When I'm usually free."
       />
       <AvailabilityCalendar />
     </section>

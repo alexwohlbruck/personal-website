@@ -23,7 +23,6 @@ function toggle(tag: string) {
   <div class="pb-8">
     <PageHeader
       title="Writing"
-      lede="Notes on maps, the web, and whatever I have been taking apart lately."
     />
 
     <!-- Filter --------------------------------------------------------------->

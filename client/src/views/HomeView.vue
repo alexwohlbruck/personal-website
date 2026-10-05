@@ -96,7 +96,6 @@ function leanWash(event: PointerEvent) {
     <section class="py-16">
       <SectionHeading
         title="Things I've made"
-        note="Ten years of side projects, experimentation, and one cat facts API that refuses to die."
       />
 
       <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -138,7 +137,7 @@ function leanWash(event: PointerEvent) {
     <section v-if="recent.length" class="py-16">
       <SectionHeading
         title="Recent writings"
-        note="Dev logs, ideas, and shower thoughts that I felt like writing down."
+        note="Dev logs and other things I've written."
       />
 
       <ol>
@@ -180,10 +179,10 @@ function leanWash(event: PointerEvent) {
       <span class="topo-close pointer-events-none absolute inset-0" aria-hidden="true" />
       <div class="relative">
         <h2 class="title mx-auto max-w-2xl text-4xl md:text-5xl">
-          Got something worth building?
+          Want to work together?
         </h2>
         <p class="prose-body mx-auto mt-4 max-w-md">
-          I like talking about maps, side projects, and front-end work that needs real care.
+          I'm happy to talk about maps, side projects, or front-end work.
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
           <AppButton variant="accent" :to="{ name: 'contact' }">Send a message</AppButton>

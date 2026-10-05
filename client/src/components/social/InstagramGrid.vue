@@ -58,8 +58,7 @@ const first = computed(() => page.value * PER_PAGE)
 
 <template>
   <div>
-    <div class="mb-5 flex items-baseline justify-between gap-4">
-      <p class="text-sm text-ink-3">What I've been pointing a camera at.</p>
+    <div class="mb-5 flex items-baseline justify-end gap-4">
       <a
         :href="links.instagram"
         target="_blank"

@@ -39,8 +39,8 @@ const largestLanguage = computed(() =>
 <template>
   <section class="py-10">
     <SectionHeading
-      title="Committed to the bit"
-      note="A year of pushes, and what they were written in."
+      title="GitHub"
+      note="My commits and languages from the past year."
     />
 
     <div v-if="loading" class="space-y-6">

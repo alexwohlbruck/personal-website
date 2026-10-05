@@ -23,7 +23,7 @@ import GithubPanel from '@/components/social/GithubPanel.vue'
     <section class="py-10">
       <SectionHeading
         title="Elsewhere"
-        note="Code, photos, music, and a slightly excessive number of map edits."
+        note="Other places you can find me."
       />
       <SocialList />
     </section>
