@@ -169,6 +169,10 @@ export interface OpenStreetMapPlace {
   lon: number
 }
 
+/** A ~100 m cell as [lat, lon, weight]. Weight is the share of changesets
+ * whose bounding boxes cover the cell. */
+export type OpenStreetMapHotspot = [lat: number, lon: number, weight: number]
+
 export interface OpenStreetMapStats {
   profile: string
   /** Lifetime changeset count from the public OSM user profile. */
@@ -183,6 +187,8 @@ export interface OpenStreetMapStats {
   /** The trailing year of editing, one changeset per count. */
   calendar: ContributionCalendar
   places: OpenStreetMapPlace[]
+  /** Missing from servers deployed before the hotspot map. */
+  hotspots?: OpenStreetMapHotspot[]
   /** Broad topics inferred from changeset comments. */
   themes: { name: string; count: number }[]
   recent: {

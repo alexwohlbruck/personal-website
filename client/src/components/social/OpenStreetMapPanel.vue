@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { ArrowUpRight, MapPin } from '@lucide/vue'
+import type { OpenStreetMapPlace } from '@/data/types'
 import SectionHeading from '@/components/ui/SectionHeading.vue'
 import InlineIcon from '@/components/ui/InlineIcon.vue'
 import ContributionCard from '@/components/social/ContributionCard.vue'
@@ -8,13 +9,29 @@ import { useLiveStore } from '@/stores/live'
 import { links } from '@/data/site'
 import { relativeTime } from '@/lib/format'
 
+const HotspotMap = defineAsyncComponent(() => import('@/components/social/HotspotMap.vue'))
+
 const live = useLiveStore()
+const focus = ref<OpenStreetMapPlace | null>(null)
+
+function toggleFocus(place: OpenStreetMapPlace) {
+  focus.value = focus.value === place ? null : place
+}
 
 onMounted(() => void live.fetchOsm())
 
 const stats = computed(() => live.osm)
 const loading = computed(() => live.osmStatus === 'loading' || live.osmStatus === 'idle')
-const largestPlace = computed(() => Math.max(...(stats.value?.places.map((place) => place.count) ?? [1])))
+// The opening map view skips areas under 1% of all edits, the same places the
+// heatmap fades out, so a few trip edits don't stretch it across the country.
+const framedPlaces = computed(() => {
+  const places = stats.value?.places ?? []
+  const total = places.reduce((sum, place) => sum + place.count, 0)
+  return places.filter((place) => place.count >= total * 0.01)
+})
+const largestPlace = computed(() =>
+  Math.max(...(stats.value?.places.map((place) => place.count) ?? [1])),
+)
 
 const number = new Intl.NumberFormat('en-US')
 const memberYear = computed(() =>
@@ -24,13 +41,11 @@ const memberYear = computed(() =>
 
 <template>
   <section class="py-10">
-    <SectionHeading
-      title="Map edits"
-      note="Places I've edited on OpenStreetMap."
-    />
+    <SectionHeading title="Map edits" note="Places I've edited on OpenStreetMap." />
 
     <div v-if="loading" class="space-y-6">
       <div class="card h-72 animate-pulse bg-paper-sunk" />
+      <div class="card h-80 animate-pulse bg-paper-sunk sm:h-[26rem]" />
       <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <div class="card h-80 animate-pulse bg-paper-sunk" />
         <div class="card h-80 animate-pulse bg-paper-sunk" />
@@ -49,6 +64,15 @@ const memberYear = computed(() =>
         tint="marine"
         pattern="topo"
       />
+
+      <div v-if="stats.hotspots?.length" class="card relative isolate h-80 overflow-hidden sm:h-[26rem]">
+        <HotspotMap :hotspots="stats.hotspots" :frame="framedPlaces" :focus="focus" />
+        <p
+          class="label pointer-events-none absolute top-4 left-5 rounded-md bg-paper/85 px-2 py-1 text-ink-3 backdrop-blur-sm"
+        >
+          Where I've edited
+        </p>
+      </div>
 
       <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <div class="card p-6 sm:p-7">
@@ -88,21 +112,34 @@ const memberYear = computed(() =>
 
             <ol v-if="stats.places.length" class="space-y-3">
               <li v-for="place in stats.places" :key="place.label">
-                <div class="mb-1 flex items-start justify-between gap-3 text-sm">
-                  <span class="flex min-w-0 items-start gap-2 font-medium leading-snug">
-                    <MapPin class="mt-0.5 size-3.5 shrink-0 text-marine" aria-hidden="true" />
-                    <span>{{ place.label }}</span>
-                  </span>
-                  <span class="tabular shrink-0 text-xs text-ink-3">
-                    {{ number.format(place.count) }} changeset{{ place.count === 1 ? '' : 's' }}
-                  </span>
-                </div>
-                <div class="h-1 overflow-hidden rounded-full bg-paper-sunk">
-                  <div
-                    class="h-full rounded-full bg-marine"
-                    :style="{ width: `${Math.max(6, (place.count / largestPlace) * 100)}%` }"
-                  />
-                </div>
+                <button
+                  type="button"
+                  class="group block w-full text-left"
+                  :aria-pressed="focus === place"
+                  @click="toggleFocus(place)"
+                >
+                  <div class="mb-1 flex items-start justify-between gap-3 text-sm">
+                    <span class="flex min-w-0 items-start gap-2 font-medium leading-snug">
+                      <MapPin class="mt-0.5 size-3.5 shrink-0 text-marine" aria-hidden="true" />
+                      <span
+                        class="transition-colors group-hover:text-accent"
+                        :class="{ 'text-accent': focus === place }"
+                        >{{ place.label }}</span
+                      >
+                    </span>
+                    <span class="tabular shrink-0 text-xs text-ink-3">
+                      {{ number.format(place.count) }} changeset{{ place.count === 1 ? '' : 's' }}
+                    </span>
+                  </div>
+                  <div class="h-1 overflow-hidden rounded-full bg-paper-sunk">
+                    <div
+                      class="h-full rounded-full bg-marine"
+                      :style="{
+                        width: `${Math.max(6, (place.count / largestPlace) * 100)}%`,
+                      }"
+                    />
+                  </div>
+                </button>
               </li>
             </ol>
           </div>
@@ -134,7 +171,11 @@ const memberYear = computed(() =>
             </div>
 
             <ul>
-              <li v-for="edit in stats.recent" :key="edit.id" class="border-b border-rule last:border-0">
+              <li
+                v-for="edit in stats.recent"
+                :key="edit.id"
+                class="border-b border-rule last:border-0"
+              >
                 <a
                   :href="edit.url"
                   target="_blank"
@@ -142,10 +183,14 @@ const memberYear = computed(() =>
                   class="group grid grid-cols-[1fr_auto] gap-4 py-3"
                 >
                   <span class="min-w-0">
-                    <span class="block truncate text-sm font-medium transition-colors group-hover:text-accent">
+                    <span
+                      class="block truncate text-sm font-medium transition-colors group-hover:text-accent"
+                    >
                       {{ edit.comment }}
                     </span>
-                    <span class="mt-1 block text-xs text-ink-3">{{ relativeTime(edit.createdAt) }}</span>
+                    <span class="mt-1 block text-xs text-ink-3">{{
+                      relativeTime(edit.createdAt)
+                    }}</span>
                   </span>
                   <span class="tabular self-center text-xs text-ink-3">
                     {{ number.format(edit.changes) }} change{{ edit.changes === 1 ? '' : 's' }}
@@ -162,7 +207,8 @@ const memberYear = computed(() =>
               target="_blank"
               rel="noopener noreferrer"
               class="link"
-            >OpenStreetMap contributors</a>.
+              >OpenStreetMap contributors</a
+            >.
           </p>
         </div>
       </div>

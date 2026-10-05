@@ -82,6 +82,54 @@ export function clusterChangesets(changesets, radius = 60) {
   return clusters.sort((a, b) => b.count - a.count).slice(0, PLACE_LIMIT)
 }
 
+/** Spread each changeset over the cells of about a hundred metres that its
+ * bounding box covers, so an edit that touched a whole neighbourhood paints
+ * the neighbourhood rather than one dot at its centre. Every changeset carries
+ * a total weight of one, split evenly across its cells. Wide boxes are
+ * sampled on a coarser lattice (at most `samples` per side) so a single
+ * district-wide edit can't produce thousands of points. Cells holding less
+ * than `floor` of a changeset are dropped: they fall under the heatmap's
+ * transparent floor anyway and would otherwise be most of the payload. */
+export function binHotspots(changesets, cell = 0.001, samples = 12, floor = 0.1) {
+  const bins = new Map()
+  const snap = (value) => Math.round(value / cell)
+
+  function add(latIndex, lonIndex, weight) {
+    const key = `${latIndex},${lonIndex}`
+    const bin = bins.get(key)
+    if (bin) bin.count += weight
+    else bins.set(key, { lat: latIndex * cell, lon: lonIndex * cell, count: weight })
+  }
+
+  for (const changeset of changesets) {
+    // point() also rejects missing boxes and country-spanning bulk edits.
+    if (!point(changeset)) continue
+
+    const lats = axis(snap(changeset.min_lat), snap(changeset.max_lat), samples)
+    const lons = axis(snap(changeset.min_lon), snap(changeset.max_lon), samples)
+    const weight = 1 / (lats.length * lons.length)
+    for (const lat of lats) for (const lon of lons) add(lat, lon, weight)
+  }
+
+  return [...bins.values()]
+    .map((bin) => ({
+      lat: Number(bin.lat.toFixed(4)),
+      lon: Number(bin.lon.toFixed(4)),
+      count: Number(bin.count.toFixed(3)),
+    }))
+    .filter((bin) => bin.count >= floor)
+    .sort((a, b) => b.count - a.count)
+}
+
+/** Cell indices from `from` to `to`, thinned to at most `limit` evenly spaced
+ * steps that still include both edges. */
+function axis(from, to, limit) {
+  const span = to - from
+  if (span <= 0) return [from]
+  const steps = Math.min(span, limit - 1)
+  return Array.from({ length: steps + 1 }, (_, i) => from + Math.round((span * i) / steps))
+}
+
 /** Changeset comments are free text, not object tags. These deliberately broad
  * buckets describe editing interests without claiming OSM exposes a
  * user's most-used map tags (it does not). */
@@ -158,6 +206,9 @@ export function shapeStats(profile, changesets, places = [], today = new Date())
     isLifetime: changesets.length === totalChangesets,
     lastEdit: changesets[0]?.created_at ?? null,
     places: places.filter((place) => place.label),
+    // [lat, lon, weight] triples: about five thousand of them, and the keys
+    // would otherwise be half the payload.
+    hotspots: binHotspots(changesets).map((bin) => [bin.lat, bin.lon, bin.count]),
     themes: tallyThemes(changesets),
     recent: changesets.slice(0, 4).map((changeset) => ({
       id: changeset.id,

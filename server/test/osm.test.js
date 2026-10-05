@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { clusterChangesets, mergeChangesets, shapeStats, tallyThemes } from '../src/apis/osm.js'
+import { binHotspots, clusterChangesets, mergeChangesets, shapeStats, tallyThemes } from '../src/apis/osm.js'
 
 const changeset = (overrides = {}) => ({
   id: 10,
@@ -26,6 +26,27 @@ describe('OpenStreetMap stats', () => {
       clusters.map((cluster) => cluster.count),
       [2, 1],
     )
+  })
+
+  it('spreads each changeset over the cells its box covers', () => {
+    const hotspots = binHotspots(
+      [
+        // A point edit: all of its weight lands in one cell.
+        changeset({ min_lat: 35.21, max_lat: 35.21, min_lon: -80.85, max_lon: -80.85 }),
+        // A box two cells by two: a quarter of its weight in each.
+        changeset({ id: 11, min_lat: 40.67, max_lat: 40.68, min_lon: -73.97, max_lon: -73.96 }),
+        changeset({ id: 12, min_lat: null }),
+      ],
+      0.01,
+    )
+
+    assert.deepEqual(hotspots, [
+      { lat: 35.21, lon: -80.85, count: 1 },
+      { lat: 40.67, lon: -73.97, count: 0.25 },
+      { lat: 40.67, lon: -73.96, count: 0.25 },
+      { lat: 40.68, lon: -73.97, count: 0.25 },
+      { lat: 40.68, lon: -73.96, count: 0.25 },
+    ])
   })
 
   it('infers broad themes once per changeset', () => {

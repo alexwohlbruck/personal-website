@@ -22,6 +22,7 @@
     "dayjs": "^1.11.21",
     "emoji-picker-element": "^1.29.1",
     "emoji-picker-element-data": "^1.8.0",
+    "maplibre-gl": "^6.12.0",
     "motion-v": "^2.3.0",
     "pinia": "^4.0.2",
     "reka-ui": "^2.10.3",
