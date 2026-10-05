@@ -87,10 +87,12 @@ function addLayers(instance: MapLibreMap) {
       // edit on a trip (about a tenth of the top bin's weight) stays below
       // the ramp's transparent floor unless it has neighbours.
       'heatmap-weight': ['sqrt', ['/', ['get', 'count'], max]],
-      // Points sit about 100 m apart. The radius has to keep growing with
-      // zoom or the bins separate into a visible lattice up close.
-      'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 2, 0.6, 10, 1, 13, 2, 15, 3],
-      'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 2, 4, 10, 10, 15, 48],
+      // Zoomed out, the radius is a few pixels so cities read as spots. From
+      // zoom 10 it doubles with every zoom level, which keeps it at a fixed
+      // ~700 m on the ground: samples stay as joined at street level as they
+      // were from afar, and the heat doesn't thin out on the way in.
+      'heatmap-intensity': 1,
+      'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 2, 3, 9, 5, 10, 5.5, 13, 44],
       'heatmap-opacity': 0.9,
       'heatmap-color': ['interpolate', ['linear'], ['heatmap-density'], ...ramp] as never,
     },

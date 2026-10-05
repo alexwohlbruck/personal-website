@@ -84,13 +84,18 @@ export function clusterChangesets(changesets, radius = 60) {
 
 /** Spread each changeset over the cells of about a hundred metres that its
  * bounding box covers, so an edit that touched a whole neighbourhood paints
- * the neighbourhood rather than one dot at its centre. Every changeset carries
- * a total weight of one, split evenly across its cells. Wide boxes are
- * sampled on a coarser lattice (at most `samples` per side) so a single
- * district-wide edit can't produce thousands of points. Cells holding less
- * than `floor` of a changeset are dropped: they fall under the heatmap's
+ * the neighbourhood rather than one dot at its centre. A changeset's weight is
+ * log2(1 + changes), split evenly across its cells: a one-tag fix counts 1, a
+ * few hundred objects about 8, a 10,000-object import about 13. Big sittings
+ * register without an import drowning out years of small edits. Boxes are
+ * sampled every `step` cells (about 300 m), close enough that the heatmap blur
+ * joins the samples into one wash instead of a visible lattice, and at most
+ * `samples` per side so one county-wide import can't produce thousands of
+ * points. Imports that wide end up below `floor` and drop out, which suits a
+ * map of where the editing happened. Cells holding less
+ * than `floor` weight are dropped: they fall under the heatmap's
  * transparent floor anyway and would otherwise be most of the payload. */
-export function binHotspots(changesets, cell = 0.001, samples = 12, floor = 0.1) {
+export function binHotspots(changesets, cell = 0.001, samples = 24, floor = 0.5, step = 3) {
   const bins = new Map()
   const snap = (value) => Math.round(value / cell)
 
@@ -105,9 +110,9 @@ export function binHotspots(changesets, cell = 0.001, samples = 12, floor = 0.1)
     // point() also rejects missing boxes and country-spanning bulk edits.
     if (!point(changeset)) continue
 
-    const lats = axis(snap(changeset.min_lat), snap(changeset.max_lat), samples)
-    const lons = axis(snap(changeset.min_lon), snap(changeset.max_lon), samples)
-    const weight = 1 / (lats.length * lons.length)
+    const lats = axis(snap(changeset.min_lat), snap(changeset.max_lat), samples, step)
+    const lons = axis(snap(changeset.min_lon), snap(changeset.max_lon), samples, step)
+    const weight = Math.log2(1 + (changeset.changes_count ?? 1)) / (lats.length * lons.length)
     for (const lat of lats) for (const lon of lons) add(lat, lon, weight)
   }
 
@@ -121,12 +126,12 @@ export function binHotspots(changesets, cell = 0.001, samples = 12, floor = 0.1)
     .sort((a, b) => b.count - a.count)
 }
 
-/** Cell indices from `from` to `to`, thinned to at most `limit` evenly spaced
- * steps that still include both edges. */
-function axis(from, to, limit) {
+/** Cell indices from `from` to `to`, roughly every `step` cells and at most
+ * `limit` of them, evenly spaced and including both edges. */
+function axis(from, to, limit, step = 1) {
   const span = to - from
   if (span <= 0) return [from]
-  const steps = Math.min(span, limit - 1)
+  const steps = Math.max(1, Math.min(Math.ceil(span / step), limit - 1))
   return Array.from({ length: steps + 1 }, (_, i) => from + Math.round((span * i) / steps))
 }
 

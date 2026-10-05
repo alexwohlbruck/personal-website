@@ -1,3 +1,4 @@
+import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import path from 'node:path'
@@ -20,6 +21,16 @@ app.set('trust proxy', production ? 1 : false)
 // credentials so the admin session cookie is sent and accepted. The origin
 // callback below never answers with a wildcard, which credentialed CORS forbids.
 app.use(cors({ origin: allowOrigin, credentials: true }))
+// Caddy on vega6 proxies without `encode`, so compress here. The OSM hotspot
+// list alone is ~200 KB of JSON. Event streams are skipped: gzip would buffer
+// them and hold back live updates.
+app.use(
+  compression({
+    filter: (req, res) =>
+      !String(res.getHeader('Content-Type') ?? '').includes('text/event-stream') &&
+      compression.filter(req, res),
+  }),
+)
 
 /**
  * Whether a browser origin may read from here.

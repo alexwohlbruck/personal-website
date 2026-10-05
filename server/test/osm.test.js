@@ -31,10 +31,10 @@ describe('OpenStreetMap stats', () => {
   it('spreads each changeset over the cells its box covers', () => {
     const hotspots = binHotspots(
       [
-        // A point edit: all of its weight lands in one cell.
-        changeset({ min_lat: 35.21, max_lat: 35.21, min_lon: -80.85, max_lon: -80.85 }),
-        // A box two cells by two: a quarter of its weight in each.
-        changeset({ id: 11, min_lat: 40.67, max_lat: 40.68, min_lon: -73.97, max_lon: -73.96 }),
+        // A one-object point edit: weight log2(2) = 1, all in one cell.
+        changeset({ changes_count: 1, min_lat: 35.21, max_lat: 35.21, min_lon: -80.85, max_lon: -80.85 }),
+        // A 15-object box two cells by two: log2(16) = 4, a quarter in each.
+        changeset({ id: 11, changes_count: 15, min_lat: 40.67, max_lat: 40.68, min_lon: -73.97, max_lon: -73.96 }),
         changeset({ id: 12, min_lat: null }),
       ],
       0.01,
@@ -42,10 +42,10 @@ describe('OpenStreetMap stats', () => {
 
     assert.deepEqual(hotspots, [
       { lat: 35.21, lon: -80.85, count: 1 },
-      { lat: 40.67, lon: -73.97, count: 0.25 },
-      { lat: 40.67, lon: -73.96, count: 0.25 },
-      { lat: 40.68, lon: -73.97, count: 0.25 },
-      { lat: 40.68, lon: -73.96, count: 0.25 },
+      { lat: 40.67, lon: -73.97, count: 1 },
+      { lat: 40.67, lon: -73.96, count: 1 },
+      { lat: 40.68, lon: -73.97, count: 1 },
+      { lat: 40.68, lon: -73.96, count: 1 },
     ])
   })
 
