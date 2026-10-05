@@ -25,8 +25,8 @@ const memberYear = computed(() =>
 <template>
   <section class="py-10">
     <SectionHeading
-      title="OpenStreetMap"
-      note="Places I've edited on the map."
+      title="Map edits"
+      note="Places I've edited on OpenStreetMap."
     />
 
     <div v-if="loading" class="space-y-6">
