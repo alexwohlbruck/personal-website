@@ -17,6 +17,13 @@ const postUrls = import.meta.glob('../assets/posts/**/*.{png,jpg,jpeg,gif,webp}'
   import: 'default',
 }) as Record<string, string>
 
+/** Clips belonging to a blog post, alongside its images. */
+const postVideoUrls = import.meta.glob('../assets/posts/**/*.{mp4,webm}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>
+
 const assetUrls = import.meta.glob('../assets/{svg,img}/*.{svg,png,jpg,jpeg}', {
   eager: true,
   query: '?url',
@@ -51,6 +58,7 @@ function keyBy(record: Record<string, string>, marker: string) {
 
 const portfolio = keyBy(portfolioUrls, '/assets/portfolio/')
 const posts = keyBy(postUrls, '/assets/posts/')
+const postVideos = keyBy(postVideoUrls, '/assets/posts/')
 const derived = keyBy(derivedUrls, '/assets/derived/')
 const assets = keyBy(assetUrls, '/assets/')
 const svgSource = keyBy(rawSvgs, '/assets/svg/')
@@ -68,6 +76,11 @@ export function projectImage(project: string, file: string): string {
 /** `postImage('hello-world', 'diagram.png')` */
 export function postImage(slug: string, file: string): string {
   return posts[`${slug}/${file}`] ?? ''
+}
+
+/** `postVideo('hello-world', 'demo.mp4')` */
+export function postVideo(slug: string, file: string): string {
+  return postVideos[`${slug}/${file}`] ?? ''
 }
 
 interface ImageMeta {

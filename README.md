@@ -33,7 +33,7 @@ at build time. Nothing is parsed in the browser.
 |---|---|
 | Project write-ups | `content/projects/<slug>.md`, where the slug matches the project's `name` in `src/data/projects.ts` |
 | Blog posts | `content/posts/<slug>.md`, where the filename is the URL |
-| Post images | `src/assets/posts/<slug>/`, alongside the project screenshots in `src/assets/portfolio/` |
+| Post images and clips | `src/assets/posts/<slug>/`, alongside the project screenshots in `src/assets/portfolio/` |
 | Widgets | `src/components/content/*.vue`, registered globally under their filename |
 
 Project metadata — dates, colour, screenshots, tags — stays typed in
@@ -75,7 +75,7 @@ Clicking one opens the lightbox, and every image in a document forms a single
 set, so the arrows walk the page — bare `![alt](…)` images included.
 
 Markdown files may use any component in `src/components/content/` by name, with
-no import. `Callout`, `Figure` and `Embed` ship with it; anything dropped in that
+no import. `Callout`, `Figure`, `Video` and `Embed` ship with it; anything dropped in that
 folder joins them. Leave a blank line after the opening tag for Markdown inside a
 widget to be parsed:
 

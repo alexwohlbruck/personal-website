@@ -1151,6 +1151,35 @@
     ],
     "lqip": "data:image/webp;base64,UklGRioAAABXRUJQVlA4IB4AAAAwAQCdASoQAAwAA4BaJaQAA3AA/vSsqdlflgM+4AA="
   },
+  "posts/metroboard-home-assistant/board-and-dashboard.jpg": {
+    "w": 3072,
+    "h": 4080,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoQABUAPu1iqU2ppaOiMAgBMB2JZAC/ZwAB0az+z1dnu1ZoeAD+7pad0Y8s8ic1OIBfkE0gu0l75Z2KY3tPai5SCXYyB3dxYpA8ixEW5/8shq4awAAAAA=="
+  },
+  "posts/metroboard-home-assistant/device-page.png": {
+    "w": 3054,
+    "h": 2514,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAADQAQCdASoQAA0AA4BaJaQAAp0QXZk7cAD+9DMdbVoC5YOGKtB056pAAAA="
+  },
+  "posts/metroboard-home-assistant/light-controls.png": {
+    "w": 1179,
+    "h": 2556,
+    "srcset": [
+      400,
+      800
+    ],
+    "lqip": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAADQAwCdASoQACMAPt1cpU2opSOiNUgBEBuJQBerBZtGn9J+qMhJAQAA/u9UUUe34sAomcfruyd5B9AKeUjx2vnJGQ8IlyNqEahLKiU6tGVTWCH1PQ6dpz/F7j9/EjzLJ+gAAA=="
+  },
   "posts/parchment-barrelman-split/region-import.png": {
     "w": 2280,
     "h": 2661,
