@@ -75,9 +75,9 @@ provided as is, with no warranty, under the MIT license.
 
 ### What you need
 
-- A Metroboard. I've only tried this on a Chicago board running app v0.8.0 and
-  MicroPython 1.25. Other cities should work the same way, and the installer
-  stops if it doesn't recognize your board's app.
+- A Metroboard that still has app v0.8.0 on it. I've only tried this on a
+  Chicago board. Other cities should work the same way, and the installer stops
+  if it doesn't recognize your board's app.
 - Home Assistant with the MQTT integration set up, and an MQTT broker like the
   [Mosquitto add-on](https://github.com/home-assistant/addons/blob/master/mosquitto/DOCS.md).
   The board has to be able to reach the broker over your Wi-Fi, and it has to
@@ -85,6 +85,19 @@ provided as is, with no warranty, under the MIT license.
 - A USB-C cable that carries data, not just power.
 - A computer with Python 3. The installer finds the board on its own on macOS
   and Linux. On Windows, pass the port with `--port`, like `--port COM3`.
+
+<Callout kind="note" title="App v1.0.0 isn't supported">
+
+Metroboards update themselves, and Design Rules' latest app is v1.0.0. The
+bridge doesn't run on it, so the installer switches the board back to v0.8.0
+and blocks v1.0.0.
+
+That only works while v0.8.0 is still on the board. v1.0.0 runs alongside it at
+first, then replaces it for good once it has been running long enough. If yours
+has already been replaced and you don't have an older backup, the installer
+will stop, and there's no way to use this on your board yet.
+
+</Callout>
 
 ### 1. Get the code
 
@@ -168,11 +181,19 @@ scenes like any other light.
 
   On Linux the port is usually `/dev/ttyACM0`.
 
+### If it drops offline later
+
+There's a known bug: if the board loses its connection to the MQTT broker, for
+example while Home Assistant or the broker restarts, the board can drop off
+Wi-Fi and stay off. The map stops updating and Home Assistant shows the board
+as unavailable. Unplug the board's power and plug it back in to bring it back.
+
 ### After a vendor update
 
-When Design Rules releases a new version, the board switches to it. The new
-version doesn't have the bridge's hook, so Home Assistant control stops. Plug the board in
-and run the installer again with your backup:
+The installer only blocks v1.0.0. If Design Rules releases a newer version, the
+board switches to it. The new version doesn't have the bridge's hook, so Home
+Assistant control stops. Plug the board in and run the installer again with your
+backup. That puts v0.8.0 back and blocks the newer version too:
 
 ```bash
 python3 tools/mb_flash.py install --app-from metroboard-20261005-120000.bin
@@ -240,16 +261,25 @@ board to `base_app` and tells it to skip the pending update. On my board, that
 meant going from app v1.0.0 back to v0.8.0. Train data comes from Design Rules'
 servers either way, so the map works the same.
 
+Running the bridge on v1.0.0 would mean starting it from somewhere updates
+don't touch, like the root `main.py`, instead of from inside the app. I haven't
+got that working yet.
+
 A newer update will still install, and the board will switch to it, leaving the
 hook behind. That's why the installer can restore `base_app` from your backup.
+Once an update has run long enough, it replaces `base_app` and deletes v0.8.0,
+so the backup is the only copy left.
 
 ### The MQTT client
 
 The bridge uses Peter Hinch's
 [`mqtt_as`](https://github.com/peterhinch/micropython-mqtt), which does all its
-socket I/O asynchronously, so a slow or unreachable broker can't stall the
-display. By default it manages Wi-Fi itself, which would conflict with the app,
-so the bridge subclasses it to wait for the app's connection instead.
+socket I/O asynchronously, so waiting on the broker never blocks the rest of the
+app. It also manages Wi-Fi itself, which conflicts with the app, so the bridge
+overrides its connect step to wait for the app's Wi-Fi connection instead. That
+override doesn't cover everything: when the broker connection drops, `mqtt_as`
+still turns Wi-Fi off before reconnecting, and the app never turns it back on.
+That's what causes the Wi-Fi drop described under "If it drops offline later."
 
 Both the bridge and `mqtt_as` are installed precompiled as `.mpy` files. If the
 board had to compile `mqtt_as` itself, next to the running app, it would run out
