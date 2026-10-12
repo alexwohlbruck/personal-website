@@ -338,3 +338,11 @@ python3 tools/mb_flash.py install
 
 It reuses your `mb_hass.json` and the existing hook, so there's nothing to set
 up again.
+
+This doesn't change anything about app v1.0.0. It's still unsupported, and the
+installer still blocks it. My board also went offline once on October 5 for a
+different reason: it installed v1.0.0, which doesn't load the bridge. If a newer
+vendor update installs itself, the bridge stops the same way. The difference is
+that the map keeps running and the board stays on your network, but Home
+Assistant shows it as unavailable. See [After a vendor update](#after-a-vendor-update)
+to put the bridge back.
