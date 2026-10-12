@@ -183,10 +183,9 @@ scenes like any other light.
 
 ### If it drops offline later
 
-There's a known bug: if the board loses its connection to the MQTT broker, for
-example while Home Assistant or the broker restarts, the board can drop off
-Wi-Fi and stay off. The map stops updating and Home Assistant shows the board
-as unavailable. Unplug the board's power and plug it back in to bring it back.
+Earlier versions of the bridge had a bug where the board could drop off Wi-Fi
+and stay off. It's fixed now. If you installed before October 12, see the
+[update](#update-wi-fi-drop-fix) at the end of this post.
 
 ### After a vendor update
 
@@ -277,9 +276,9 @@ The bridge uses Peter Hinch's
 socket I/O asynchronously, so waiting on the broker never blocks the rest of the
 app. It also manages Wi-Fi itself, which conflicts with the app, so the bridge
 overrides its connect step to wait for the app's Wi-Fi connection instead. That
-override doesn't cover everything: when the broker connection drops, `mqtt_as`
-still turns Wi-Fi off before reconnecting, and the app never turns it back on.
-That's what causes the Wi-Fi drop described under "If it drops offline later."
+override didn't cover everything: when the broker connection dropped, `mqtt_as`
+still turned Wi-Fi off before reconnecting, and the app never turned it back on.
+The [update](#update-wi-fi-drop-fix) below covers the fix.
 
 Both the bridge and `mqtt_as` are installed precompiled as `.mpy` files. If the
 board had to compile `mqtt_as` itself, next to the running app, it would run out
@@ -303,3 +302,39 @@ The board only has three brightness levels, so the light's brightness snaps to
 can only show the real line colors or all white. The Brightness and Color Mode
 dropdowns on the device page control the same settings and stay in sync with the
 light.
+
+## Update: Wi-Fi drop fix
+
+_October 12, 2026_
+
+The bridge had a bug where the board went offline and stayed offline until it
+was unplugged. Whenever the board lost its connection to the MQTT broker, for
+example during a Home Assistant restart or a short Wi-Fi blip, `mqtt_as` turned
+the board's Wi-Fi off before reconnecting. The Metroboard app only connects to
+Wi-Fi once at boot, so nothing turned it back on. Mine went offline four times
+in the first week, once for almost two days.
+
+The bridge now handles Wi-Fi in two ways:
+
+- It wraps the Wi-Fi interface it hands to `mqtt_as`, so calls that would turn
+  Wi-Fi off do nothing. MicroPython keeps reconnecting on its own after a real
+  outage, which an explicit disconnect used to stop.
+- If Wi-Fi is down for 30 seconds, for example after a router restart, the
+  bridge reconnects using the network name and password already saved on the
+  board. Nothing new is stored.
+
+Since the fix, Home Assistant has seen my board drop twice, for 8 seconds and
+under a second, and it came back on its own both times.
+
+If you installed the bridge before this, plug the board into your computer,
+pull the latest code and run the installer again:
+
+```bash
+cd metroboard-hass
+source .venv/bin/activate
+git pull
+python3 tools/mb_flash.py install
+```
+
+It reuses your `mb_hass.json` and the existing hook, so there's nothing to set
+up again.
