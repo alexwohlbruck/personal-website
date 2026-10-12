@@ -88,14 +88,8 @@ provided as is, with no warranty, under the MIT license.
 
 <Callout kind="note" title="App v1.0.0 isn't supported">
 
-Metroboards update themselves, and Design Rules' latest app is v1.0.0. The
-bridge doesn't run on it, so the installer switches the board back to v0.8.0
-and blocks v1.0.0.
-
-That only works while v0.8.0 is still on the board. v1.0.0 runs alongside it at
-first, then replaces it for good once it has been running long enough. If yours
-has already been replaced and you don't have an older backup, the installer
-will stop, and there's no way to use this on your board yet.
+The bridge only runs on app v0.8.0. If your board has updated itself to v1.0.0,
+see the [update](#update-app-v1-0-0-isnt-supported) at the end of this post.
 
 </Callout>
 
@@ -303,6 +297,25 @@ can only show the real line colors or all white. The Brightness and Color Mode
 dropdowns on the device page control the same settings and stay in sync with the
 light.
 
+## Update: App v1.0.0 isn't supported
+
+_October 5, 2026_
+
+Metroboards update themselves, and Design Rules' latest app is v1.0.0. My board
+installed it on October 5 and dropped out of Home Assistant, because v1.0.0
+doesn't load the bridge. The map kept working, but every Metroboard entity
+showed as unavailable.
+
+The bridge doesn't run on v1.0.0, so the installer switches the board back to
+v0.8.0 and blocks v1.0.0. That only works while v0.8.0 is still on the board.
+v1.0.0 runs alongside it at first, then replaces it for good once it has been
+running long enough. If yours has already been replaced and you don't have an
+older backup, the installer will stop, and there's no way to use this on your
+board yet.
+
+A newer vendor update would still install itself and stop the bridge the same
+way. See [After a vendor update](#after-a-vendor-update) to put it back.
+
 ## Update: Wi-Fi drop fix
 
 _October 12, 2026_
@@ -338,11 +351,3 @@ python3 tools/mb_flash.py install
 
 It reuses your `mb_hass.json` and the existing hook, so there's nothing to set
 up again.
-
-This doesn't change anything about app v1.0.0. It's still unsupported, and the
-installer still blocks it. My board also went offline once on October 5 for a
-different reason: it installed v1.0.0, which doesn't load the bridge. If a newer
-vendor update installs itself, the bridge stops the same way. The difference is
-that the map keeps running and the board stays on your network, but Home
-Assistant shows it as unavailable. See [After a vendor update](#after-a-vendor-update)
-to put the bridge back.
