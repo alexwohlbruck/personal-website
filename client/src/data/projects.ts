@@ -284,7 +284,7 @@ export const projects: Project[] = [
     summary: 'An online multiplayer typing race, taken from a game played in class.',
     start: new Date('2017-11-27'),
     end: new Date('2018-05-10'),
-    url: 'https://clickygame.herokuapp.com/',
+    url: 'https://clicky.wohlbruck.dev',
     github: 'https://github.com/alexwohlbruck/clicky',
     images: ['game.png', 'logo.png', 'name.png'],
     tags: [
