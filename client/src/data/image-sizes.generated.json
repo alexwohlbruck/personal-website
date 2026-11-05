@@ -179,6 +179,16 @@
     ],
     "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAACQAgCdASoQAAwAA4BaJQBOjXAYIB6/4Hy8Hk+mAAD+56/leizaYGQgiLBc57Uyrg3chhbd6+sgxy4jLKFraMYNz0V7kLo6hl0f4DH8415zTI7yAAA="
   },
+  "clicky/close-call.png": {
+    "w": 2400,
+    "h": 1800,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAQCdASoQAAwAA4BaJQBOgCHk08BakHgA/uNlmjFt67fQPn/ifiTINKiLLF2+HmFL5M080WlRlDpVdv3/fw7C75AEIbPI1Oof9/WGY6+YehXowAA="
+  },
   "clicky/game.png": {
     "w": 2400,
     "h": 1652,
@@ -187,9 +197,9 @@
       800,
       1400
     ],
-    "lqip": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAAAQAgCdASoQAAsAA4BaJbACdEf/gSIm9ia4AP7jy8LD7KHr5XPafZBI17zBPCWj057PvhPufxic8imGfIAKlZYdClW9gKKeaSlfxFMI1i6jv6fJ3P60xIspnfn1l4AA"
+    "lqip": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAAAwAgCdASoQAAsAA4BaJbACdBagDJ/kyrXYAAD+42aE472TZZnwDYquo4/fNxDs3wSzLp2JjmFb5VaHNWFMbuMv/JxHKmt7iv60POaPeKQNRQcwVvJpFRsTX0pQBXwWSPDHyQAA"
   },
-  "clicky/logo.png": {
+  "clicky/home.png": {
     "w": 2400,
     "h": 1800,
     "srcset": [
@@ -197,9 +207,9 @@
       800,
       1400
     ],
-    "lqip": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACQAQCdASoQAAwAA4BaJaQAAudUwMAA/vivxpXYMXYwd2AIkwVzG2AAAAA="
+    "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACwAQCdASoQAAwAA4BaJbACdADwvqJMAP7w3RcJT0nHJDjdbmEWAuX2SI36WqL8F3ATVj7BX39gkjB0o84wXL2UOiP6dRLQQRfQAA=="
   },
-  "clicky/name.png": {
+  "clicky/intro.png": {
     "w": 2400,
     "h": 1800,
     "srcset": [
@@ -207,7 +217,37 @@
       800,
       1400
     ],
-    "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAQCdASoQAAwAA4BaJbACdAEfOrtsYAAA/uNgVUWgJp4gmPkbdjOYu+mBRedu/NF3Qh2Ytop13ufx24vm8mZAhgSfnu5cmapcb0/SLs4o8eaagAA="
+    "lqip": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoQAAwAA4BaJQAAXRuLuTtgAAD++E0LXXMlzzLny7ugzs8sxT9DA+vUWBm+HvhAAAA="
+  },
+  "clicky/lobby.png": {
+    "w": 2400,
+    "h": 1800,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAAAwAgCdASoQAAwAA4BaJbACdAEVV046Po1sAAD+8Oy5NNRqcYsG/7yhHh853UDuuCmwp86FBeCVYiJcEZy1TNXSp0f2c/8TGDtwAA=="
+  },
+  "clicky/mobile.png": {
+    "w": 2400,
+    "h": 1800,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwAgCdASoQAAwAA4BaJbACdAYvDlZuTc98MAD+7Q1NIbfxP+FAtO7SYjhZYfT+ifNq4Cu4Qv55t9J8eARiwIaC9IfiRqADr2cX+WFdLFWTlQU+2Aq+4AsgJ5WtRY+6nyuAAA=="
+  },
+  "clicky/results.png": {
+    "w": 2400,
+    "h": 1800,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAAAQAgCdASoQAAwAA4BaJZQC7AEPBZPSnOoAAP72jlZoDvdGuS4tJcKpGmmtX6+ik8orkOQWZ9Uj6AAA"
   },
   "coopoly-deal/endgame.jpg": {
     "w": 2400,

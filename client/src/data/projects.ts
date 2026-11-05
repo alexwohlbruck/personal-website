@@ -286,7 +286,7 @@ export const projects: Project[] = [
     end: new Date('2018-05-10'),
     url: 'https://clicky.wohlbruck.dev',
     github: 'https://github.com/alexwohlbruck/clicky',
-    images: ['game.png', 'logo.png', 'name.png'],
+    images: ['game.png', 'close-call.png', 'home.png', 'lobby.png', 'results.png', 'mobile.png', 'intro.png'],
     tags: [
       'client-side',
       'server-side',
