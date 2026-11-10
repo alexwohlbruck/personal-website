@@ -8,7 +8,7 @@ export const projects: Project[] = [
     title: 'Tanks!',
     color: '#c8282f',
     icon: 'svg/tanks.svg',
-    summary: "Wii Play's Tanks! in the browser, with online co-op and a 40-player arena.",
+    summary: 'Toy tank battles in the browser, with online co-op and a 40-player arena.',
     start: new Date('2026-11-09'),
     end: new Date(),
     url: 'https://tanks.wohlbruck.dev',
