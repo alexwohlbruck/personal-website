@@ -1011,6 +1011,156 @@
     ],
     "lqip": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAACwAQCdASoQAAwAA4BaJbACdLoABDAAAP7PF2LMx2B0eyI5E6r7UwSiepn/xhEgdeq8Fd2AAAA="
   },
+  "tanks/achievements.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoQAAkAA4BaJZACdAEN0Z8BAAD5elL+eTRyZ9fwxAWd2+YbEphMC3KM7ckdREg98GyRTciVfDd7AAAA"
+  },
+  "tanks/arena-join.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoQAAkAA4BaJaACdAD2PPUFfaAAAP4/m0mHfvRsDr4FiFOCNXVy3MsxhW6Lo1p2Qrax1MIwqrORtJvNgdLnqo7U5ywbh/9uW8gAAA=="
+  },
+  "tanks/arena-nuke.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADwAQCdASoQAAkAA4BaJbACdAEDoabg3gAA/mZWdO4P4nawXjSnMnP4oUJBU0hIcUdxztDNH7rTl8SOGychzGCXTBZ+ItPLh3WzshM+sAA="
+  },
+  "tanks/arena-scores.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAQCdASoQAAkAA4BaJZgCdAEPdoUue+AA/Xb2l/WU+R1yvTNZ4A/WivcNDllfXG/waMvtrBwR7L3a7EfrhbXIlgrgZpBAUF8AAA=="
+  },
+  "tanks/arena-smoke.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAQAgCdASoQAAkAA4BaJbACdAEDqSvMRYIAAP6XkVikL56YCz0KDR3ydqsrhCDkDeERoa04PNiffcc74YxDH9mZ1oGicrg3b0e2f6lxvXouxrpjiklNzogAAAA="
+  },
+  "tanks/arena-teams.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAAAQAgCdASoQAAkAA4BaJbACdAEQx4H9xiiAAP7WvmywSJL6/GinxYIG3t4dtwhYya2ev4NN3OATqK3wU0Fd6acBf195Q7EyEGu788AA"
+  },
+  "tanks/arena.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAADQAQCdASoQAAkAA4BaJbACdAEJrHurEAD+07WlNv3Z31ROePIm3lIrU2Jr3/OmAsFSiFY4kgunLo3S6zrFcw59feUNe/zgSVqzCAAA"
+  },
+  "tanks/campaign-aim.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADQAQCdASoQAAkAA4BaJagCdADxIJQt9AD+VTD+ioWsZkwGGBLvegjTIX/Gr96rNTdX/QrFB5GsZnGu44H9LU4ovtIMU7Tydbp7166e3y3QZbbBAAA="
+  },
+  "tanks/campaign.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAADQAQCdASoQAAkAA4BaJaACdADbOl5aAAD+kNlrbtWyiiPRavTE52wE6GwPd4sr+kYhKretdQAVDV6Oo6qbosuAw3aTVIQfURE+MQP160tzcJyr1eVwAA=="
+  },
+  "tanks/editor.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAAAQAgCdASoQAAkAA4BaJaACdAEQUIu9XnwAAP7g1IrP5HH2ZkOVMFdKtdcU54v+Zud+L0nqWhk8TtZWmIRrBl7kzAA="
+  },
+  "tanks/menu.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADQAQCdASoQAAkAA4BaJaACdACnjZOyAAD+P5tGwqZ/DziJ1VxLABkcfemyUijDRMtlKLizMNaKTtFPqneg2ZueqqevxuV9oDdRqiw2vSIWAAAA"
+  },
+  "tanks/online-room.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAQCdASoQAAkAA4BaJZACdADvY0XlAAD9tJGB3X9RK6iLYHolcqpeQC8oUGSyutYq03oItluaBXpTI4qfn3wW0cszhXX0GW8EJeaAAAA="
+  },
+  "tanks/online.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAQAgCdASoQAAkAA4BaJZgCdAEPhomv/onAAP21B3Mi9mlq/TU7jFPnq4p72g6SW+ERGF1ab1Uze3QY1/1UdqbkTDj8tvIAAAA="
+  },
+  "tanks/settings.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAQCdASoQAAkAA4BaJaACdAD1mtW+6AAA/j+edmU11GlbB97xPLMIdhcL21CioumcZ85bOu+qtLc2bpV6vK4AAAA="
+  },
+  "tanks/title.jpg": {
+    "w": 1600,
+    "h": 900,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAQCdASoQAAkAA4BaJaACdAYtU+CmXOAA9jZ23yGJi+Wwrd9rkq9nTG2CouFJ6d2l15eZ1zCa2iHDPInRS3ySxkIVPekdPXG5tey+BxFLEmzIAAA="
+  },
   "worxstr/blog.png": {
     "w": 2400,
     "h": 1776,
