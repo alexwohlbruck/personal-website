@@ -1,0 +1,3 @@
+Landmarks is a catalog of low-poly 3D models of real landmarks, made to replace a building's flat extrusion on the map. There are 500+ of them so far, across New York, Chicago, Los Angeles, San Francisco, Charlotte, Washington DC, Las Vegas, Seattle and a few theme parks.
+
+Every model is a small TypeScript generator rather than a hand-sculpted mesh. It is shaped from open data only, OpenStreetMap outlines and freely licensed photos, then rendered beside those photos and adjusted until the two match. The models share one color palette, usually come in at a few thousand triangles, and some have authored night lighting. They're published as an open dataset for any map to use.

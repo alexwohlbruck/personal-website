@@ -611,6 +611,16 @@
     ],
     "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAACwAQCdASoQAAkAA4BaJQAAXIXjDRoAAP7ytnYMe89dyrZAfeLXtbk3Fiq26U8vwoqj/k5qEsgAAA=="
   },
+  "landmarks/lower-manhattan.jpg": {
+    "w": 2000,
+    "h": 1327,
+    "srcset": [
+      400,
+      800,
+      1400
+    ],
+    "lqip": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAAAQAgCdASoQAAsAA4BaJYwCdADcFnkxVeMAAP12maCanXkkclEINSzou9VhrEilZ3g5SKux+w/ikR4YOeG/xM7jRZtjwhduzwwCiIgHuNbyAAAA"
+  },
   "parchment/bike-parking-mobile.png": {
     "w": 1206,
     "h": 2622,
