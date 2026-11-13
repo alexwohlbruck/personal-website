@@ -41,7 +41,7 @@ export const projects: Project[] = [
     end: new Date(),
     url: 'https://landmarks.barrelman.dev',
     github: 'https://github.com/alexwohlbruck/landmarks',
-    images: ['lower-manhattan.jpg'],
+    images: ['lower-manhattan.jpg', 'washington-square-night.jpg', 'times-square-night.jpg'],
     coverPosition: 'center',
     tags: ['client-side', 'cartography', 'ci-cd'],
   },
