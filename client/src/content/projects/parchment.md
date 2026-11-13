@@ -8,7 +8,7 @@ hosted, or run the whole stack on your own hardware.
   project="parchment"
   file="main.png"
   alt="Parchment's globe view, with the Atlantic and labeled cities"
-  caption="Zoom far enough out and the map becomes a globe. All of it is OpenStreetMap data, styled rather than licensed."
+  caption="A clean, simple interface keeps your attention on the detailed maps."
 />
 
 Parchment depends on no single map provider. It defines a set of capabilities,
