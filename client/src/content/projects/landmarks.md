@@ -1,3 +1,5 @@
-Landmarks is a catalog of low-poly 3D models of real landmarks, made to replace a building's flat extrusion on the map. There are 500+ of them so far, across New York, Chicago, Los Angeles, San Francisco, Charlotte, Washington DC, Las Vegas, Seattle and a few theme parks.
+Most 3D maps draw buildings by raising each footprint straight up into a flat-topped block, so a building like the US Capitol loses the dome that makes it recognizable. Landmarks fixes that with a library of over 500 3D models of real buildings, and once you put them on your map, the skyline looks like the one you'd see from the street.
 
-Every model is a small TypeScript generator rather than a hand-sculpted mesh. It is shaped from open data only, OpenStreetMap outlines and freely licensed photos, then rendered beside those photos and adjusted until the two match. The models share one color palette, usually come in at a few thousand triangles, and some have authored night lighting. They're published as an open dataset for any map to use.
+Landmarks is used by Parchment and Subway Builder to give their cities buildings you can recognize at a glance. Every model comes in day and night versions and uses a set of standard textures that you can adjust to match the look of your map.
+
+The whole library is free and open, so any map that wants recognizable buildings can use these models.
