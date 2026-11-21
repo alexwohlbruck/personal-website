@@ -42,19 +42,6 @@ function toTop() {
             {{ site.role }} in {{ site.location }}. Currently at
             {{ site.currently.company }}. Most of my own time goes to maps.
           </p>
-
-          <RouterLink
-            :to="{ name: 'contact' }"
-            class="mt-5 flex w-fit items-center gap-2 text-sm text-ink-2 transition-colors hover:text-accent"
-          >
-            <span class="relative flex size-2" aria-hidden="true">
-              <span
-                class="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60"
-              />
-              <span class="relative inline-flex size-2 rounded-full bg-accent" />
-            </span>
-            Say hello
-          </RouterLink>
         </div>
 
         <nav class="flex flex-col gap-2.5">
